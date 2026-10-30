@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>鄰伴 · 助理記憶</title>  <link rel="stylesheet" href="/assets/service-shell.css">
+<link rel="icon" href="/assets/service/service-mark.svg" type="image/svg+xml">
+</head>
+<body class="service-theme" data-service-area="tools">
+__SERVICE_SHELL__<main id="main-content">
+  <h1>助理記憶</h1><p><a href="/admin">返回管理工作台</a></p>
+  <p>只有你直接以「記住：內容」發出指令才新增記憶。不自動保存整段聊天。最多 100 項，每項 1000 字；不要存密碼或金鑰。</p>
+  <p>記憶模式下的對話及取用記憶只用本機 Ollama，不送雲端；未授權記憶模式的一般對話仍沿用雲端＋Ollama 備援。刪除記憶不會刪除既有瀏覽器聊天紀錄、備份或已傳送資料；需要時另開新對話。</p>
+  <p>本機操作員模式：免輸入密碼。</p><input id="memoryKey" type="hidden" value="__LOCAL_OPERATOR_TOKEN__">
+  <button id="refreshMemory" type="button">查看／重新整理</button>
+  <button id="pairMemory" type="button">開啟 AIRI 並授權記憶模式</button>
+  <button id="revokeMemory" type="button">撤銷所有 AIRI 記憶授權</button>
+  <p>授權最多八小時，只可使用記憶，不能控制 EP；重新整理 AIRI 或服務重啟後需重新授權。若彈出視窗被封鎖，請容許此本機頁面的彈出視窗。</p>
+  <label for="rememberCommand">明確記憶指令</label><input id="rememberCommand" maxlength="1003" placeholder="記住：我偏好用廣東話回答">
+  <button id="saveMemory" type="button">執行「記住」</button>
+  <p id="memoryStatus" role="status" aria-live="polite">尚未載入</p><ul id="memoryItems"></ul>
+</main><script src="/assets/assistant-memory.js" defer></script><script src="/assets/service/service-shell.js" defer></script>
+</body></html>

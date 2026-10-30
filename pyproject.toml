@@ -1,0 +1,49 @@
+[project]
+name = "zhiwei-jianbing"
+version = "0.1.0"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "bm25s==0.3.16",
+  "fastapi>=0.116,<1",
+  "httpx>=0.28,<1",
+  "jsonschema>=4.25,<5",
+  "numpy>=2.2,<3",
+  "opencv-python-headless>=4.11,<5",
+  "onnxruntime>=1.22,<2",
+  "packaging>=26,<27",
+  "pillow>=11.3,<12",
+  "pydantic>=2.11,<3",
+  "psutil>=7,<8",
+  "pyyaml>=6.0,<7",
+  "scikit-learn>=1.7,<2",
+  "skl2onnx>=1.19,<2",
+  "uvicorn>=0.35,<1",
+  "websockets>=15,<17",
+]
+
+[project.optional-dependencies]
+cloud = ["libsql==0.1.11", "PyJWT==2.15.1", "cryptography==50.0.2"]
+dev = [
+  "opencc-python-reimplemented==0.1.7",
+  "pytest>=8.4,<9",
+  "pytest-cov>=6.2,<7",
+  "ruff>=0.12,<1",
+]
+vision-training = [
+  "torch>=2.8,<3",
+  "torchvision>=0.23,<1",
+]
+
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["edge_hub*", "simulator*", "tools*", "deploy.cloud*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100

@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>鄰伴 · EP 遙控</title>
+  <link rel="stylesheet" href="/assets/ep-console.css">
+  <link rel="stylesheet" href="/assets/service-shell.css">
+<link rel="icon" href="/assets/service/service-mark.svg" type="image/svg+xml">
+</head>
+<body class="service-theme" data-service-area="robots">
+__SERVICE_SHELL__
+  <main id="main-content" class="console">
+    <header class="page-header">
+      <div class="brand"><span class="brand-mark" aria-hidden="true">EP</span><div><p class="eyebrow">AIRI</p><h1>EP 遙控</h1></div></div>
+      <a class="back-link" href="/admin">返回管理工作台 後台 <span aria-hidden="true">↗</span></a>
+    </header>
+    <p class="page-intro">掃碼連線，按住方向移動，放開停止。</p>
+    <input id="epKey" type="hidden" value="__LOCAL_OPERATOR_TOKEN__">
+    <div class="setup-grid">
+      <section class="card pairing-card" aria-labelledby="pairHeading">
+        <div class="section-heading"><div><h2 id="pairHeading">掃碼連線</h2><p>用 EP 掃描，點擊 QR Code 可放大。</p></div></div>
+        <button id="currentWifiQr" class="primary wide" type="button">產生 Wi-Fi QR Code</button>
+        <div class="qr-panel">
+          <div id="qrPlaceholder" class="qr-empty"><svg aria-hidden="true" viewBox="0 0 64 64"><path d="M8 25V8h17M39 8h17v17M56 39v17H39M25 56H8V39"/><path d="M18 18h9v9h-9zM37 18h9v9h-9zM18 37h9v9h-9zM37 37h9v9h-9z"/></svg><strong>準備好就產生組網碼</strong><span>將 EP 切到組網模式，再按掃碼鍵。</span></div>
+          <button id="zoomQr" class="qr-zoom" type="button" aria-label="放大組網碼" hidden><img id="epQr" width="320" height="320" alt="供 EP 掃描的組網 QR Code" hidden></button>
+        </div>
+        <div class="qr-meta"><span id="networkName"></span><span id="qrCountdown" hidden></span></div>
+        <p id="pairStatus" class="status-message" role="status">尚未產生組網碼。</p>
+        <details id="manualWifiDetails" class="manual-wifi"><summary>無法自動讀取？手動輸入 Wi-Fi</summary>
+          <form id="manualWifiForm"><label for="wifiSsid">Wi-Fi 名稱</label><input id="wifiSsid" required maxlength="32" autocomplete="off"><label for="wifiPassword">Wi-Fi 密碼</label><input id="wifiPassword" type="password" maxlength="63" autocomplete="off"><button id="manualWifiQr" type="submit">產生組網碼</button></form>
+        </details>
+        <p class="fine-print">換 Wi-Fi 後，重新產生 QR Code 即可。</p>
+      </section>
+    <section class="card controls-card" aria-labelledby="controlHeading">
+      <div class="section-heading control-heading"><h2 id="controlHeading">方向遙控</h2><p id="connectionStatus" class="connection-badge" role="status">等待連線</p></div>
+      <p id="epActionStatus" class="status-message" role="status"></p>
+      <div class="control-grid">
+        <div class="control-pad" aria-label="EP 方向控制">
+          <button type="button" data-ep-direction="forward" disabled><span aria-hidden="true">↑</span>前進</button>
+          <button type="button" data-ep-direction="left" disabled><span aria-hidden="true">←</span>左移</button>
+          <button type="button" data-ep-direction="backward" disabled><span aria-hidden="true">↓</span>後退</button>
+          <button type="button" data-ep-direction="right" disabled><span aria-hidden="true">→</span>右移</button>
+          <button type="button" data-ep-direction="turn_left" disabled><span aria-hidden="true">↶</span>左轉</button>
+          <button id="stopEp" class="stop-button" type="button" disabled>鎖定停止</button>
+          <button type="button" data-ep-direction="turn_right" disabled><span aria-hidden="true">↷</span>右轉</button>
+        </div>
+        <div class="control-info"><p id="motionStatus" class="status-message" role="status">連線後即可使用方向掣。</p>
+          <details id="resetPanel" class="reset-panel" hidden><summary>解除停止鎖定</summary><label class="check-row"><input id="confirmEpStationary" type="checkbox"><span>已確認 EP 靜止。</span></label><button id="resetEpStop" type="button" disabled>解除鎖定</button></details>
+        </div>
+      </div>
+      <details class="connection-options"><summary>連線設定</summary>
+        <label for="epIp">EP IP 位址</label><input id="epIp" placeholder="192.168.1.123" maxlength="15" autocomplete="off" inputmode="decimal">
+        <div class="button-row connection-actions"><button id="connectEp" type="button">重試連線</button><button id="disconnectEp" type="button" disabled>斷開連線</button></div>
+        <button id="cancelPairing" class="text-button" type="button" hidden>清除 QR Code</button>
+        <p class="fine-print">開啟此頁不會移動 EP。直線上限 0.15 m/s，轉速上限 15°/s。軟件停止不是硬件急停；網絡故障時請在現場停機。</p>
+      </details>
+    </section>
+    </div>
+    <dialog id="qrDialog" class="qr-dialog" aria-labelledby="qrZoomHeading"><div class="zoom-heading"><h2 id="qrZoomHeading">用 EP 掃描組網碼</h2><button id="closeQrDialog" type="button">關閉</button></div><img id="qrZoomImage" alt="供 EP 掃描的放大組網 QR Code"><p>掃碼後自動連線。按 Esc 或點擊空白處關閉。</p></dialog>
+  </main>
+  <script src="/assets/ep-console.js" defer></script>
+<script src="/assets/service/service-shell.js" defer></script>
+</body>
+</html>

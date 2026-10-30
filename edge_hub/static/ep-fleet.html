@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>鄰伴 · 機械人巡邏</title>
+  <link rel="stylesheet" href="/assets/ep-console.css">
+  <link rel="stylesheet" href="/assets/ep-fleet.css">
+  <link rel="stylesheet" href="/assets/service-shell.css">
+<link rel="icon" href="/assets/service/service-mark.svg" type="image/svg+xml">
+</head>
+<body data-ep-ui="fleet" class="service-theme" data-service-area="robots">
+__SERVICE_SHELL__
+  <main id="main-content" class="fleet-console">
+    <header class="service-heading-row"><div><h1>機械人巡邏</h1><p class="service-lead">選擇機體，查看畫面及人手遙控。</p></div></header>
+    <input id="epKey" type="hidden" value="__LOCAL_OPERATOR_TOKEN__">
+    <p id="fleetNotice" class="fleet-notice" role="status"></p>
+    <div id="fleetLayout" class="fleet-layout">
+    <section id="pairingView" class="pairing-view" aria-label="掃碼連線">
+      <h2>新增機械人</h2><p>已加入的機體不用重複掃碼。</p>
+      <button id="zoomQr" class="qr-zoom" type="button" aria-label="放大連線碼" hidden><img id="epQr" width="320" height="320" alt="供機體掃描的連線碼"></button>
+      <div id="qrEmpty" class="qr-empty"><strong>連上 Wi-Fi 後，即可產生 QR Code</strong></div>
+      <p id="pairStatus" class="status-message" role="status"></p>
+      <button id="makeQr" type="button" class="primary">顯示連線碼</button>
+      <p id="networkName" class="network-name"></p>
+      <details class="pair-options"><summary>換 Wi-Fi／手動設定</summary><form id="manualWifiForm"><label for="wifiSsid">Wi-Fi 名稱</label><input id="wifiSsid" maxlength="32" required autocomplete="off"><label for="wifiPassword">Wi-Fi 密碼</label><input id="wifiPassword" type="password" maxlength="63" autocomplete="off"><button id="manualWifiQr" type="submit">更新連線碼</button></form></details>
+      <button id="backToDevices" class="text-button" type="button" hidden>返回機體清單</button>
+    </section>
+    <section id="devicesView" class="devices-view" aria-label="EP 機體清單" hidden>
+      <div class="fleet-toolbar"><div><h2>機械人清單</h2><p id="fleetCount"></p></div><div class="button-row"><button id="addEp" type="button">＋ 新增機體</button><button id="monitorEp" class="primary" type="button">分割監看</button></div></div>
+      <div id="deviceList" class="device-list"></div>
+    </section>
+    </div>
+    <dialog id="qrDialog" class="qr-dialog" aria-labelledby="qrZoomHeading"><div class="zoom-heading"><h2 id="qrZoomHeading">新增機械人</h2><button id="closeQr" type="button">關閉</button></div><img id="qrZoomImage" alt="供 EP 掃描的放大組網 QR Code"></dialog>
+    <dialog id="driveDialog" class="drive-dialog" aria-labelledby="driveTitle">
+      <header class="drive-header"><h2 id="driveTitle">EP 遙控</h2><div class="button-row"><button id="fullScreenViews" type="button">全螢幕</button><button id="closeDrive" type="button">返回清單</button></div></header>
+      <p id="driveNotice" class="drive-notice" role="status"></p>
+      <div id="viewGrid" class="view-grid"></div>
+      <div class="control-dock"><p id="dockEmpty">點選上方畫面，選擇要控制的 EP</p><div id="driveControls" class="control-content" hidden>
+        <p id="driveControlLabel" class="control-label"></p>
+        <div class="dock-row">
+        <div class="control-pad" aria-label="EP 方向控制">
+          <button type="button" data-ep-direction="forward" disabled><span aria-hidden="true">↑</span>前進</button>
+          <button type="button" data-ep-direction="left" disabled><span aria-hidden="true">←</span>左移</button>
+          <button type="button" data-ep-direction="backward" disabled><span aria-hidden="true">↓</span>後退</button>
+          <button type="button" data-ep-direction="right" disabled><span aria-hidden="true">→</span>右移</button>
+          <button type="button" data-ep-direction="turn_left" disabled><span aria-hidden="true">↶</span>左轉</button>
+          <button id="followSelected" class="follow-button" type="button" aria-pressed="true" disabled>跟隨：開</button>
+          <button type="button" data-ep-direction="turn_right" disabled><span aria-hidden="true">↷</span>右轉</button>
+        </div>
+        <div class="speed-panel"><label for="speedLevel">速度 <output id="speedValue" for="speedLevel">0.15 m/s</output></label><input id="speedLevel" type="range" min="1" max="4" step="1" value="1" disabled><p id="gimbalHint">鏡頭跟隨底盤正前方</p></div>
+        <div class="warning-panel"><button id="infraredWarning" type="button" disabled>按住警示</button><small>紅外線 · 綠燈閃爍 · 警告音<br>放開停止，不發射水晶彈</small><small id="warningStatus" role="status"></small></div>
+        </div>
+      </div></div>
+      <div id="driveGuide" class="drive-guide">點畫面選機體 · 按住 W A S D 移動／Q E 轉向 · 放開停止 · 關閉跟隨後游標瞄準 · 空白鍵鎖定停止</div>
+      <div id="resetArea" class="hud-reset" hidden><label class="check-row"><input id="stationary" type="checkbox">已確認機體靜止</label><button id="resetSelected" type="button">解除停止鎖定</button></div>
+      <details class="drive-details"><summary>巡邏及連線設定</summary><div class="patrol-settings"><button id="patrolToggle" type="button" disabled>巡邏回報：關</button><small id="patrolStatus" role="status">啟用後只在停穩時自動轉動雲台，拍攝事件及左右環境三張相，供職員核實。</small><details><summary>回報區域</summary><label>目前位置<input id="patrolZone" maxlength="80" placeholder="例如：A座地下大堂"></label><label><input id="patrolRestricted" type="checkbox">此鏡頭在禁區，有人時回報</label><label><input id="patrolCloud" type="checkbox">雲端複核提醒（原相不自動上傳；請在現場回報檢查遮蓋預覽後傳送，每日最多20次）</label></details></div><div class="button-row"><button id="stopSelected" class="stop-button" type="button" disabled>鎖定停止</button><button id="disconnectSelected" type="button">斷開選定 EP</button></div><p>按住方向才移動，放開即送出停止。操作時請留意現場；遇異常請立即在機體上關機。</p></details>
+    </dialog>
+  </main>
+  <script src="/assets/ep-console.js" defer></script>
+  <script src="/assets/ep-fleet.js" defer></script>
+<script src="/assets/service/service-shell.js" defer></script>
+</body>
+</html>

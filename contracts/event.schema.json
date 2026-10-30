@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "HTTP creation additionally requires UTF-8 JSON with no unpaired Unicode surrogates, at most 65536 raw bytes and 32 structural levels; these request limits are enforced outside JSON Schema. Creation validation errors return a fixed redacted 422 detail.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "type", "zone", "at_ms", "severity"],
+  "properties": {
+    "id": {"type": "string", "minLength": 1, "maxLength": 128},
+    "type": {"enum": ["litter_detected", "leak_detected", "temperature_drill", "robot_fault"]},
+    "zone": {"type": "string", "minLength": 1, "maxLength": 128},
+    "at_ms": {"type": "integer", "minimum": 0, "maximum": 9007199254740991},
+    "severity": {"enum": ["notice", "warning", "critical"]},
+    "evidence": {"type": "string", "maxLength": 512, "pattern": "^events/.+-blurred\\.jpg$"},
+    "details": {"type": "object", "description": "HTTP creation additionally limits compact UTF-8 JSON to 16384 bytes."},
+    "status": {"enum": ["pending"]}
+  }
+}

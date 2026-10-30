@@ -1,0 +1,13 @@
+.runtime/
+.experiments/
+.vendor/
+.env
+.env.*
+*.dpapi
+*.db
+*.sqlite*
+*.key
+*.pem
+__pycache__/
+node_modules/
+.venv*/

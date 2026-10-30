@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>鄰伴 · EP 單機閒置驗收</title>
+  <link rel="stylesheet" href="/assets/ep-console.css">
+  <style>
+    .acceptance-console { display: flex; flex-direction: column; gap: 18px; max-width: 820px; }
+    .acceptance-console select { font: inherit; width: 100%; min-height: 46px; padding: 10px; border: 1px solid #d5deea; border-radius: 10px; background: #fff; color: inherit; }
+  </style>
+  <link rel="stylesheet" href="/assets/service-shell.css">
+<link rel="icon" href="/assets/service/service-mark.svg" type="image/svg+xml">
+</head>
+<body class="service-theme" data-service-area="robots">
+__SERVICE_SHELL__
+  <main id="main-content" class="console acceptance-console">
+    <header class="page-header"><h1>EP 單機閒置驗收</h1><a class="back-link" href="/ep-preparation">返回控制台</a></header>
+    <input id="epKey" type="hidden" value="__LOCAL_OPERATOR_TOKEN__">
+    <p class="page-intro">第二階段：只連線，觀察 2 分鐘。自動重連、移動、雲台及鏡頭均停用。</p>
+    <div id="pairingGate" hidden>
+      <p>配網仍開啟。請先結束配網，再按「手動連線」；「結束並斷線」只用於驗收連線。</p>
+      <button id="endPairing" type="button" class="primary">結束配網（不會自動連線）</button>
+    </div>
+    <form id="acceptanceForm">
+      <label for="device">選擇機體 SN</label><select id="device" required><option value="">載入機體清單…</option></select>
+      <label class="check-row"><input id="stationary" type="checkbox" required>只有所選 EP 開機，平放地面並保持靜止；其他控制程式已關閉。</label>
+      <button id="connect" class="primary" type="submit" disabled>手動連線，開始觀察</button>
+      <button id="disconnect" type="button" disabled>結束並斷線</button>
+    </form>
+    <p id="status" role="status" aria-live="polite">尚未連線</p>
+    <p id="elapsed">觀察時間：0 / 120 秒</p>
+    <p id="telemetry"></p>
+    <p>全程不要按方向或抬起機體。若自行轉輪或飄移，停止驗收並在安全情況下關機；不要用手擋輪。</p>
+    <p>計時完成不代表驗收通過，須由你確認現場沒有轉輪或位移。</p>
+  </main>
+  <script src="/assets/ep-acceptance.js" defer></script>
+<script src="/assets/service/service-shell.js" defer></script>
+</body>
+</html>

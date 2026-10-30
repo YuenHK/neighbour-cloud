@@ -1,0 +1,247 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>鄰伴 · 管理工作台</title><link rel="stylesheet" href="/assets/service-shell.css"><link rel="icon" href="/assets/service/service-mark.svg" type="image/svg+xml"></head>
+<body class="service-theme" data-service-area="admin">__SERVICE_SHELL__
+<main id="main-content"><header class="service-heading-row"><div><h1>管理工作台</h1><p class="service-lead">查看居民求助、更新進度及整理屋苑資料。</p></div></header>
+<input id="operatorKey" type="hidden" value="__LOCAL_OPERATOR_TOKEN__">
+<nav class="service-tabs" aria-label="管理工作台分區" role="tablist"><a role="tab" id="tab-work" data-work-section="requests" href="#work" aria-controls="panel-work">求助查詢</a><a role="tab" id="tab-care" data-work-section="care" href="#care" aria-controls="panel-work">關懷</a><a role="tab" id="tab-reports" data-work-section="reports" href="#reports" aria-controls="panel-work">現場回報</a><a role="tab" id="tab-knowledge" href="#knowledge" aria-controls="panel-knowledge">屋苑資料</a><a role="tab" id="tab-usage" href="#usage" aria-controls="panel-usage">服務用量</a><a role="tab" id="tab-avatar" href="#avatar" aria-controls="panel-avatar">數字人設定</a></nav>
+<section id="panel-work" role="tabpanel" aria-labelledby="tab-work"><div id="caseWorkspace">
+<div class="service-kpis"><div class="service-kpi"><strong id="caseNewCount">—</strong><span>等待接手</span></div><div class="service-kpi"><strong id="caseActiveCount">—</strong><span>跟進中</span></div><div class="service-kpi"><strong id="caseClosedCount">—</strong><span>已完成</span></div></div>
+<p id="caseAlert" role="status">新個案會自動更新並提示。</p>
+<section class="service-card" aria-labelledby="caseHeading"><div class="service-heading-row"><div><p class="service-eyebrow">居民服務</p><h2 id="caseHeading">求助查詢</h2><p class="service-muted">數字人已分流的居民需要；接手、更新進度，居民即可在對話查詢。</p></div></div><p id="caseStatus" role="status">正在載入求助單…</p><div id="serviceCases"></div><div class="service-actions"><button id="casesPrevious" type="button" disabled>上一頁</button><span id="casesPage">第 1 頁</span><button id="casesNext" type="button" disabled>下一頁</button></div></section></div><section id="eventsPanel" class="service-card" role="region" aria-labelledby="reportsHeading" hidden><h2 id="reportsHeading">現場回報</h2><section id="eventManagement"><p class="service-muted">回報由職員核實後處理，歷史演練紀錄另有標示。</p><p id="stats">正在載入統計…</p><button id="refreshEvents" type="button">更新回報</button><p id="eventStatus" role="status">正在載入現場回報…</p><div class="service-table-wrap"><table><thead><tr><th>時間</th><th>事件</th><th>位置</th><th>級別</th><th>進度</th><th>影像</th><th>操作</th></tr></thead><tbody id="events"></tbody></table></div></section></section></section><section id="panel-knowledge" role="tabpanel" aria-labelledby="tab-knowledge"><details class="service-card" open><summary>屋苑資料管理</summary><p>填好並啟用後，居民可直接向數字人查詢；舊版本會保留。</p><select id="knowledgeList" aria-label="選擇屋苑資料"><option value="">新增資料</option></select><form id="knowledgeForm"><label>題目<input id="knowledgeTitle" maxlength="120" required placeholder="例如：管理處開放時間"></label><label>居民常用講法／關鍵字<input id="knowledgeKeywords" maxlength="1500" required placeholder="管理處幾點、辦公時間、開放時間"></label><label>已確認答案<textarea id="knowledgeAnswer" rows="4" maxlength="4000" placeholder="填寫真實資料，未確認可先停用"></textarea></label><label><input id="knowledgeEnabled" type="checkbox" checked>啟用此項資料</label><button id="saveKnowledge" type="submit">儲存資料</button></form><p id="knowledgeStatus" role="status"></p></details><details class="service-card"><summary>居民保存的偏好</summary><p>只查看居民明確交代數字人記住的資料。</p><form id="residentMemoriesForm"><label>居民使用的稱呼<input id="residentMemoryProfile" maxlength="64" required></label><button type="submit">查看記憶</button></form><p id="residentMemoryStatus" role="status"></p><div id="residentMemoryItems"></div></details></section><section id="panel-avatar" role="tabpanel" aria-labelledby="tab-avatar" hidden><section class="service-card airi-settings-card"><iframe id="airiSettingsFrame" title="AIRI 數字人設定" data-src="http://127.0.0.1:4173/ui/estate-settings-entry.html" allow="microphone 'none'; camera 'none'; autoplay 'none'" referrerpolicy="no-referrer"></iframe></section></section><section id="panel-usage" role="tabpanel" aria-labelledby="tab-usage"><section class="service-card"><h2>服務狀態</h2><p id="serviceReadiness" role="status">正在檢查服務…</p><p class="service-muted">只檢查本機服務及設定，不會試用或扣除 AI 額度；實際對話仍受平台狀態及免費額度影響。</p></section><section class="service-card" aria-labelledby="quotaHeading">
+<div class="service-heading-row"><div><h2 id="quotaHeading">AI 服務與免費額度</h2></div><button id="refreshQuota" type="button">更新額度</button></div>
+<p id="quotaStatus" role="status">正在核對各平台用量…</p><p class="service-muted">只列目前居民服務使用的平台；進度條表示剩餘比例，官方餘額與本機保守限制分開顯示。</p>
+<div class="service-quota-scroll"><table class="service-quota-table"><caption class="service-muted">對話、語音及資料查詢的可用額度</caption><thead><tr><th scope="col">服務與用途</th><th scope="col">官方免費額度</th><th scope="col">本機可用量</th><th scope="col">重設時間與狀態</th></tr></thead><tbody id="apiQuotaRows"></tbody></table></div>
+<p id="quotaFunctions" class="service-note"></p><p id="quotaLocalStatus" class="service-muted"></p></section><section class="service-card" id="localResourcesCard"><h2>本機資源</h2><p class="service-muted">以下顯示 Notebook 已使用比例，越高代表用得越多。對話及朗讀供應商以 AIRI 設定為準。</p><div id="localResourceItems" class="local-resources"></div><p id="localResourceStatus" role="status">正在讀取 CPU、記憶體及磁碟使用率…</p></section></section>
+<footer class="service-footer">鄰伴智慧社區平台 · 居民服務與管理協作</footer></main>
+<script src="/assets/service/photo-privacy.js" defer></script>
+<script src="/assets/service/latest-photo.js" defer></script>
+<script src="/assets/service/governance.js" defer></script>
+<script>
+    // BEGIN REQUEST CLIENT
+    globalThis.ZhiweiAdminRequest = {
+      async json(path, options = {}, timeoutMs = 3000, request = fetch) {
+        if (typeof path !== 'string' || !path.startsWith('/') || path.startsWith('//')
+          || path.includes('\\'))
+          throw new Error('invalid_local_path')
+        const controller = new AbortController()
+        let timer
+        try {
+          const deadline = new Promise((_resolve, reject) => {
+            timer = setTimeout(() => {
+              controller.abort()
+              reject(new Error('request_timeout'))
+            }, timeoutMs)
+          })
+          const operation = (async () => {
+            const response = await request(path, { ...options, signal: controller.signal,
+              cache: 'no-store', credentials: 'omit', redirect: 'error' })
+            if (!response.ok)
+              throw new Error(`HTTP ${response.status}`)
+            return response.json()
+          })()
+          return await Promise.race([operation, deadline])
+        }
+        finally {
+          clearTimeout(timer)
+          controller.abort()
+        }
+      },
+    }
+    // END REQUEST CLIENT
+
+
+
+    const eventStatus = document.querySelector('#eventStatus')
+    const eventRows = document.querySelector('#events')
+    const statsText = document.querySelector('#stats')
+
+    function operatorHeaders() {
+      return {
+        'Content-Type': 'application/json',
+        'X-Operator-Key': document.querySelector('#operatorKey').value,
+      }
+    }
+
+    let eventsLoading = false
+    async function loadEvents() {
+      const panel = document.querySelector('#eventsPanel')
+      if (panel && (panel.hidden || document.querySelector('#panel-work')?.hidden))
+        return
+      if (eventsLoading)
+        return
+      eventsLoading = true
+      try {
+        const [events, stats] = await Promise.all([
+          ZhiweiAdminRequest.json('/api/v1/events?limit=100'),
+          ZhiweiAdminRequest.json('/api/v1/event-stats'),
+        ])
+        const ids = Array.isArray(events) ? events.filter(item => item?.details?.source === 'ep_patrol_local' && /^[a-f0-9]{32}$/.test(item.id)).slice(0, 100).map(item => item.id) : []
+        const followupData = ids.length ? await ZhiweiAdminRequest.json('/api/v1/patrol/followups?ids='+ids.join(','), { headers: operatorHeaders() }) : {items:[]}
+        if (!Array.isArray(followupData.items) || followupData.items.length > 100)
+          throw new Error('invalid_patrol_followups')
+        const followups = new Map(followupData.items.map(item => [item.event_id, item]))
+        if (!Array.isArray(events) || events.length > 100
+          || events.some(item => !item || typeof item.id !== 'string')
+          || !stats || !['total', 'pending', 'confirmed', 'false_positive', 'resolved']
+            .every(key => Number.isSafeInteger(stats[key]) && stats[key] >= 0))
+          throw new Error('invalid_event_snapshot')
+        const liveEvents = events.filter(item => item.details?.is_test !== true && item.details?.source !== 'software_validation' && !item.id.startsWith('evt-demo-'))
+        eventRows.replaceChildren(...liveEvents.map(item => {
+          const row = document.createElement('tr')
+          row.dataset.eventId = item.id
+          const patrol = item.details?.source === 'ep_patrol_local'
+          const followup = followups.get(item.id)
+          const types = { litter_detected: '疑似垃圾', leak_detected: '疑似積水／漏水', smoke_fire_candidate: '疑似煙霧／火焰', electrical_visual_candidate: '疑似電氣外觀異常（不能確認漏電）', access_candidate: '指定禁區有人（待核實）', temperature_drill: '溫度演練', robot_fault: '機械人故障' }
+          const severities = { notice: '一般', warning: '需留意', critical: '優先處理' }
+          const statuses = { pending: '待核實', confirmed: '已確認', false_positive: '誤報', resolved: '已完成' }
+          const stamp = Number.isFinite(item.at_ms) ? new Date(item.at_ms).toLocaleString('zh-HK', { timeZone: 'Asia/Hong_Kong', hour12: false }) : '未提供'
+          const category = `${item.details?.is_test === true ? '演練 · ' : ''}${types[item.type] || '其他事件'}`
+          for (const value of [stamp, category, item.zone, severities[item.severity] || '待核實', statuses[item.status] || '待核實', item.evidence ? '已附圖像' : '—']) {
+            const cell = document.createElement('td')
+            cell.textContent = String(value)
+            row.appendChild(cell)
+          }
+          const actions = document.createElement('td')
+          if (followup) {
+            const cell = row.children[4]
+            const link = document.createElement('a')
+            link.href = '/admin#work'
+            link.textContent = ` · 個案 ${followup.case_number}`
+            cell.append(link)
+            if (followup.note) {
+              const progress = document.createElement('small')
+              progress.textContent = ` · 最新跟進：${followup.note}`
+              cell.append(progress)
+            }
+            if (followup.sync_pending) cell.append(' · 同步中')
+          }
+          else if (patrol && !['resolved', 'false_positive'].includes(item.status)) {
+            const recover = document.createElement('button')
+            recover.textContent = '建立跟進個案'
+            recover.addEventListener('click', async () => {
+              recover.disabled = true
+              try {
+                await ZhiweiAdminRequest.json(`/api/v1/patrol/events/${encodeURIComponent(item.id)}/followup`, {method:'POST', headers:operatorHeaders()})
+                await loadEvents()
+              }
+              catch { eventStatus.textContent = '跟進個案未確認，請稍後核對；相片回報仍保留。' }
+              finally { recover.disabled = false }
+            })
+            actions.append(recover)
+          }
+          if (item.evidence && item.details?.source === 'ep_patrol_local') {
+            const button = document.createElement('button')
+            button.type = 'button'
+            button.textContent = '事件／左右環境相'
+            button.addEventListener('click', async () => {
+              button.disabled = true
+              try {
+                if (typeof globalThis.NeighbourLatestPhoto !== 'function') throw new Error('photo_view_not_ready')
+                const response = await fetch(`/api/v1/patrol/events/${encodeURIComponent(item.id)}/photo`, {
+                  headers: { 'X-Operator-Key': document.querySelector('#operatorKey').value },
+                  cache: 'no-store', credentials: 'omit', redirect: 'error', signal: AbortSignal.timeout(5000),
+                })
+                if (!response.ok) throw new Error('photo_unavailable')
+                const url = URL.createObjectURL(await response.blob())
+                const dialog = document.createElement('dialog')
+                dialog.className = 'event-photo-dialog'
+                const caption = document.createElement('p')
+                caption.textContent = `${item.details.caption || category} · EP ${item.details.robot_sn} · ${stamp} · ${item.zone}`
+                const image = document.createElement('img')
+                image.src = url
+                image.alt = '此回報辨識時使用的 EP 鏡頭相片，供職員核實'
+                const close = document.createElement('button')
+                close.type = 'button'
+                close.textContent = '關閉相片'
+                close.addEventListener('click', () => dialog.close())
+                dialog.addEventListener('close', () => dialog.remove(), { once: true })
+                const tabs = document.createElement('div')
+                const photoView = new globalThis.NeighbourLatestPhoto(url)
+                for (const [side, label] of [['event', '事件'], ['left', '左方環境'], ['right', '右方環境']]) {
+                  const tab = document.createElement('button')
+                  tab.type = 'button'
+                  tab.textContent = label
+                  tab.addEventListener('click', async () => {
+                    tab.disabled = true
+                    try {
+                      await photoView.load(`/api/v1/patrol/events/${encodeURIComponent(item.id)}/photo?side=${side}`, {
+                        headers: { 'X-Operator-Key': document.querySelector('#operatorKey').value },
+                      }, (nextUrl) => {
+                        image.src = nextUrl
+                        image.alt = label + ' EP 實際拍攝相片'
+                        const photo = item.details.photos?.find(p => p.side === side)
+                        caption.textContent = `${label} · EP ${item.details.robot_sn} · ${new Date(photo?.captured_at_ms || item.at_ms).toLocaleString('zh-HK')} · ${item.zone}`
+                      })
+                    }
+                    catch { caption.textContent = '此相片未能載入；保留目前畫面，請核實。' }
+                    finally { tab.disabled = false }
+                  })
+                  tabs.append(tab)
+                }
+                dialog.addEventListener('close', () => photoView.close(), { once: true })
+                dialog.append(caption, tabs, image, close)
+                const privacy = document.createElement('button')
+                privacy.type = 'button'
+                privacy.textContent = '遮蓋私隱後 AI 複核'
+                privacy.addEventListener('click', () => globalThis.ZhiweiPhotoPrivacy.open(item.id))
+                dialog.append(privacy)
+                document.body.append(dialog)
+                dialog.showModal()
+              }
+              catch { eventStatus.textContent = '相片未能載入或已不一致，請核實，沒有顯示其他幀替代。' }
+              finally { button.disabled = false }
+            })
+            row.lastElementChild.replaceChildren(button)
+          }
+          for (const [statusValue, label] of [['confirmed', '確認'], ['false_positive', '誤報'], ['resolved', '完成']]) {
+            const action = document.createElement('button')
+            action.type = 'button'
+            action.textContent = patrol && statusValue === 'confirmed' ? '核實並接手' : label
+            action.disabled = patrol && (!followup || followup.status === 'resolved')
+            action.addEventListener('click', () => updateStatus(item.id, statusValue, followup?.revision))
+            actions.appendChild(action)
+          }
+          row.appendChild(actions)
+          return row
+        }))
+        try {
+          const target = sessionStorage.getItem('neighbourPatrolEvent')
+          const selected = [...eventRows.children].find(row => row.dataset.eventId === target)
+          if (selected) {
+            sessionStorage.removeItem('neighbourPatrolEvent')
+            selected.scrollIntoView({block:'center'})
+            selected.setAttribute('tabindex', '-1')
+            selected.focus({preventScroll:true})
+          }
+        } catch { /* The normal list remains usable without session storage. */ }
+        eventStatus.textContent = `目前顯示 ${liveEvents.length} 項現場回報`
+        statsText.textContent = '最近載入的回報；歷史演練已收起，原紀錄仍保留。'
+      }
+      catch {
+        eventStatus.textContent = '事件載入失敗或逾時；目前列表不可視為最新，請稍後重新整理。'
+        statsText.textContent = '事件統計未能核對；不是零事件。'
+      }
+      finally {
+        eventsLoading = false
+      }
+    }
+
+    async function updateStatus(eventId, statusValue, expectedRevision) {
+      try {
+        await ZhiweiAdminRequest.json(`/api/v1/events/${encodeURIComponent(eventId)}`, {
+          method: 'PATCH',
+          headers: operatorHeaders(),
+          body: JSON.stringify({ status: statusValue, ...(expectedRevision === undefined ? {} : {expected_revision:expectedRevision}) }),
+        })
+        await loadEvents()
+      }
+      catch {
+        eventStatus.textContent = '狀態更新未確認（權限／連線／逾時）；請重新整理核對，勿重複提交。'
+      }
+    }
+
+    document.querySelector('#refreshEvents').addEventListener('click', loadEvents)
+    loadEvents()
+    document.addEventListener?.('worksectionchange', () => { void Promise.resolve().then(loadEvents) })
+    setInterval(loadEvents, 2000)
+
+</script><script src="/assets/service/work-sections.js" defer></script><script src="/assets/service/service-workbench.js" defer></script><script src="/assets/service/api-quota.js" defer></script><script src="/assets/service/estate-management.js" defer></script><script src="/assets/service/service-shell.js" defer></script><script src="/assets/service/workspace-navigation.js" defer></script></body></html>

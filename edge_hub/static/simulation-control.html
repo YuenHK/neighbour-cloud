@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>鄰伴 · 模擬演練</title>
+  <link rel="stylesheet" href="/assets/service-shell.css">
+<link rel="icon" href="/assets/service/service-mark.svg" type="image/svg+xml">
+</head>
+<body class="service-theme" data-service-area="tools">
+__SERVICE_SHELL__
+  <main id="main-content">
+    <h1>本機模擬控制——不連接實機</h1>
+    <p>僅供軟件驗證。沒有相機、聲音或實機控制；軟件停止不是硬件急停。關頁停止請求不保證送達，另由後端指令有效期與 watchdog 保護。</p>
+    <p><a href="/admin">返回管理工作台</a></p>
+    <p>本機操作員模式：免輸入密碼。</p>
+    <input id="controlKey" type="hidden" value="__LOCAL_OPERATOR_TOKEN__">
+    <button id="armSimulation" type="button">準備模擬</button>
+    <p>先準備，再以滑鼠或觸控按住方向；放開、離開按鈕、視窗失焦或斷網即停止續送。沒有鍵盤遙控。</p>
+    <div>
+      <button type="button" data-direction="forward">按住：模擬前進</button>
+      <button type="button" data-direction="backward">按住：模擬後退</button>
+      <button type="button" data-direction="left">按住：模擬左移</button>
+      <button type="button" data-direction="right">按住：模擬右移</button>
+      <button type="button" data-direction="turn_left">按住：模擬左轉</button>
+      <button type="button" data-direction="turn_right">按住：模擬右轉</button>
+    </div>
+    <p><button id="softwareStop" type="button">鎖定模擬軟件停止</button></p>
+    <label><input id="confirmStationary" type="checkbox">我確認模擬已停止，僅重設模擬鎖定</label>
+    <button id="resetSimulationStop" type="button">重設模擬停止鎖定</button>
+    <p id="controlStatus" role="status" aria-live="polite">未準備；沒有控制租約，沒有發送動作。</p>
+  </main>
+  <script src="/assets/simulation-control.js" defer></script>
+<script src="/assets/service/service-shell.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,1088 @@
+{
+  "format": "neighbour-cloud-preparation-v1",
+  "kind": "source-only",
+  "deployed": false,
+  "contains_resident_data": false,
+  "contains_credentials": false,
+  "requires": [
+    "Linux host",
+    "pinned AIRI source/build and Node dependencies",
+    "SenseVoice model and tokens",
+    "explicit data cutover with usage counters",
+    "private service credentials",
+    "authenticated HTTPS ingress",
+    "off-Notebook end-to-end acceptance"
+  ],
+  "files": [
+    {
+      "path": "airi_bridge/package.json",
+      "bytes": 399,
+      "sha256": "de395b3e883bed76f200cb9403aae56c20c518fef43a08cb12998a306cbc9fac"
+    },
+    {
+      "path": "airi_bridge/src/airi-ready.ts",
+      "bytes": 2543,
+      "sha256": "9ef3a4ba64059713b5656eb0c1951e759d76e43a0edbcd3124a0d346f926c394"
+    },
+    {
+      "path": "airi_bridge/src/client.ts",
+      "bytes": 591,
+      "sha256": "bea6d641cb2a9469939fd88e7f5f10c9949a7ca559ac8d061506ba67179dc65c"
+    },
+    {
+      "path": "airi_bridge/src/cursor-journal.ts",
+      "bytes": 5829,
+      "sha256": "170e94f74812fb5c378d66a200113735b35da9f6afc9be48b56c9675fa1a4372"
+    },
+    {
+      "path": "airi_bridge/src/cursor-pump.ts",
+      "bytes": 3280,
+      "sha256": "2c555f99ae1456a0b87b6e0512f81864aca3ccbb07eff080bc72f1243030cd49"
+    },
+    {
+      "path": "airi_bridge/src/delivery-receipts.ts",
+      "bytes": 1908,
+      "sha256": "a29f53ff6a8262dc39338616f07a4e78133349b299010ecb131292cb3ab54407"
+    },
+    {
+      "path": "airi_bridge/src/edge-hub-client.ts",
+      "bytes": 6052,
+      "sha256": "3ece433f645e6c69cd230c2b01fa476f6ae7a9ef1f3dddd3d83f8c3b4eb20f79"
+    },
+    {
+      "path": "airi_bridge/src/event-dispatcher.ts",
+      "bytes": 1723,
+      "sha256": "620941328430fe9fc244d2f64d94b4c32fd20a940d2377669e81c0f77d18c10a"
+    },
+    {
+      "path": "airi_bridge/src/event-socket.ts",
+      "bytes": 2961,
+      "sha256": "b9e36ae6cebd326253fb81b5ba8ecbafdfe8540cb3e607054dae83b359ee8d21"
+    },
+    {
+      "path": "airi_bridge/src/event-template.ts",
+      "bytes": 1879,
+      "sha256": "3fd6a5d27280e70332764c89925dc87b0f04d939f76c9f548ee27655e61ab185"
+    },
+    {
+      "path": "airi_bridge/src/index.ts",
+      "bytes": 4319,
+      "sha256": "bcc00a3cad7182af5d0558d5cbc4bc67077d1725f7f190c75cc8b45b0c2c8d4d"
+    },
+    {
+      "path": "airi_bridge/src/journal-pump.ts",
+      "bytes": 2163,
+      "sha256": "d4f9d728bc1561d50875ac27bc42cd7f54f7f8ce33632320d1d50016ee2d1317"
+    },
+    {
+      "path": "airi_bridge/test/airi-ready.test.ts",
+      "bytes": 5981,
+      "sha256": "42d0cb10adfe120acdfacf1da5576853db1c0c14038d8e3156896dacb1eea311"
+    },
+    {
+      "path": "airi_bridge/test/client.test.ts",
+      "bytes": 455,
+      "sha256": "beb7f00ccc2f32423b8a323d2c397cb5525489a03512ba59e3f2b777082242ba"
+    },
+    {
+      "path": "airi_bridge/test/cursor-journal.test.ts",
+      "bytes": 7772,
+      "sha256": "bc3fc62396385c26c6ef3cc4027a08a6a91749da696634016abd9d9416d64da0"
+    },
+    {
+      "path": "airi_bridge/test/cursor-pump.test.ts",
+      "bytes": 6305,
+      "sha256": "ce36bf4e7c911338d90972cfd7ac9cbd0f69a7c19fb976a5d770e29054c70e71"
+    },
+    {
+      "path": "airi_bridge/test/delivery-receipts.test.ts",
+      "bytes": 2612,
+      "sha256": "be667aca73e87e74337603f51d276c321a7a692d63010c7d22697750e3cea679"
+    },
+    {
+      "path": "airi_bridge/test/edge-hub-client.test.ts",
+      "bytes": 5509,
+      "sha256": "ddbdeb767b4b2da2d1c25091f3930ee0f83b2748218b6c044c59555dd8e699c8"
+    },
+    {
+      "path": "airi_bridge/test/event-dispatcher.test.ts",
+      "bytes": 2663,
+      "sha256": "22b413500a9e469c0c50ad05c808b71f94e40f5259b7604e203e06ee52a62422"
+    },
+    {
+      "path": "airi_bridge/test/event-socket.test.ts",
+      "bytes": 3923,
+      "sha256": "3d82b8598543883a5a60a69d4e2074ecf89ff279cf91098eb67cea53b35f5357"
+    },
+    {
+      "path": "airi_bridge/test/event-template.test.ts",
+      "bytes": 2921,
+      "sha256": "b9973fc0d0894e2711de4f4cb0ab1c99da83e4c1452c120d2048111ba12448cf"
+    },
+    {
+      "path": "airi_bridge/test/journal-pump.test.ts",
+      "bytes": 7228,
+      "sha256": "e0ba7ea0d67842613785c3661221f6e5428918bc6e8bbfa4002cdff84d838a60"
+    },
+    {
+      "path": "airi_bridge/test/stream-identity.test.ts",
+      "bytes": 1679,
+      "sha256": "23591ea7b1bc061d425b7af137f3fde18cdf1075dbf5b62f6ba177fff05d1015"
+    },
+    {
+      "path": "airi_bridge/test/voice-turn.test.ts",
+      "bytes": 5981,
+      "sha256": "b3726146b71243324c6752dd1b97feda717dcc99fdae5f70608edfc537636908"
+    },
+    {
+      "path": "airi_bridge/tsconfig.json",
+      "bytes": 196,
+      "sha256": "238d9d36a40db523c41c4fa2e7076f557fe65d4da82cdc7b9358ae38608a947c"
+    },
+    {
+      "path": "airi_overlay/assistant-memory.js",
+      "bytes": 2248,
+      "sha256": "e618234f46655b2162bdeae93e9659dabec411ba7ec0d3aeb29153c0ecba28fe"
+    },
+    {
+      "path": "airi_overlay/cloud-transport.js",
+      "bytes": 7907,
+      "sha256": "225fd48c3c853c6253492e9a06948d6ff20bb7e10687cece40360895d2db2ac2"
+    },
+    {
+      "path": "airi_overlay/embedded-settings.ts",
+      "bytes": 898,
+      "sha256": "94ee7f164a637faf500c02234551e0fc478fa3be7b221c2bc9cfe5cdf8f42931"
+    },
+    {
+      "path": "airi_overlay/local-connection-error.ts",
+      "bytes": 528,
+      "sha256": "7c92da53a2f37684ec0a59b8a43df64ac2dfb139e7bba11db641a67f3470150e"
+    },
+    {
+      "path": "airi_overlay/local-profile-bootstrap.ts",
+      "bytes": 12390,
+      "sha256": "8f5e1f195c873688ccaa253137cacf30adbfbce6631a8b2543326dfa723c3625"
+    },
+    {
+      "path": "airi_overlay/model-settings-page.vue",
+      "bytes": 2702,
+      "sha256": "74357a12266cb88a6e2ce88b95c116055ed772967e95e92de2b55174869f3525"
+    },
+    {
+      "path": "airi_overlay/native-search/components/modules/WebSearch.vue",
+      "bytes": 1456,
+      "sha256": "1f82a19e13ea454d5d346bb8ebc8060745c2e4ecbdd299114b74443fdda74b56"
+    },
+    {
+      "path": "airi_overlay/native-search/stores/llm-tool-resolver.ts",
+      "bytes": 5618,
+      "sha256": "9434bb9a45f54693eda821632a44e43167f5add75bcf63ae53b7c787e6ac6b8b"
+    },
+    {
+      "path": "airi_overlay/native-search/stores/modules/web-search.test.ts",
+      "bytes": 2719,
+      "sha256": "238384bf9fb1d9767a0b4a5351a786a6e14017252555c490dbd72f898de2a54b"
+    },
+    {
+      "path": "airi_overlay/native-search/stores/modules/web-search.ts",
+      "bytes": 2637,
+      "sha256": "54032a4fb2f0e31bb525adaa146b56469e699684029e8f4185275d86014af1a7"
+    },
+    {
+      "path": "airi_overlay/native-search/tools/web-search.ts",
+      "bytes": 12033,
+      "sha256": "279a2839df7a53b9e4e13604640f673b3c57915053e8e31b56fe446f9b21c8f7"
+    },
+    {
+      "path": "airi_overlay/ordered-audio.ts",
+      "bytes": 857,
+      "sha256": "7034166b97c14a88e600a8106dd304dbde0b643e2b0c74886f2dab64efb39589"
+    },
+    {
+      "path": "airi_overlay/resident-api.js",
+      "bytes": 3760,
+      "sha256": "eaf9a11654036939f741d1773f5650cd5a0bc2a025416e7856ab2936dc9b1b95"
+    },
+    {
+      "path": "airi_overlay/resident-entry.js",
+      "bytes": 244,
+      "sha256": "675b1cf3b9b15fe46ec1fa2375ed4a96060fbf11466c1ec75a7d89382bdfd64d"
+    },
+    {
+      "path": "airi_overlay/resident-idle.js",
+      "bytes": 914,
+      "sha256": "3e8ee7ba11c48f97eed0d424dd05cf277957e03bcf253602555266786d655f27"
+    },
+    {
+      "path": "airi_overlay/resident-pcm.js",
+      "bytes": 6515,
+      "sha256": "6e7e786293eca6f54ad233b2ba2a891e56bc6c631b2f3cc91a45a249a419c9b8"
+    },
+    {
+      "path": "airi_overlay/resident-response.js",
+      "bytes": 4510,
+      "sha256": "967aef28f1865ae1e71873fea7ab02c5e635ed613dc74ebe923c40616c47de76"
+    },
+    {
+      "path": "airi_overlay/resident-service-panel.vue",
+      "bytes": 23402,
+      "sha256": "b709d7a58e71d694dc76ffd363bbd1dda5f53b439b507d9de53866890f138bdb"
+    },
+    {
+      "path": "airi_overlay/resident-session.js",
+      "bytes": 2862,
+      "sha256": "b23a870fd574c2c911db9fc875f88dc5bede576cfd92dad13dce8e8fb4c5c4ef"
+    },
+    {
+      "path": "airi_overlay/resident-view-guard.js",
+      "bytes": 1018,
+      "sha256": "9d74a2d5ff840adecc3943c0c5189c0cef6cb3a2c8078712b17528d2a1cf4e34"
+    },
+    {
+      "path": "airi_overlay/resident-view-guard.vue",
+      "bytes": 2987,
+      "sha256": "08ab5cc31b8b47b7bdfec9dc69c737c76920b93ce944dadbb9012b6fe6358ae8"
+    },
+    {
+      "path": "airi_overlay/retired-pages.ts",
+      "bytes": 906,
+      "sha256": "510862c5b96e296fce9a09fb92ddf9fe3c2b804e4889dfc50a534d317a2658b5"
+    },
+    {
+      "path": "airi_overlay/settings-entry.js",
+      "bytes": 1774,
+      "sha256": "4847cb89acd7f074906652449f1725e947f09b0eac9ae65851baaa7af60e005b"
+    },
+    {
+      "path": "airi_overlay/voice-turn.ts",
+      "bytes": 4290,
+      "sha256": "9935ef97a37cb95e27bf78ba9ceb88427ce057c063d6e6dbe71748770412f8eb"
+    },
+    {
+      "path": "contracts/command.schema.json",
+      "bytes": 452,
+      "sha256": "11bd219d9ce05c8af8bd702b7e14d3be636c2db006464e8870e7b5bc8ae6dfae"
+    },
+    {
+      "path": "contracts/event.schema.json",
+      "bytes": 1087,
+      "sha256": "64511dceff4b33246f6b1701770b995aad0ce3872a1d2ecd6af18c0d7b3b1a2b"
+    },
+    {
+      "path": "deploy/cloud/README.zh-Hant.md",
+      "bytes": 40589,
+      "sha256": "526de80a990370f3a8ef4f17232911de7e56937c86193074da331e8282568dcd"
+    },
+    {
+      "path": "deploy/cloud/bootstrap.py",
+      "bytes": 10901,
+      "sha256": "2641814b7e59ca4d09083b953c92f7199e8ff4ad7b2c34079008960f711f881a"
+    },
+    {
+      "path": "deploy/cloud/closed_backup.py",
+      "bytes": 1273,
+      "sha256": "93e529c0213a6e59c8e10402c6904eedcd953336340996af5bf814848544ad92"
+    },
+    {
+      "path": "deploy/cloud/constraints.txt",
+      "bytes": 700,
+      "sha256": "7d8a43b5a15904562f527404deb5c2ebe73775f447e84523a002c504793f1c41"
+    },
+    {
+      "path": "deploy/cloud/control_restore.py",
+      "bytes": 7763,
+      "sha256": "3d3d9b746986acab0af4514556d73552a9009d30548442d25882596fec207bfe"
+    },
+    {
+      "path": "deploy/cloud/database_profile.py",
+      "bytes": 7719,
+      "sha256": "1e69e23dc38eb7f616ed44925b092e8cf17de726f91a45087189b1092bf68e62"
+    },
+    {
+      "path": "deploy/cloud/deletion_ledger.py",
+      "bytes": 8125,
+      "sha256": "58bdd04c62f877a05be55820c6d3b7285ea901b891ba52931f1fa1176c3f8b80"
+    },
+    {
+      "path": "deploy/cloud/event_export.py",
+      "bytes": 3041,
+      "sha256": "114cadda933dbf4092fcd668f2dfc0423c8cef01a9377091ef2d5cb2260fc1d8"
+    },
+    {
+      "path": "deploy/cloud/google_identity.py",
+      "bytes": 6949,
+      "sha256": "839314359ab752b8668393a53f5b2f96cb66e9c6bcb13c4fc864734f118f4049"
+    },
+    {
+      "path": "deploy/cloud/http_app.py",
+      "bytes": 14131,
+      "sha256": "cb06cea9dd98498fee103c178ea1f1bd034a9bbd0621443f7a808335a569f3e0"
+    },
+    {
+      "path": "deploy/cloud/libsql_connection.py",
+      "bytes": 4806,
+      "sha256": "91e09198fc4e04ba031039c862e08d73d6807a3ecd67a602d0856a62b976f191"
+    },
+    {
+      "path": "deploy/cloud/photo_api.py",
+      "bytes": 6433,
+      "sha256": "de280b6d79e64e642e0ff6261307fbbd3d1675b257eabdceeee739e1e0f5adbd"
+    },
+    {
+      "path": "deploy/cloud/photo_store.py",
+      "bytes": 9174,
+      "sha256": "68b9bf70436f8230fff8ff1107cc5655173822d22d08671b2969b2ca70208966"
+    },
+    {
+      "path": "deploy/cloud/quota_api.py",
+      "bytes": 8892,
+      "sha256": "5ff0c4df1eb6c990bbe802ad672aece47f38aab80ed02960895a05bc859d446a"
+    },
+    {
+      "path": "deploy/cloud/requirements.txt",
+      "bytes": 301,
+      "sha256": "b2c271f58dd58fa5797c494aa4decf8c54678f1235a8274736596c754056396c"
+    },
+    {
+      "path": "deploy/cloud/retention_restore.py",
+      "bytes": 6421,
+      "sha256": "7887ea20fce51761989992cc31281455b79d064a2e57ebb97dbd09f20284c070"
+    },
+    {
+      "path": "deploy/cloud/runtime_storage.py",
+      "bytes": 691,
+      "sha256": "f2f16f290593ac2b36431a7ef8af4732dc02d52108ea6eb28055247d3d4cb7a2"
+    },
+    {
+      "path": "deploy/cloud/sql_snapshot.py",
+      "bytes": 6557,
+      "sha256": "25144cf29a01b9a75b470ee638c8cf11282cab1da18ed5cb982a9d9b7abc10d2"
+    },
+    {
+      "path": "deploy/cloud/state_store.py",
+      "bytes": 4255,
+      "sha256": "3f370fc7ab6aa6b5f5afef9e05e2eb3a53df66808121ca2f0eef73caba16e3af"
+    },
+    {
+      "path": "deploy/cloud/usage_restore.py",
+      "bytes": 7488,
+      "sha256": "24895d5283b58adb2b471866b0aa03ece7bd9f99347021ab6ef4ee493aeb28f9"
+    },
+    {
+      "path": "deploy/cloud/voice_api.py",
+      "bytes": 1904,
+      "sha256": "ce55d1776858d633cda2e74c7493cdc75771143a37f19ba84080b0e7da70a0a0"
+    },
+    {
+      "path": "edge_hub/__init__.py",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "edge_hub/api_quota.py",
+      "bytes": 6818,
+      "sha256": "d6a3cd1d79c5dd3600374d2a6fa80778d879dab4254dac18a1103e6ea6e2b2d6"
+    },
+    {
+      "path": "edge_hub/app.py",
+      "bytes": 31501,
+      "sha256": "7a68ea13a2c61d04ec1aeb511bcc1f459da237768289556cb5d7d7626193ffbb"
+    },
+    {
+      "path": "edge_hub/approved_photo.py",
+      "bytes": 460,
+      "sha256": "d1cb7a256356e67cc65625508e535fe6874fcf3c50359b2bf31f386421055f70"
+    },
+    {
+      "path": "edge_hub/assistant_memory.py",
+      "bytes": 6282,
+      "sha256": "72fc5e686ffadf9efca54a9df90014fb4744621256c51e072b28edaf96663e11"
+    },
+    {
+      "path": "edge_hub/assistant_request.py",
+      "bytes": 443,
+      "sha256": "7c6ce031fb9a86f30f0d91b9c5bc5d876503f19bc2c4e8c8050226490d761428"
+    },
+    {
+      "path": "edge_hub/azure_voice.py",
+      "bytes": 9092,
+      "sha256": "52172bf07fe5295a55ed08ef2c0cb090786b2b32d2ad80262c6a595350c40195"
+    },
+    {
+      "path": "edge_hub/browser_timing.py",
+      "bytes": 2210,
+      "sha256": "7b8d78c8a303cef34c90ecbfa85a4d6eb7268282612672cb0c0538f0ae2cb7c3"
+    },
+    {
+      "path": "edge_hub/cantonese_terms.py",
+      "bytes": 1587,
+      "sha256": "afe08789bede9bbe32eb56ab542f39f7846462738af15c8f12b373085c746f7a"
+    },
+    {
+      "path": "edge_hub/case_retention.py",
+      "bytes": 9281,
+      "sha256": "711c7b95b0c065551c5c490b32f43170943d54c2285d6b83e67a4fe3b7cbb5ee"
+    },
+    {
+      "path": "edge_hub/chat_context.py",
+      "bytes": 2199,
+      "sha256": "fce7507138d10ba9f6d4e9cd43d48e8a396902747918e587d69acf8aec902a1a"
+    },
+    {
+      "path": "edge_hub/chat_gateway.py",
+      "bytes": 10467,
+      "sha256": "517712247adeb67d0c46d44217bd5d5adb18f5eceaefebf1552a534fce4f0b75"
+    },
+    {
+      "path": "edge_hub/cloud_allowance.py",
+      "bytes": 4326,
+      "sha256": "89b02e345dcec031c809b1d4026295aba10e9c6afa9897afa640370c10e7de0a"
+    },
+    {
+      "path": "edge_hub/cloud_credentials.py",
+      "bytes": 3045,
+      "sha256": "d4a5f6153cbf5e5c23a094fbc175c7db60ae6076544168b4ca481a1344443c4c"
+    },
+    {
+      "path": "edge_hub/cloud_host_credentials.py",
+      "bytes": 4167,
+      "sha256": "3b3be140730da99516504beab321cf0662fad5a65c941d9dff378e1b1311802a"
+    },
+    {
+      "path": "edge_hub/cloudflare_gemma.py",
+      "bytes": 13029,
+      "sha256": "5d0b4b3222ed502b9b02427e9a7e62287b5f7c6832607fdae1737169bb38f1f6"
+    },
+    {
+      "path": "edge_hub/commands.py",
+      "bytes": 463,
+      "sha256": "fe10d93940eb504edc56bf9d706fa102183b496bd156902a2724f09e10e44e7b"
+    },
+    {
+      "path": "edge_hub/control_state.py",
+      "bytes": 1204,
+      "sha256": "15c5ad1b967ac147ddc7da2ed0cc3c2561fde9016c17836b22efbb2b1a7af17e"
+    },
+    {
+      "path": "edge_hub/csv_export.py",
+      "bytes": 2259,
+      "sha256": "2c7a2e362c424c4a731ecc6267c1acee37e8ab0ed2d060da25eb96ec25025cca"
+    },
+    {
+      "path": "edge_hub/deployment.py",
+      "bytes": 4811,
+      "sha256": "01c1932968b4757211a941865222f033e47d96164e213c5f60f1eefeff339f80"
+    },
+    {
+      "path": "edge_hub/ep_acceptance.py",
+      "bytes": 18880,
+      "sha256": "8569bcb00e381d37b616d691a501d1b3f5e6bf195d8082584e9a107f7511ae41"
+    },
+    {
+      "path": "edge_hub/ep_console.py",
+      "bytes": 25392,
+      "sha256": "e1735e50476b64288155e2749efdfed6dd666d2f535fc5fa01a314d76f34d0a1"
+    },
+    {
+      "path": "edge_hub/ep_discovery.py",
+      "bytes": 2394,
+      "sha256": "b87f92e55aa6e0aadf6ccc82803ed7e329f859ce3f68b1ccd5f6cf810d8658ec"
+    },
+    {
+      "path": "edge_hub/ep_fleet.py",
+      "bytes": 21733,
+      "sha256": "29130e7bf38e9944d8e2fdb5962f4c6cc1fdcf2aa3acf34c594578c56a95d66d"
+    },
+    {
+      "path": "edge_hub/ep_manual_pairing.py",
+      "bytes": 7153,
+      "sha256": "7936842774ef14c57a02838c0d73e45d7b40170eed0e7b2d65e03ed396c72a35"
+    },
+    {
+      "path": "edge_hub/ep_patrol.py",
+      "bytes": 22041,
+      "sha256": "e34d09b5358231dac2d9a1aedddee27c22095c0114ff1938cc29fc85803ea0ac"
+    },
+    {
+      "path": "edge_hub/ep_preparation.py",
+      "bytes": 5981,
+      "sha256": "d1009a61fd0668435926589a567e7691402aa5f8db77b3000508b07cc6c83d12"
+    },
+    {
+      "path": "edge_hub/ep_runtime_evidence.py",
+      "bytes": 3715,
+      "sha256": "a5420b30af01265c37cf7fb89afd77533862b8e1aeef16186af59254debd51f8"
+    },
+    {
+      "path": "edge_hub/estate_services.py",
+      "bytes": 23521,
+      "sha256": "cc9703df9f65dbf1873946c6da541b2a631b5d1d6bf62f51657cd44f23bf535a"
+    },
+    {
+      "path": "edge_hub/event_ingest.py",
+      "bytes": 1422,
+      "sha256": "928eb7fc7e1689f30aca4bcff0e182c43538ae09d6a94ddcd5407f4ddc20a5fd"
+    },
+    {
+      "path": "edge_hub/event_request.py",
+      "bytes": 5115,
+      "sha256": "203e8f3f91847abb093ee0f59d15cbefd8913dcc9a5661af7e342afd5ebeab6c"
+    },
+    {
+      "path": "edge_hub/event_stream.py",
+      "bytes": 5334,
+      "sha256": "a0861002f1e96e559a87f21afd4c157af793d706a5f840bef55cea538ade65df"
+    },
+    {
+      "path": "edge_hub/events.py",
+      "bytes": 17845,
+      "sha256": "60f4ff708b95cadd68ab3b096828fb608dd41b56671ca00125fc59afd110736e"
+    },
+    {
+      "path": "edge_hub/evidence.py",
+      "bytes": 865,
+      "sha256": "5291dd64b0ffc117a67c25d6619e86db3c49ef8e77a2c481c8e6d0dde269a906"
+    },
+    {
+      "path": "edge_hub/faq.py",
+      "bytes": 2888,
+      "sha256": "909b6c34f59c5a8b68b3d5f1e6ff79e279d7987f6d4101389ea886d8f8452b34"
+    },
+    {
+      "path": "edge_hub/gemini_voice.py",
+      "bytes": 4239,
+      "sha256": "9a0ab14bc0cf1a0718c7b8b495f24801fb2e6c39e28daef56890289d110e142e"
+    },
+    {
+      "path": "edge_hub/governance.py",
+      "bytes": 6531,
+      "sha256": "b658bbe1daa5922a9666ee09acbf8790a7cdf8120ff1bbd48e5addaac957e81c"
+    },
+    {
+      "path": "edge_hub/knowledge_relevance.py",
+      "bytes": 1384,
+      "sha256": "08e619a86f04b7e37a6bd3540e9286f432c3ae7f645208e2cea27bbb44015150"
+    },
+    {
+      "path": "edge_hub/knowledge_retrieval.py",
+      "bytes": 4760,
+      "sha256": "1f2282068513a8600790bdad529357b49bb465a3f583c1f216251b7fd21be1e6"
+    },
+    {
+      "path": "edge_hub/local_operator.py",
+      "bytes": 1038,
+      "sha256": "827b3cd529f4416a480ed5a7200ffb6db9eafa11e81b16ea56660b6244c505e2"
+    },
+    {
+      "path": "edge_hub/local_resources.py",
+      "bytes": 1735,
+      "sha256": "b916edad7d3fc3fa2347939ef4f00301e294ab387d0f598eaedab428d5993151"
+    },
+    {
+      "path": "edge_hub/memory_api.py",
+      "bytes": 3573,
+      "sha256": "bcb393f160239c8372396aaa726d8af6d73895cb5552436b21c1550e2d0d59fd"
+    },
+    {
+      "path": "edge_hub/metrics.py",
+      "bytes": 3564,
+      "sha256": "34df4eda7199cd55f4c6ceeb563f4324aebc8e178c2878401b417f9b5a0e17f6"
+    },
+    {
+      "path": "edge_hub/mimo_voice.py",
+      "bytes": 2062,
+      "sha256": "c7d6e0579ded75386aa6d1cf1720ad4dd4c9bdd5b4a6f36cf4807ad63694ca05"
+    },
+    {
+      "path": "edge_hub/object_hints.py",
+      "bytes": 2734,
+      "sha256": "28004b6c2d0702cf1b793c3fce5899721c342337d3468d8b203f9a0a99eac846"
+    },
+    {
+      "path": "edge_hub/object_proposals.py",
+      "bytes": 3439,
+      "sha256": "914630536ae5ed799eced752a2235fef6801cf53c4ce05b3c674bb20eaada855"
+    },
+    {
+      "path": "edge_hub/observability.py",
+      "bytes": 7305,
+      "sha256": "c24a07c9e978846f805bce67022abf02be5f7220947cb07f2816eca4f487b880"
+    },
+    {
+      "path": "edge_hub/observation_cache.py",
+      "bytes": 1027,
+      "sha256": "3523f00babdca50f3051a3ca88d8800d6a1a42701b7da6a23cb0e357a3cb3c9d"
+    },
+    {
+      "path": "edge_hub/outbound_privacy.py",
+      "bytes": 1946,
+      "sha256": "6fed4301194e8669e2d92547d849fedf4b1ea8f70be3ba7f47f60cb6592fe01f"
+    },
+    {
+      "path": "edge_hub/patrol_cloud.py",
+      "bytes": 4482,
+      "sha256": "f3a34865a66baaf3370762bd8e5a8dac99c756aed9f7049fb474d46d179417f1"
+    },
+    {
+      "path": "edge_hub/patrol_followup.py",
+      "bytes": 8478,
+      "sha256": "28bf52e64f4be9054275c8754230cc7e86754538eb02d744fcd75e0dcded9a68"
+    },
+    {
+      "path": "edge_hub/patrol_schedule.py",
+      "bytes": 1524,
+      "sha256": "910e1d5dff2847506f03ac75c814daf8b858288e997eea1b2318baff398dd450"
+    },
+    {
+      "path": "edge_hub/phase_latency.py",
+      "bytes": 1528,
+      "sha256": "82bc74faf04d9243b5ea77a22a2dbb22f871e7cc2ddef00421cc07dac1bc5884"
+    },
+    {
+      "path": "edge_hub/photo_privacy.py",
+      "bytes": 7293,
+      "sha256": "2fc9a62de1b04b9d07ee3989304fe0cf52a8d4df573fe5124ccb627b9cae7b7d"
+    },
+    {
+      "path": "edge_hub/privacy.py",
+      "bytes": 8743,
+      "sha256": "010a4159e778c82a9ab8bb9fe57600a2aa7efa6380c910f9db4cada858ec8aad"
+    },
+    {
+      "path": "edge_hub/quota_overview.py",
+      "bytes": 10688,
+      "sha256": "0711e30fe3d393c82c68d9ef7614d8fd8c3bbe7f0d0ee4fcdf5a7894365856d4"
+    },
+    {
+      "path": "edge_hub/remote_access_runner.py",
+      "bytes": 8010,
+      "sha256": "a9b89d07ada57706d84bdf85731ce9ac675890fa5d54a8838cee768d154aa0ad"
+    },
+    {
+      "path": "edge_hub/remote_access_setup.py",
+      "bytes": 5677,
+      "sha256": "1c51be7bde73c664688c7ce648b5bf1092e4c73aef20499cfdf895e4eef090ac"
+    },
+    {
+      "path": "edge_hub/remote_gateway.py",
+      "bytes": 9343,
+      "sha256": "0eb0e208927df3dd6b582371b3c37f2d00597739de5ea744fbf7330d97689c6d"
+    },
+    {
+      "path": "edge_hub/resident_adapter.py",
+      "bytes": 4647,
+      "sha256": "26305af7cc5c0db3b925ef77dcb11fa577ed887a4dba8aaa8f68007d2cf66a08"
+    },
+    {
+      "path": "edge_hub/resident_care.py",
+      "bytes": 4760,
+      "sha256": "ebd10c8b69e8f5dd8a1da8ed0805e7a97bebed285f9ac1454699a2f204da2a56"
+    },
+    {
+      "path": "edge_hub/resident_cases.py",
+      "bytes": 4753,
+      "sha256": "bdd49f3645ff385a067a861e1053268a7c21cb2923470f2a4cc42cb6baa0777f"
+    },
+    {
+      "path": "edge_hub/resident_cloud.py",
+      "bytes": 9035,
+      "sha256": "02b322704f91a1b39c9384993c19216596e1259ab7ede04b6ad1975216641302"
+    },
+    {
+      "path": "edge_hub/resident_crisis.py",
+      "bytes": 5356,
+      "sha256": "ca54a3fc62f0f626de720bcaa30ccc73f67c733ea50596ec4a32ea79cbb95c58"
+    },
+    {
+      "path": "edge_hub/resident_delivery.py",
+      "bytes": 3412,
+      "sha256": "dc834021815e5c01d9b32355f215ca89dcd3d4c92087c5869075bcd2a670c524"
+    },
+    {
+      "path": "edge_hub/resident_followup.py",
+      "bytes": 13391,
+      "sha256": "e31d5907edb3d0c425c343c711b73b3c648df03c668fa3c9e34ebb5e104c18bf"
+    },
+    {
+      "path": "edge_hub/resident_inference.py",
+      "bytes": 11834,
+      "sha256": "e1d306c8a482655e09441ed1ae78e910c5d0af1102e192d712802cbfdc6e9158"
+    },
+    {
+      "path": "edge_hub/resident_models.py",
+      "bytes": 278,
+      "sha256": "cc924af0a4507142b072ce2973cabc540eb81a725c8bd7bf995bf25931870261"
+    },
+    {
+      "path": "edge_hub/resident_persona.py",
+      "bytes": 553,
+      "sha256": "f01507254ee1a299aff23627723e027cca345fb8e5fec3c79550bf3405f9e72a"
+    },
+    {
+      "path": "edge_hub/resident_replay.py",
+      "bytes": 2558,
+      "sha256": "f10aa83b34710af59d95362865fdfab6b5182837b6933e48e1c5283ca9d93b3c"
+    },
+    {
+      "path": "edge_hub/resident_settings.py",
+      "bytes": 857,
+      "sha256": "a531a14e1d2b5082f9156ed1a9708ffb32670346c7882ec450525c19cd25d009"
+    },
+    {
+      "path": "edge_hub/resident_stream.py",
+      "bytes": 7255,
+      "sha256": "2e6a93a04238aca482e2510bd3bb0b91d36cec48fc95b5648cc5abdbe655e5af"
+    },
+    {
+      "path": "edge_hub/resident_threads.py",
+      "bytes": 10157,
+      "sha256": "548c8d26de99bc660c95f44aca08201a5166205465a9cc8d142db01604d6a120"
+    },
+    {
+      "path": "edge_hub/retired_pages.py",
+      "bytes": 913,
+      "sha256": "98885e1fa3a68afd52dfcec8359f550a1b3c5f3280d0035f9597c5220550fab8"
+    },
+    {
+      "path": "edge_hub/robot_control.py",
+      "bytes": 16867,
+      "sha256": "0be9a105f0dd6c5d383826bdd3d8094238d1c54b9f7e10a03242104def678300"
+    },
+    {
+      "path": "edge_hub/sensors.py",
+      "bytes": 1653,
+      "sha256": "626cd71615b9eb6e18870ced0e7f97f608daa3639432e9c5faf73b149681af9b"
+    },
+    {
+      "path": "edge_hub/service_backup.py",
+      "bytes": 9206,
+      "sha256": "0fb195f12e67bee259f7c7c02eb825960ab65733cbe0642bab6c85f0e310b0fc"
+    },
+    {
+      "path": "edge_hub/service_desk.py",
+      "bytes": 46075,
+      "sha256": "4c5f22701af307816f415f0c02b032b16ace12e45da0985eb16dd1e0b01d4a11"
+    },
+    {
+      "path": "edge_hub/service_identity.py",
+      "bytes": 1446,
+      "sha256": "b5d03e11983c56720a1bd14b928e8a7579429cec3b12585651e275f4014246c6"
+    },
+    {
+      "path": "edge_hub/service_readiness.py",
+      "bytes": 3429,
+      "sha256": "585e49f90ab7847d342eb3af198089172842fe32b4109d962e01470cd07d865b"
+    },
+    {
+      "path": "edge_hub/siliconflow.py",
+      "bytes": 3421,
+      "sha256": "b0dc959133eb29a6c032c4926f609e5d34662df75b20916b011486e126e77087"
+    },
+    {
+      "path": "edge_hub/siliconflow_quota.py",
+      "bytes": 1701,
+      "sha256": "533baecd7ede1454ad7925a352e2a5949aa91838f505e27c18237fcd5bbb69fc"
+    },
+    {
+      "path": "edge_hub/static/admin.html",
+      "bytes": 19921,
+      "sha256": "3b10c55c81b78472a2190c1ddf7c86962f13d5566205285f46d56c5560d4effe"
+    },
+    {
+      "path": "edge_hub/static/api-quota.js",
+      "bytes": 6015,
+      "sha256": "98abc1900e5c05d8b2a4324f47416c6f7e69ca7336b13485649f83df648b5b84"
+    },
+    {
+      "path": "edge_hub/static/assistant-memory.html",
+      "bytes": 1963,
+      "sha256": "af7e910d66f0e16739743bf17126c51b4b32a4a5bc16050dd8df0335ee85aa22"
+    },
+    {
+      "path": "edge_hub/static/assistant-memory.js",
+      "bytes": 5848,
+      "sha256": "7ba612ad68fe8b274d8d2bdf6b20f2b7c32d71fbf07c7edfd61aca12931b214c"
+    },
+    {
+      "path": "edge_hub/static/ep-acceptance.html",
+      "bytes": 2530,
+      "sha256": "4f89050a403598e07a40f621ec615ad8ceb2bdbd2419ec43c8effff4a427ed79"
+    },
+    {
+      "path": "edge_hub/static/ep-acceptance.js",
+      "bytes": 27238,
+      "sha256": "82479868863fbacc87aa5b4c98cc9ffacd8091be2c1b697f554527bd880012f1"
+    },
+    {
+      "path": "edge_hub/static/ep-background.js",
+      "bytes": 699,
+      "sha256": "82841e90cfa87f658afde0b5a40e9ed67b144190ed123ef7066cacd14833db57"
+    },
+    {
+      "path": "edge_hub/static/ep-console.css",
+      "bytes": 8661,
+      "sha256": "c7e4acad3d42bef60663e104f9b0197bb17456fb0e3038a647ca7c94f9b071b9"
+    },
+    {
+      "path": "edge_hub/static/ep-console.js",
+      "bytes": 14643,
+      "sha256": "7f9e56e82d0888a471238cc5a624732c8a5a96e0245772c5e556d204b633fb43"
+    },
+    {
+      "path": "edge_hub/static/ep-fleet.css",
+      "bytes": 11703,
+      "sha256": "e2d383702f05d2cedcc6f653bdbc8037e8094edfc40029e1de2edddcb46e0816"
+    },
+    {
+      "path": "edge_hub/static/ep-fleet.html",
+      "bytes": 6693,
+      "sha256": "896669359b9ced3e112c6156ae346d583a75b49c1fc72ae665e80b263513fe04"
+    },
+    {
+      "path": "edge_hub/static/ep-fleet.js",
+      "bytes": 34673,
+      "sha256": "3e086602c4389d30d0910c1214cddce4f558616e6f0b056e81cf6e4fd07bce9b"
+    },
+    {
+      "path": "edge_hub/static/ep-idle-acceptance.html",
+      "bytes": 3569,
+      "sha256": "29ccf3d6346fb7af3c76dcbf6ccb6b97d2940d3e5983ccfe387a894504f3a50c"
+    },
+    {
+      "path": "edge_hub/static/ep-idle-motor-acceptance.html",
+      "bytes": 4791,
+      "sha256": "a9f2dc8bd0d955776be49b85675fb9a59376eef507b4d7be59b71b91e2edf3be"
+    },
+    {
+      "path": "edge_hub/static/ep-manual-pairing.html",
+      "bytes": 2782,
+      "sha256": "6277689ba1c6b9c47945dbfbac51247d383efc63c8ff53f9cad942aee913fa34"
+    },
+    {
+      "path": "edge_hub/static/ep-manual-pairing.js",
+      "bytes": 5591,
+      "sha256": "60720e7a2200fd1972f60d040b7e3effcc08f5255f717e665e677826b4524cb6"
+    },
+    {
+      "path": "edge_hub/static/ep-preparation.html",
+      "bytes": 5627,
+      "sha256": "e0f48160bafe0304d720ad1edd22e3f5ee29d66af487d08186bbb54bffce62e8"
+    },
+    {
+      "path": "edge_hub/static/ep-preparation.js",
+      "bytes": 2714,
+      "sha256": "506f8e542ad319e899bdc786d0f8d9fe73b2a68f711c2cb6310749820d2fe4f5"
+    },
+    {
+      "path": "edge_hub/static/ep-release-check-acceptance.html",
+      "bytes": 3980,
+      "sha256": "043f36d8fa07f6851d94bab1fc7db376b8f382e2d4f2dd3c794c69a2daeba53c"
+    },
+    {
+      "path": "edge_hub/static/ep-short-press-acceptance.html",
+      "bytes": 3830,
+      "sha256": "f00a6715b98359f3d3ecacdcd1da205f9c664cb908ee032019183c236458fc1a"
+    },
+    {
+      "path": "edge_hub/static/estate-management.js",
+      "bytes": 7849,
+      "sha256": "e4c318c59962b925b2c4545e49318b2a08c67364a3c51cfe9db7be3ed6b6662f"
+    },
+    {
+      "path": "edge_hub/static/governance.js",
+      "bytes": 3374,
+      "sha256": "a6b0d985f9a14d2268f0fc2152daa4a96a0b98e33c215c68385e0a87f2abeb0f"
+    },
+    {
+      "path": "edge_hub/static/latest-photo.js",
+      "bytes": 1695,
+      "sha256": "6065b19bdd3cb99beed47d8bdfea67b3dae939893c2ea22a1de60ead73a28e26"
+    },
+    {
+      "path": "edge_hub/static/photo-privacy.js",
+      "bytes": 5388,
+      "sha256": "3bc8d3db4304b2985d4f103435be5b141da3a20641ce110b65e3044d7cd52861"
+    },
+    {
+      "path": "edge_hub/static/remote-runtime.js",
+      "bytes": 2155,
+      "sha256": "b3d9265ec220a0d2e7589145fbd6be0fe5688b24cedf6b61c4e56d13846c2724"
+    },
+    {
+      "path": "edge_hub/static/resident.html",
+      "bytes": 1688,
+      "sha256": "b871646bfc714b394da4424a13af3a133bb7af98699b271c2694570ca1837a6e"
+    },
+    {
+      "path": "edge_hub/static/resident.js",
+      "bytes": 1582,
+      "sha256": "c447e37bfd1240c151c80e93f81464f27603cf9892b6d513e3e7191511faa73b"
+    },
+    {
+      "path": "edge_hub/static/service-mark.svg",
+      "bytes": 308,
+      "sha256": "2f4facdf3db1437a50ed809e80985fe3d940ba6726571845f11fdea1e7d47306"
+    },
+    {
+      "path": "edge_hub/static/service-shell.css",
+      "bytes": 24806,
+      "sha256": "17fc855632ad04e3c9c6047e75ba1e2ed436faf6cd530d78a1a69893ce375540"
+    },
+    {
+      "path": "edge_hub/static/service-shell.js",
+      "bytes": 2132,
+      "sha256": "abf52b4413d1ecdfb0cf7ace17004803fa059ccd6431cab6eecdec80982e0666"
+    },
+    {
+      "path": "edge_hub/static/service-workbench.js",
+      "bytes": 14705,
+      "sha256": "1aae4ca2062ac3b6dd1127b60a1a04b61e2148eca586afcb8dec2e2198549a00"
+    },
+    {
+      "path": "edge_hub/static/simulation-control.html",
+      "bytes": 2181,
+      "sha256": "1f5e747a4cfcfe25ee2ebdbea0256cf953f37cffd2de7bb381e1df3d4fb2d365"
+    },
+    {
+      "path": "edge_hub/static/simulation-control.js",
+      "bytes": 8741,
+      "sha256": "ad5cb140738bfb86dd3cc14552a9f9e4b119be8095413c96778affd3a33c6847"
+    },
+    {
+      "path": "edge_hub/static/voice-control.js",
+      "bytes": 2327,
+      "sha256": "7295efa824f1988f0c0fa0b70b374b41b368168696c0bffe38aae5c01978068a"
+    },
+    {
+      "path": "edge_hub/static/work-sections.js",
+      "bytes": 803,
+      "sha256": "934b21867104b8ba90530790ba917d0348cae99acc0dabbe1becbb34ab811995"
+    },
+    {
+      "path": "edge_hub/static/workspace-navigation.js",
+      "bytes": 2862,
+      "sha256": "d5dae8a45ad0c47bf2d6cc9f14d32f58d970bc5af3b52c6fd15864f8a94df44c"
+    },
+    {
+      "path": "edge_hub/stop_fault_recovery.py",
+      "bytes": 3657,
+      "sha256": "e7f1003f9b63fb864a695371284572a397fe276fdc246994ee9677cc73b918a5"
+    },
+    {
+      "path": "edge_hub/storage_context.py",
+      "bytes": 902,
+      "sha256": "bff52ff3c3fc049ab06cd72104cb15b95c792877d7f059518abe5b4fcc49890d"
+    },
+    {
+      "path": "edge_hub/system_status.py",
+      "bytes": 940,
+      "sha256": "a307c4978411b3860596ae1abb31ada410b225ab1a9371573772591c7622e08a"
+    },
+    {
+      "path": "edge_hub/ui_shell.py",
+      "bytes": 1973,
+      "sha256": "8ebca1439f3e96335d10185d4041f1d1a5e9d4ffc0dbd64c0420aedd16aaccf4"
+    },
+    {
+      "path": "edge_hub/usage_snapshot.py",
+      "bytes": 1418,
+      "sha256": "6353253be2dcbf14333c2774763fb90179787613bbc2dcb886c44d0e4141b854"
+    },
+    {
+      "path": "edge_hub/vision.py",
+      "bytes": 19417,
+      "sha256": "9a97517495b62f49a947ed8992f87feb0ceb1c034ef3b5f2dd2414064c320f05"
+    },
+    {
+      "path": "edge_hub/vision_runtime.py",
+      "bytes": 16179,
+      "sha256": "4aa36216e8a18d2aa3ae83b4df4a114ab9ba593edddd38878ce7c4e7fe72da04"
+    },
+    {
+      "path": "edge_hub/wifi_profile.py",
+      "bytes": 4530,
+      "sha256": "e795d2ab6e2e8fea76463d7ab368d4c28b5127a0a761c6240e9dda4d68fb5a20"
+    },
+    {
+      "path": "local_audio_gateway/__init__.py",
+      "bytes": 57,
+      "sha256": "457e266cf094fa2682746728c0dc3b769c92b1b6f67ba0e92b85a8bd34ab32d9"
+    },
+    {
+      "path": "local_audio_gateway/app.py",
+      "bytes": 25362,
+      "sha256": "6095217d3aadd689aeb22096bb263e44aa3c04958db1eedd0b4a8c664432c676"
+    },
+    {
+      "path": "local_audio_gateway/model_paths.py",
+      "bytes": 966,
+      "sha256": "31dc4253636c1f8941c5cbf3bcdb2d08389c30d1f21316c51da7b52203689386"
+    },
+    {
+      "path": "local_audio_gateway/pronunciation.py",
+      "bytes": 1163,
+      "sha256": "609167fc87e0b47720691fd6cdb9acc1a01a64da6a65af5576dcd4dd2ba06300"
+    },
+    {
+      "path": "local_audio_gateway/requirements.txt",
+      "bytes": 160,
+      "sha256": "51d399e8be20061251f378c23e8d1f56c98f43f7726b4332aa846031ff83437b"
+    },
+    {
+      "path": "local_audio_gateway/resident_stream.py",
+      "bytes": 4437,
+      "sha256": "5faf81dfcc75c55c5806eacc3038426b997b5033f63844cffd5a4614a8b63621"
+    },
+    {
+      "path": "local_audio_gateway/singleflight.py",
+      "bytes": 1187,
+      "sha256": "b8db8090e5ecad482eaf2f2eea2815d17847bfee69a9d8c665a98706c327076f"
+    },
+    {
+      "path": "local_audio_gateway/stt_availability.py",
+      "bytes": 2803,
+      "sha256": "f8ad043d0d36d41936702de43198875831dff2228b690d46e9119a58bf624cdd"
+    },
+    {
+      "path": "local_audio_gateway/test_service.py",
+      "bytes": 35243,
+      "sha256": "79b2fa95067a76603645b52721ca292ac7765085cd4c8761b44bca04679099ad"
+    },
+    {
+      "path": "local_audio_gateway/voice_style.py",
+      "bytes": 1873,
+      "sha256": "86ec1c263983e1d38758b4d8480352673ae339dab2a64c85afdb6114ae2e1310"
+    },
+    {
+      "path": "package.json",
+      "bytes": 1149,
+      "sha256": "41a487ac8aa4bc876be13d71ae669395dcff16bb97c6ee685346365876d8e855"
+    },
+    {
+      "path": "pnpm-lock.yaml",
+      "bytes": 32782,
+      "sha256": "c0a23ea708b5cb2ecb8df2b20886448869a4bfef901f9d85d867996a3cdaf254"
+    },
+    {
+      "path": "pnpm-workspace.yaml",
+      "bytes": 26,
+      "sha256": "535c68c75b44caf6e70c8e61ca6ee69c284af26d2f556a75fe2513e5c4ef7bbf"
+    },
+    {
+      "path": "pyproject.toml",
+      "bytes": 1068,
+      "sha256": "780ad76001641f357eabab19cdb98c2a003a4c4437a764f0e91287df493c0b11"
+    },
+    {
+      "path": "tools/cloud_bundle.py",
+      "bytes": 5291,
+      "sha256": "e7a0911025c39631965302be61867cf813c41a368d5bc892475826614d96a2dc"
+    },
+    {
+      "path": "tools/cloud_preflight.py",
+      "bytes": 3827,
+      "sha256": "c944e55aa2c8d507795de91ce4056672a097bcf2989858638ba544ced4950135"
+    }
+  ]
+}

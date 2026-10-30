@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>鄰伴 · EP 第五階段：提前放開停止</title>
+  <link rel="stylesheet" href="/assets/ep-console.css">
+  <style>
+    .acceptance-console { display: flex; flex-direction: column; gap: 18px; max-width: 820px; }
+    .acceptance-console select { font: inherit; width: 100%; min-height: 46px; padding: 10px; border: 1px solid #d5deea; border-radius: 10px; background: #fff; color: inherit; }
+    #shortPress { touch-action: none; user-select: none; min-height: 80px; }
+  </style>
+  <link rel="stylesheet" href="/assets/service-shell.css">
+<link rel="icon" href="/assets/service/service-mark.svg" type="image/svg+xml">
+</head>
+<body data-acceptance-stage="5" class="service-theme" data-service-area="robots">
+__SERVICE_SHELL__
+  <main id="main-content" class="console acceptance-console">
+    <header class="page-header"><h1>第五階段：提前放開停止</h1><a class="back-link" href="/ep-preparation">返回控制台</a></header>
+    <input id="epKey" type="hidden" value="__LOCAL_OPERATOR_TOKEN__">
+    <p class="page-intro">只測一次短按後立即放開，分辨按鍵放開與上限停止。請選剛才通過第四階段的 0930，另一台保持關機。不開鏡頭或自動重連。</p>
+    <div id="pairingGate" hidden><p>配網仍開啟，先結束配網再手動連線。</p><button id="endPairing" type="button">結束配網（不會自動連線）</button></div>
+    <form id="acceptanceForm">
+      <label for="device">選擇已通過第四階段的機體 SN</label><select id="device" required><option value="">載入機體清單…</option></select>
+      <label class="check-row"><input id="stationary" type="checkbox" required>只有所選 EP 開機，平放空曠地面並保持靜止；其他控制程式已關閉。</label>
+      <button id="connect" class="primary" type="submit" disabled>手動連線</button>
+      <button id="disconnect" type="button" disabled>結束並斷線</button>
+    </form>
+    <div id="resetPanel" hidden>
+      <p id="resetNotice"></p>
+      <label class="check-row"><input id="resetStationary" type="checkbox">我已在現場確認機體平放、車輪完全停止，現在解除這台舊停止。</label>
+      <button id="resetStop" type="button" disabled>解除這台舊停止鎖定</button>
+    </div>
+    <div>
+      <label class="check-row"><input id="prepareConfirm" type="checkbox">我已確認機體靜止、雲台周圍空曠，知道按準備後雲台會回正。</label>
+      <button id="prepare" class="primary" type="button" disabled>準備控制模式（雲台回正）</button>
+    </div>
+    <p id="status" role="status" aria-live="polite">尚未連線</p>
+    <p id="elapsed">最低速度 0.15 m/s · 主機最長 0.5 秒 · 本次只測一次</p>
+    <p id="telemetry"></p>
+    <label class="check-row"><input id="clearPath" type="checkbox">前方與四周空曠，無人接近車輪，我可以在現場關機。現在由我短按前進。</label>
+    <button id="shortPress" class="primary" type="button" disabled>短按前進，立即放開（驗放開停止）</button>
+    <p id="shortResult" role="status" aria-live="polite">準備完成並確認前方空曠後，才可短按。</p>
+    <p>放開、失焦或離開頁面會送停止；主機最遲在 0.5 秒後送停止，不保證機體已物理停穩，須由你觀察車輪。</p>
+    <p>看到停止來源後，確認放開是否立即停穩及沒有繼續飄移。若顯示由上限停止，這次未驗到提前放開，請結束並回報，不重按。若車輪未停，在安全情況下關機；不要抬機或用手擋輪。完成後結束並斷線、關機，再回報結果。</p>
+  </main>
+  <script src="/assets/ep-acceptance.js" defer></script>
+<script src="/assets/service/service-shell.js" defer></script>
+</body>
+</html>

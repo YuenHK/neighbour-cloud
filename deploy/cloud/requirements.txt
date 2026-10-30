@@ -1,0 +1,12 @@
+# Standalone cloud API candidate. Install this, not .[cloud], on the small host.
+# Keep the existing native/GPU/EP environments unchanged.
+-c constraints.txt
+bm25s==0.3.16
+fastapi==0.141.1
+httpx==0.28.1
+Pillow==11.3.0
+pydantic==2.13.4
+uvicorn==0.52.4
+libsql==0.1.11
+PyJWT==2.15.1
+cryptography==50.0.2

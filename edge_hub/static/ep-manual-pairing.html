@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>鄰伴 · 0930 手動配網</title>
+  <link rel="stylesheet" href="/assets/ep-console.css">
+  <style>
+    .pairing-console { display: flex; flex-direction: column; gap: 18px; max-width: 820px; }
+    .pair-image { width: min(100%, 340px); height: auto; display: block; margin: auto; }
+    .pair-zoom { padding: 12px; align-self: center; background: #fff; }
+    #qrDialog { max-width: 94vw; border: 0; border-radius: 14px; padding: 20px; }
+    #zoomImage { display: block; width: min(78vw, 680px); height: auto; }
+  </style>
+  <link rel="stylesheet" href="/assets/service-shell.css">
+<link rel="icon" href="/assets/service/service-mark.svg" type="image/svg+xml">
+</head>
+<body class="service-theme" data-service-area="robots">
+__SERVICE_SHELL__
+  <main id="main-content" class="console pairing-console">
+    <header class="page-header"><h1>0930 手動配網</h1><a class="back-link" href="/ep-idle-acceptance">返回第三階段</a></header>
+    <input id="epKey" type="hidden" value="__LOCAL_OPERATOR_TOKEN__">
+    <p id="target">載入機體資料…</p>
+    <p>只用 0930 掃碼。按下按鈕才會讀取 Notebook 當前 Wi-Fi，密碼不會以文字顯示。</p>
+    <button id="generate" type="button" class="primary" disabled>用目前 Wi-Fi 產生 QR Code</button>
+    <p id="network"></p>
+    <button id="zoom" class="pair-zoom" type="button" aria-label="放大配網 QR Code" hidden><img id="qrImage" class="pair-image" alt="供 0930 掃描的手動配網碼"></button>
+    <p id="notice" role="status" aria-live="polite">尚未產生 QR Code</p>
+    <p id="reply"></p>
+    <button id="end" type="button" disabled>結束配網並清除 QR Code</button>
+    <details id="manualPassword"><summary>Windows 無法讀取密碼時使用</summary>
+      <form id="passwordForm"><label for="wifiPassword">Notebook 當前 Wi-Fi 密碼</label><input id="wifiPassword" type="password" maxlength="63" autocomplete="off"><button id="passwordGenerate" type="submit" disabled>用目前 Wi-Fi 與此密碼產生</button></form>
+    </details>
+    <p>掃碼後只接收配網回覆，沒有啟用控制連線。方向、雲台、鏡頭及自動重連保持停用。</p>
+    <p>收到回覆後記下 IP，按「結束配網」，再回報燈號；機體 SN 仍須在之後由你手動連線時核對。</p>
+  </main>
+  <dialog id="qrDialog"><button id="closeZoom" type="button">關閉放大</button><img id="zoomImage" alt="放大的手動配網碼"></dialog>
+  <script src="/assets/ep-manual-pairing.js" defer></script>
+<script src="/assets/service/service-shell.js" defer></script>
+</body>
+</html>

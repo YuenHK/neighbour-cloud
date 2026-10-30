@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>鄰伴 · 居民服務</title><link rel="stylesheet" href="/assets/service-shell.css"><link rel="icon" href="/assets/service/service-mark.svg" type="image/svg+xml"></head>
+<body class="service-theme resident-conversation" data-service-area="resident">
+__SERVICE_SHELL__
+<main id="main-content">
+  <iframe id="residentAssistant" src="http://127.0.0.1:4173/ui/estate-resident-entry.html?estate=1" title="鄰伴數字人" allow="microphone; autoplay"></iframe>
+  <p id="assistantLoadStatus" role="status">數字人準備中…</p>
+  <a id="assistantFallback" href="http://127.0.0.1:4173/ui/estate-resident-entry.html?estate=1" hidden>重新開啟數字人</a>
+  <details class="resident-privacy-notice"><summary>資料與私隱</summary><div class="resident-privacy-content"><p>咪高峰開關及聆聽狀態顯示在對話畫面。對話使用 Cloudflare Gemma、朗讀使用 Microsoft 曉曼，公開資料搜尋使用 Tavily；本機會先隱去常見聯絡資料及單位格式，但未保證能辨認所有個人資料。請勿提供身份證或其他不必要私人資料。</p><p>具體求助可能整理到本機管理工作台，由管理人員及保安跟進；未代表職員已聯絡你。可告訴數字人你不希望被聯絡。三分鐘沒有新查詢只清除本輪畫面及稱呼，不會刪除已建立個案或你明確要求保存的記憶。需要更正個案或不想使用 AI，可直接向現場職員求助。</p></div></details>
+</main>
+<script src="/assets/service/resident.js" defer></script>
+</body></html>

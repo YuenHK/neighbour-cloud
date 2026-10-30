@@ -1,0 +1,11 @@
+{
+  "name": "zhiwei-jianbing",
+  "private": true,
+  "packageManager": "pnpm@10.33.0",
+  "scripts": {
+    "test": "pnpm test:profile && node --test tests/admin-status.test.cjs tests/admin-request.test.cjs tests/admin-console.test.cjs tests/simulation-control.test.cjs tests/ep-preparation.test.cjs tests/ep-console.test.cjs tests/ep-fleet.test.cjs tests/ep-acceptance.test.cjs tests/ep-manual-pairing.test.cjs tests/resident-service.test.cjs && pnpm -r test",
+    "test:profile": "node --experimental-strip-types --test tests/local-profile-capture.test.cjs tests/airi-channel-ready.test.cjs tests/assistant-memory.test.cjs",
+    "test:admin": "node --test tests/admin-status.test.cjs tests/admin-request.test.cjs tests/admin-console.test.cjs tests/simulation-control.test.cjs tests/ep-preparation.test.cjs tests/ep-console.test.cjs tests/ep-fleet.test.cjs tests/ep-acceptance.test.cjs tests/ep-manual-pairing.test.cjs tests/resident-service.test.cjs tests/theme-color.test.cjs tests/ui-workspace.test.cjs tests/api-quota.test.cjs tests/work-sections.test.cjs tests/resident-view-guard.test.cjs",
+    "typecheck": "pnpm -r typecheck"
+  }
+}

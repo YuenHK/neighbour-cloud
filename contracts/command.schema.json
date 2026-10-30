@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["seq", "type", "ttl_ms"],
+  "properties": {
+    "seq": {"type": "integer", "minimum": 0},
+    "type": {"enum": ["start_patrol", "pause", "resume", "enter_stair", "cancel_mission", "keepalive"]},
+    "ttl_ms": {"type": "integer", "minimum": 100, "maximum": 500},
+    "mission_id": {"type": "string", "minLength": 1}
+  }
+}

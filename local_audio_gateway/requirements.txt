@@ -1,0 +1,8 @@
+av==18.1.0
+httpx>=0.28,<1
+fastapi==0.141.1
+numpy==2.5.2
+opencc-python-reimplemented==0.1.7
+python-multipart==0.0.32
+sherpa-onnx==1.13.6
+uvicorn==0.52.4
