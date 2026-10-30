@@ -17,7 +17,10 @@ from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 from deploy.cloud.database_profile import unique_object
 
 VARIABLE = 'NEIGHBOUR_RELEASE_ENVELOPE'
-FORMAT = 'neighbour-release-envelope-v1'
+# A stopped-writer upgrade must not let Render resume the previous executable
+# with live credentials before the repaired executable has been selected.
+# V1 hosts reject this format before provisioning or opening any databases.
+FORMAT = 'neighbour-release-envelope-v2'
 FIELDS = {'format', 'service_id', 'origin', 'salt', 'nonce', 'ciphertext'}
 KEYS = {'NEIGHBOUR_CREDENTIAL_BACKEND', 'NEIGHBOUR_SETTINGS_ROOT', 'NEIGHBOUR_CLOUD_CONFIG',
         'NEIGHBOUR_MANAGED_RELEASE', 'NEIGHBOUR_SECRET_TURSO_DATA', 'NEIGHBOUR_SECRET_TURSO_READ',
@@ -42,7 +45,7 @@ def key(bootstrap, salt, binding):
             or any(ord(char) <= 32 or ord(char) == 127 for char in bootstrap)):
         raise ValueError('release_envelope_unavailable')
     return HKDF(algorithm=hashes.SHA256(), length=32, salt=salt,
-                info=b'neighbour-render-formal-release-v1:' + binding).derive(bootstrap.encode('ascii'))
+                info=b'neighbour-render-formal-release-v2:' + binding).derive(bootstrap.encode('ascii'))
 
 
 def seal(values, bootstrap, *, service_id, origin):

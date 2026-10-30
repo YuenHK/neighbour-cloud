@@ -456,8 +456,8 @@
     },
     {
       "path": "deploy/cloud/release_envelope.py",
-      "bytes": 3928,
-      "sha256": "78dc30696fc5a59aa5a00e82097ed8a7d5e6945967aef638beeef7e8b64099ff"
+      "bytes": 4156,
+      "sha256": "b5b2e951ee6bdc1dfa3c92a8f439de6cbf4fa0a5d9652a3d856cf67fada3e512"
     },
     {
       "path": "deploy/cloud/release_probe.py",
