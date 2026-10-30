@@ -271,8 +271,8 @@
     },
     {
       "path": "deploy/cloud/README.zh-Hant.md",
-      "bytes": 46990,
-      "sha256": "ef3d0b0c6a528c9a7fdba3e60aca505bbfa0d5bb222a052d8276becc26ca9cb8"
+      "bytes": 48322,
+      "sha256": "b6bbbd7703278c1098e763a2c230223443a2425edb88c8db5904b77c6c6e000b"
     },
     {
       "path": "deploy/cloud/bootstrap.py",

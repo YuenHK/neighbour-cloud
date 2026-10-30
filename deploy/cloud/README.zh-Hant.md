@@ -16,6 +16,14 @@ Turso 官方第一方登入已成功，帳戶 `yuenhk`；不再需要重試 Code
 
 私人來源庫 `YuenHK/neighbour-cloud` 已建立。尚未建立鄰伴 Render service、完整雲端前台／Google 登入／ASR、正式一致資料搬遷、唯一寫入者切換、持久備份及關機後外網驗收；不要直接公開原本機 app，也不要停止仍正常運行的本機服務。最新本機證據位於 `.runtime/cloud-host-20261029/private-deployment-20261030/turso-provisioning/`，不會納入來源包。
 
+### Render 私人庫存取仍待本人確認
+
+2026-10-30 已嘗試在本人確認的 My Workspace 建立 `neighbour-yuenhk`，明確 Free／Singapore／手動部署，不傳任何私人資料或 key。官方工具回覆 HTTP 400：`passed in repository URL is invalid or unfetchable`，**未建立服務**。來源 URL 格式正確；目前連接不能取用新私人庫，確切 GitHub App 設定尚無法由工具查看。不要再用相同參數不停重試、把 repo 改成公開、放 token 進 Git URL 或新建重複庫。
+
+已請本人到 https://github.com/apps/render/installations/new ，在 YuenHK 的 Render Configure 保留原有 repo 存取，再加入 `neighbour-cloud`。如未連接 Git Deployment Credentials，需在 Render Account Settings 正常連接 GitHub。這是來源庫授權，不是 Turso 登入失敗；Turso 不必重做登入。官方步驟：https://render.com/docs/git-provider#fixing-github-app-permissions 。目前未有可用雲端網址，本機服務保持正常。
+
+Linux amd64／Python 3.12 的 24 個相容 wheel 已在隔離目錄成功解析及下載（約 37 MB），含 libsql；沒有安裝到正式環境或執行 Linux。這只排除「沒有相容 wheel」的部分問題，**不是 Linux、512 MB 主機或實際 Render 建置通過**。
+
 ## 選擇及現實限制
 
 Oracle 註冊已由用戶確認失敗，**不再沿此路徑等候或重複註冊**。目前轉向 Render Free 程式託管與 Turso Free 永久資料庫。2026-10-30 用戶已回覆原待辦確認「同意，只用免費方案」：允許以現有 Google／GitHub 登入或建立這兩個免費帳戶，建立鄰伴專用 DB 憑證並只加密保存；不加信用卡、不升級或購買。歷史交接中的 pending 已由本次回覆取代，不要再次要求同一授權。目前僅建立下述隔離資源，未部署公開平台或上傳私人資料。
@@ -88,7 +96,7 @@ Render 候選另支援明確 `NEIGHBOUR_CREDENTIAL_BACKEND=managed-environment`�
 
 個案、事件、資料、記憶、日誌及配額類別已有明確 `connection_factory=` 接口；原本未傳這個參數時仍使用原 SQLite。沒有改全域 sqlite3，也沒有在本機自動啟用 cloud profile。未知 EP 控制 DB 不會被映射到雲端。記憶初始化失敗、職員日誌及配額初始化的短連線都有關閉檢查。
 
-`file:...?mode=ro` 只映射到已綁定角色並在獨立連線設定 query_only；它不是任意檔案代理。密鑰／driver 錯誤不回顯敏感值，初始化失敗會關閉已建立的連線。可選 `.[cloud]` 固定 libsql 0.1.11、PyJWT 2.15.1 及 cryptography 50.0.2；沒有安裝到目前正式 venv。後兩項只放在獨立 `.experiments/cloud-auth-20261030/python` 研究環境，以官方 PyPI wheel 安裝並保存來源／摘要回條，沒有改動原本 AI 研究環境。
+`file:...?mode=ro` 只映射到已綁定角色；v2 使用獨立供應商唯讀憑證，舊 v1 保留 query_only 行為。它不是任意檔案代理。密鑰／driver 錯誤不回顯敏感值，初始化失敗會關閉已建立的連線。可選 `.[cloud]` 固定 libsql 0.1.11、PyJWT 2.15.1 及 cryptography 50.0.2；沒有安裝到目前正式 venv。後兩項只放在獨立 `.experiments/cloud-auth-20261030/python` 研究環境，以官方 PyPI wheel 安裝並保存來源／摘要回條，沒有改動原本 AI 研究環境。
 
 歷史離機測試的 endpoint 全由攔截 driver 導向 pytest 臨時 DB，分別用標準 SQLite 及真正的研究 libsql 本機引擎；其後的真實 Turso staging 與耗時證據見開首，仍未驗收正式資料切換或實際 Render 容量。目前主程式未選用此 factory；真實雲端啟動仍要接齊下述儲存 scope、CSV 快照 provider、保存／備份、照片路由及跨 DB 檢查，不能因建構子測試成功就公開。部署時還要在實際可用免費區域內盡量將程式與 DB 放同區，量度每輪 SQL 往返；不能假設搬上雲端一定更快。
 
