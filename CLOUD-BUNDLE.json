@@ -301,8 +301,8 @@
     },
     {
       "path": "deploy/cloud/README.zh-Hant.md",
-      "bytes": 64419,
-      "sha256": "bf3a18138fe9f74d8fa88f270e9700d759c5240803759b490d37bc2046d26670"
+      "bytes": 66356,
+      "sha256": "2b37538450f93d232401872e2dfe8042f4d878203ccb38732b9267eb9c77cceb"
     },
     {
       "path": "deploy/cloud/THIRD-PARTY.md",
