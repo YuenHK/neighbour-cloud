@@ -301,8 +301,8 @@
     },
     {
       "path": "deploy/cloud/README.zh-Hant.md",
-      "bytes": 57873,
-      "sha256": "e057e505f32981fb6b9102dcb849769ed1bb0a35338c7a82c3b5d0506bdd4221"
+      "bytes": 60538,
+      "sha256": "d0502fea9cea6fa139e3228d6d836727393d590043c89a8f9cf05bfea9c8772d"
     },
     {
       "path": "deploy/cloud/THIRD-PARTY.md",
@@ -313,6 +313,11 @@
       "path": "deploy/cloud/admin_assets.py",
       "bytes": 3618,
       "sha256": "28d61076d089265005e32afb1a192f9000bca0f63d8f314939d52d1bbbd5d3e9"
+    },
+    {
+      "path": "deploy/cloud/backup_store.py",
+      "bytes": 16933,
+      "sha256": "ef6650d7b3799a5171811a1414ab3d6b542740c5f06e26051619492d9dd81793"
     },
     {
       "path": "deploy/cloud/bootstrap.py",
@@ -400,6 +405,16 @@
       "sha256": "55e0cf33b94dd47d8c96cd4312b7e31212c9060160c735fce89614223719ae7a"
     },
     {
+      "path": "deploy/cloud/native_adapters.py",
+      "bytes": 7901,
+      "sha256": "8f7006c65e44531fb3af9a23df0c889bb771cd9cd176ede20ea764c44e838e2b"
+    },
+    {
+      "path": "deploy/cloud/native_export.py",
+      "bytes": 9016,
+      "sha256": "3f0337ddb2974f8b2af73a967c73d6bb702c2bcb41bc2c7067486d0616ec3c92"
+    },
+    {
       "path": "deploy/cloud/photo_api.py",
       "bytes": 6433,
       "sha256": "de280b6d79e64e642e0ff6261307fbbd3d1675b257eabdceeee739e1e0f5adbd"
@@ -421,13 +436,18 @@
     },
     {
       "path": "deploy/cloud/retention_restore.py",
-      "bytes": 6421,
-      "sha256": "7887ea20fce51761989992cc31281455b79d064a2e57ebb97dbd09f20284c070"
+      "bytes": 7320,
+      "sha256": "3f572b34955745b1f849faa08151e88bb2f01454fa100a8dbc811c1a112c9e83"
     },
     {
       "path": "deploy/cloud/runtime_storage.py",
       "bytes": 691,
       "sha256": "f2f16f290593ac2b36431a7ef8af4732dc02d52108ea6eb28055247d3d4cb7a2"
+    },
+    {
+      "path": "deploy/cloud/sql_import.py",
+      "bytes": 9500,
+      "sha256": "9322bca8fb361e9fd5aa42ab747b4ac87716d8c9efcaa7a530a613da8b2f29ec"
     },
     {
       "path": "deploy/cloud/sql_snapshot.py",

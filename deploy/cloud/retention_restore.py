@@ -62,6 +62,10 @@ def reconcile(db, scope, records):
                                        'erased_at_ms': record['erased_ms']}), record['target'])).rowcount
     else:
         db.execute('CREATE TABLE IF NOT EXISTS cloud_erased_events(event_id TEXT PRIMARY KEY,erased_ms INTEGER NOT NULL)')
+        legacy = {row[0] for row in db.execute("SELECT name FROM sqlite_master WHERE name IN "
+                  "('native_evidence_blobs','native_evidence_bindings','native_evidence_missing')")}
+        if legacy and len(legacy) != 3:
+            raise ValueError('unrecognised_native_evidence_archive_schema')
         for record in records:
             if record['kind'] != 'event':
                 continue
@@ -71,6 +75,14 @@ def reconcile(db, scope, records):
                 db.execute('INSERT OR IGNORE INTO cloud_photo_tombstones VALUES(?,?,?)', (row[0], target, stamp))
             db.execute('INSERT OR IGNORE INTO cloud_erased_events VALUES(?,?)', (target, stamp))
             changed += db.execute('DELETE FROM cloud_photos WHERE event_id=?', (target,)).rowcount
+            if legacy:
+                # A legacy file may be shared by several old events. Remove
+                # its expired binding; erase bytes only after the last one.
+                changed += db.execute('DELETE FROM native_evidence_bindings WHERE event_id=?', (target,)).rowcount
+                db.execute('DELETE FROM native_evidence_missing WHERE event_id=?', (target,))
+        if legacy:
+            db.execute('DELETE FROM native_evidence_blobs WHERE NOT EXISTS '
+                       '(SELECT 1 FROM native_evidence_bindings b WHERE b.key=native_evidence_blobs.key)')
     return changed
 
 
