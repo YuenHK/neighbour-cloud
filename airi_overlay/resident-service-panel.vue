@@ -43,6 +43,7 @@ const speechOutput = useSpeechOutputControlStore()
 const { nowSpeaking } = storeToRefs(useSpeakingStore())
 const { audioContext: residentAudioContext } = useAudioContext()
 const speechActive = ref(false)
+const inputControllers = new Set<AbortController>()
 let speechIntent: ReturnType<typeof speechRuntime.openIntent> | undefined
 let speechStartTimer: ReturnType<typeof setTimeout> | undefined
 let speechHealthTimer: ReturnType<typeof setTimeout> | undefined
@@ -172,6 +173,7 @@ function reset() {
   followupNotice.value = ''
   inactivity.stop()
   session.reset()
+  cancelTranscription()
   messages.value = []
   draft.value = ''
   busy.value = false
@@ -298,6 +300,7 @@ async function sendMessage(text = draft.value, voice = true, inputEndedAt?: numb
   if (!text || busy.value)
     return
   touch()
+  cancelTranscription()
   clearAudio()
   speechFailed = false
   const epoch = session.generation
@@ -410,7 +413,37 @@ async function sendMessage(text = draft.value, voice = true, inputEndedAt?: numb
       busy.value = false
   }
 }
-defineExpose({ sendMessage })
+function cancelTranscription() {
+  for (const controller of inputControllers)
+    controller.abort()
+  inputControllers.clear()
+}
+async function transcribeAudio(audio: Blob) {
+  if (!residentApi.cloud)
+    throw new Error('cloud_transcription_only')
+  touch()
+  const epoch = session.generation
+  const controller = new AbortController()
+  inputControllers.add(controller)
+  try {
+    const text = await residentApi.transcribe(audio, {
+      sessionId: session.sessionId,
+      inputId: crypto.randomUUID().replaceAll('-', ''),
+    }, controller.signal)
+    if (epoch !== session.generation || controller.signal.aborted)
+      throw new Error('resident_transcription_cancelled')
+    return text
+  }
+  catch {
+    if (epoch === session.generation && !controller.signal.aborted)
+      status.value = '剛才未能辨識清楚，你可以再講一次，或者先打字同我傾。'
+    throw new Error('resident_transcription_unavailable')
+  }
+  finally {
+    inputControllers.delete(controller)
+  }
+}
+defineExpose({ sendMessage, transcribeAudio })
 function acknowledgeReady(event?: MessageEvent) {
   if (event && (event.origin !== hubOrigin || event.source !== window.parent || event.data?.type !== 'estate-assistant-check'))
     return
@@ -426,6 +459,7 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('message', acknowledgeReady)
   session.reset()
+  cancelTranscription()
   window.removeEventListener('focus', checkIdle)
   document.removeEventListener('visibilitychange', checkIdle)
   inactivity.stop()

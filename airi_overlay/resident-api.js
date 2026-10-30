@@ -41,6 +41,38 @@ export function createResidentApi({ cloud = false, transport, fetcher = (...args
 
   return {
     cloud,
+    /** @param {Blob} audio @param {{sessionId: string, inputId: string}} ids @param {AbortSignal} [signal] */
+    async transcribe(audio, ids, signal) {
+      if (!cloud || !(audio instanceof Blob) || audio.size < 8044 || audio.size > 1440044
+        || !ids || !/^[a-f0-9]{32}$/.test(ids.sessionId) || !/^[a-f0-9]{32}$/.test(ids.inputId)) {
+        throw new Error('cloud_transcription_invalid')
+      }
+      const timeout = AbortSignal.timeout(30000)
+      const deadline = signal ? AbortSignal.any([signal, timeout]) : timeout
+      if (deadline.aborted)
+        throw new DOMException('cloud_transcription_cancelled', 'AbortError')
+      const bytes = new Uint8Array(await audio.arrayBuffer())
+      const parts = []
+      for (let index = 0; index < bytes.length; index += 16384)
+        parts.push(String.fromCharCode(...bytes.subarray(index, index + 16384)))
+      if (deadline.aborted)
+        throw new DOMException('cloud_transcription_cancelled', 'AbortError')
+      const response = await post('/api/v1/resident/transcription', {
+        session_id: ids.sessionId,
+        input_id: ids.inputId,
+        audio: btoa(parts.join('')),
+      }, deadline)
+      if (!response.ok)
+        throw new Error('cloud_transcription_unavailable')
+      const result = await response.json()
+      if (deadline.aborted)
+        throw new DOMException('cloud_transcription_cancelled', 'AbortError')
+      if (result?.engine !== 'cloudflare-whisper-free' || result.model !== '@cf/openai/whisper-large-v3-turbo'
+        || typeof result.text !== 'string' || result.text.length > 4000 || result.text.includes('\0')) {
+        throw new Error('cloud_transcription_unavailable')
+      }
+      return result.text
+    },
     /** @param {object} body @param {AbortSignal} [signal] */
     chat(body, signal) {
       return post(cloud ? '/api/v1/resident/chat' : 'http://127.0.0.1:8000/api/v1/resident/chat', { ...body, native_settings: true }, signal)

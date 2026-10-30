@@ -1,5 +1,19 @@
 # 鄰伴獨立雲端部署準備
 
+## 2026-10-30 雲端 Whisper 已獲用戶批准，候選接線完成
+
+用戶明確同意雲端版用現有 Cloudflare 免費 Whisper Turbo 辨識；錄音會交 Cloudflare，與 Gemma 共用免費額度，本機 SenseVoice／Gemma／曉曼不變。新增嚴格同源身份保護的 transcription 接口、完整最多45秒WAV驗證、先預留現有8,000-Neuron共用守護、短期同段去重／兩工作上限／逾時不重送。正式使用仍需明確 whisper Free／user_approved 設定及原有模型 key；staging 模式照舊拒絕 POST，不會為驗證而啟用供應商。
+
+前台新增同源錄音請求與30秒取消；真 Vue script 測過改用文字、下一位／三分鐘清場後，舊 ASR 不會插入新對話。隔離 AIRI cloud index 分支不回本機 ASR，原 vendor／正式 dist 均還原或未改。這不是已啟用的完整雲端居民畫面：Google-to-AIRI 啟動、靜態資產／analytics／service worker整理、管理台、正式一致匯入與單writer、備份保存及 Notebook-off 仍待。詳見本機 docs/cloud-speech-input-2026-10-30.md 與 cloud-asr-20261030 回條。
+
+## 2026-10-30 08:29Z 隔離主機已上線、真 Google 登入已通過
+
+私人來源 v27／26f16512215441410af90f576633f823df058479 已核對遠端，Render Free 的 dep-dbi594ui0phs73ctcl40 終態 live。AES-GCM 設定更新已只以密文經現有 Render 專用工具合併，沒有再次要求本人貼 raw key；API 儲存自動觸發部署，沒有重複 trigger。真 Linux 九類 Store 啟動約 5.612 秒，這不是對話延遲或效能承諾。
+
+外網 root／JS 與來源 SHA256 一致，login-config 只有核准 public clientID，未登入／偽 token 401；本人 Google 登入成功，後端 2026-10-30T08:29:20Z session GET200 已核。HTTPS 在現有 loopback forwarding allowlist 已正常，沒有擴大信任範圍。Computer Use 本身仍受網址辨認 guard 阻擋，沒有修好或繞過該工具；部署設定已改由正常 Render 連接完成。
+
+這是只供驗收的登入入口，health 仍 public_ready=false，不會開咪、合成／播放音訊或操作 EP。完整居民與職員前台、ASR、正式一致資料匯入與唯一 writer、持久備份／90 日清理／復原及 Notebook-off 整體驗收仍未完成。本機原服務與所有資料保持；不要把隔離主機 live 當作整個平台已完成。
+
 ## 2026-10-30 最新接續：Google 已核、隔離設定更新已測試
 
 本人已完成 Google 登入及首位職員綁定；不再需要重做本機設定。其後 Computer Use 在正常 Chrome 服務頁（包括先啟用視窗）仍無法可靠辨認網址而強制停止，沒有改安全設定或換瀏覽器控制繞過。本人已正常把 staging 設定存入 Render；手動觸發的 e6c3ce2 舊版本部署 update_failed，新版 managed-stage 尚未上線。

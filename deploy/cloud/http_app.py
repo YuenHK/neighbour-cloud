@@ -27,6 +27,12 @@ from deploy.cloud.google_identity import (
 )
 from deploy.cloud.photo_api import PHOTO_PATH, photo_router
 from deploy.cloud.quota_api import QUOTA_PATH, CloudQuotas, quota_router
+from deploy.cloud.transcription_api import PATH as TRANSCRIPTION_PATH
+from deploy.cloud.transcription_api import (
+    CloudTranscriptionBodyLimit,
+    Transcription,
+    transcription_router,
+)
 from deploy.cloud.voice_api import STREAM_PATHS, CloudVoiceBodyLimit, voice_router
 from edge_hub import azure_voice, cloudflare_gemma
 from edge_hub.browser_timing import BrowserTimings, timing_router
@@ -170,6 +176,11 @@ def include_selected(app, router, prefixes):
     app.include_router(selected)
 
 
+class CloudServiceBodyLimit(ServiceBodyLimitMiddleware):
+    def matches(self, scope):
+        return scope.get('path') != TRANSCRIPTION_PATH and super().matches(scope)
+
+
 def create_app(services, verifier, *, origin, model_client=None, voice_client=None, quota_client=None,
                storage_acceptance=False):
     if (not isinstance(services, CloudServices) or services.closed
@@ -197,6 +208,7 @@ def create_app(services, verifier, *, origin, model_client=None, voice_client=No
             app.state.resident_cloud_client = client
             app.state.resident_voice_client = voice
             app.state.quota_client = quota
+            cleanup.push_async_callback(app.state.resident_transcription.close)
             app.state.started = True
             try:
                 yield
@@ -210,9 +222,12 @@ def create_app(services, verifier, *, origin, model_client=None, voice_client=No
     app = FastAPI(lifespan=lifespan, docs_url=None, redoc_url=None, openapi_url=None)
     app.state.started = False
     app.state.browser_timings = BrowserTimings()
+    app.state.resident_transcription = Transcription(lambda: app.state.resident_cloud_client)
     app.include_router(timing_router(resident_request=verified_resident_request, timings=app.state.browser_timings))
-    app.add_middleware(ServiceBodyLimitMiddleware)
+    app.add_middleware(CloudServiceBodyLimit)
     app.add_middleware(CloudVoiceBodyLimit)
+    app.add_middleware(CloudTranscriptionBodyLimit)
+    app.include_router(transcription_router(app.state.resident_transcription, current_principal))
 
     @app.exception_handler(RequestValidationError)
     async def validation(_request, _error):

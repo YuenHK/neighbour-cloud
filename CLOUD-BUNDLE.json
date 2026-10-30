@@ -201,8 +201,8 @@
     },
     {
       "path": "airi_overlay/resident-api.js",
-      "bytes": 3760,
-      "sha256": "eaf9a11654036939f741d1773f5650cd5a0bc2a025416e7856ab2936dc9b1b95"
+      "bytes": 5473,
+      "sha256": "006d4077674a783622c46d92498387a9d4a682c3f0aa65bfe8abf3a2b8448935"
     },
     {
       "path": "airi_overlay/resident-entry.js",
@@ -226,8 +226,8 @@
     },
     {
       "path": "airi_overlay/resident-service-panel.vue",
-      "bytes": 23402,
-      "sha256": "b709d7a58e71d694dc76ffd363bbd1dda5f53b439b507d9de53866890f138bdb"
+      "bytes": 24576,
+      "sha256": "c3cd3c82e91336d86bad1b9f394102e2be3ccd9f729381e618869bcc3e55404f"
     },
     {
       "path": "airi_overlay/resident-session.js",
@@ -271,8 +271,8 @@
     },
     {
       "path": "deploy/cloud/README.zh-Hant.md",
-      "bytes": 53047,
-      "sha256": "442d6fdfc6b785d3af39fc2d0481ed22dbd9dab84a8ddb8f667ed6bb8557f738"
+      "bytes": 55419,
+      "sha256": "27fd762b1f30e707a6771d0c194483869019097797a11794dd9e68ccc3876520"
     },
     {
       "path": "deploy/cloud/bootstrap.py",
@@ -310,6 +310,11 @@
       "sha256": "114cadda933dbf4092fcd668f2dfc0423c8cef01a9377091ef2d5cb2260fc1d8"
     },
     {
+      "path": "deploy/cloud/frontend_wiring.py",
+      "bytes": 990,
+      "sha256": "1a4c1b23df9b35c9269a06079fd1b5167133222a35580395728e82be36252fe7"
+    },
+    {
       "path": "deploy/cloud/google_identity.py",
       "bytes": 6949,
       "sha256": "839314359ab752b8668393a53f5b2f96cb66e9c6bcb13c4fc864734f118f4049"
@@ -321,8 +326,8 @@
     },
     {
       "path": "deploy/cloud/http_app.py",
-      "bytes": 16331,
-      "sha256": "de01ecce8183c69f283e69ca19eaf955e14de5c973cdbefdf221b484950d6a90"
+      "bytes": 17016,
+      "sha256": "781768689182de755d6ebb41544979e82570a6e7f7978ee8af72a96c593242b7"
     },
     {
       "path": "deploy/cloud/libsql_connection.py",
@@ -408,6 +413,11 @@
       "path": "deploy/cloud/state_store.py",
       "bytes": 4255,
       "sha256": "3f370fc7ab6aa6b5f5afef9e05e2eb3a53df66808121ca2f0eef73caba16e3af"
+    },
+    {
+      "path": "deploy/cloud/transcription_api.py",
+      "bytes": 10249,
+      "sha256": "fb3e3051db4a394242ea15f571d2066c14d15911417595912d4fffa4b68025c6"
     },
     {
       "path": "deploy/cloud/usage_restore.py",
