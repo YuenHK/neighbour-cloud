@@ -2,6 +2,18 @@
 
 2026-10-29：用戶要求 Notebook 關機後仍可使用。此目錄是準備及核對工具，**尚未完成雲端部署**，不可把 ngrok Notebook 網址當成已完成。
 
+## 2026-10-30 Render 已建立，Google 登入設定進行中
+
+本人已完成 Render GitHub App 的新私人庫授權。重新核對沒有重複資源後，已建立 `neighbour-yuenhk`（`srv-dbi41m2fngtc73c82fq0`），My Workspace／Singapore／**compute plan=free**／autoDeploy=no。網址已分配 `https://neighbour-yuenhk.onrender.com`，**尚不可當作可用平台**。原兩個其他服務沒有改動。
+
+首個部署 `dep-dbi41mifngtc73c82hbg` 來源為 `c0f71203f58d2a7c1a26317ee27ed90dbebe8add`。Render 的真實 Linux／Python 3.12.10 已安裝所有鎖定依賴，07:02:15Z 回報 Build successful；隨後應用程式因尚未提供 `/etc/secrets/neighbour-host.json` 而以固定 `cloud_host_configuration_required` 拒絕啟動，部署終態 **update_failed**。這是未配置前的停止條件，不得移除檢查、設假身份／臨時資料或重試相同未配置部署求綠燈。尚未輸入正式 key、資料或 Google 帳戶設定；沒有公開居民功能。
+
+已新增只限本機的 Google 首位職員設定工具 `deploy.cloud.login_setup`。由本人在 Google 建立 Web application Client ID，JavaScript origins 包括上面雲端 origin、`http://localhost` 及 `http://localhost:8924`；只需基本身份 scopes，不需 Client secret、開計費或下載憑證。工具保留指定電郵、固定 Google JWKS／簽名／audience／issuer／時效核對，再核對本輪 nonce，成功才把最少帳戶 metadata 用 Windows CurrentUser DPAPI 加密保存；不保存 ID token、Google 密碼、Client secret 或居民資料，不覆寫既有設定。
+
+本機入口只綁 127.0.0.1:8924，HTTP Host 固定 localhost、同源 POST 加程序 nonce、拒外網／重複欄位／大 body、不記存取 log，30 分鐘自停。HTML／JS 不開咪、不播放音訊、不操作 EP；這不是雲端公開註冊端點，也不會自行授權任意居民帳戶。合成 Google 簽名／失效 nonce／錯帳戶／偽 token／CSRF／DPAPI 真往返／失敗不明文及打包排除測試通過；真人 Google Client ID、彈窗與登入仍待本人完成。
+
+代理嘗試「驗證並背景啟動本機設定工具」的指令被自動審查在執行前拒絕 `blocked by policy`，未提供細項原因。沒有代啟動、產生 PID、改政策或換另一控制途徑重試；獨立測試／lint 已另外正常執行。已準備可供本人檢查及前台執行的 `OPEN-CLOUD-LOGIN-SETUP.cmd`，須由本人開啟後再訪問 `http://localhost:8924`，不應假稱頁面已開。加密輸出位置是 `.runtime/cloud-host-20261029/private-deployment-20261030/render-service-20261030/google-login.dpapi`；不要把其內容、ID token 或個人帳戶識別寫入聊天／程式庫。
+
 ## 2026-10-30 已核實進度
 
 Turso 官方第一方登入已成功，帳戶 `yuenhk`；不再需要重試 Codex MCP 或找 API Tokens 選單。由官方 CLI v1.0.34 原碼建立的本機工具，加入只限此工具的 Windows CurrentUser DPAPI 保存及正常第一方登入連結；保留 state／TLS，沒有關閉 Codex issuer 檢查。憑證只加密保存在本機，不在程式庫、聊天或日誌。
@@ -14,13 +26,13 @@ Turso 官方第一方登入已成功，帳戶 `yuenhk`；不再需要重試 Code
 
 啟動將表格、欄位、quick_check、foreign_key_check 合併成每庫一輪查詢，仍保留短號、事件 stream／接收序列／完成日期及簽名檢查；雲端 Store 明確使用 `initialize=False`，不重跑本機建表、補號或升級。額外最多四個唯讀驗證執行緒可選，預設一個。Notebook 跨網絡九庫完整啟動實測 45.188 秒；這不是同區 Render 或對話延遲。API host 有 60 秒有界啟動預算，未就緒仍拒絕請求，不把超時當通過，也沒有自動重試或放寬資料完整性條件。
 
-私人來源庫 `YuenHK/neighbour-cloud` 已建立。尚未建立鄰伴 Render service、完整雲端前台／Google 登入／ASR、正式一致資料搬遷、唯一寫入者切換、持久備份及關機後外網驗收；不要直接公開原本機 app，也不要停止仍正常運行的本機服務。最新本機證據位於 `.runtime/cloud-host-20261029/private-deployment-20261030/turso-provisioning/`，不會納入來源包。
+私人來源庫 `YuenHK/neighbour-cloud` 及 Render Free service 已建立，建置結果見開首。完整雲端前台／Google 登入／ASR、正式一致資料搬遷、唯一寫入者切換、持久備份及關機後外網驗收仍未完成；不要直接公開原本機 app，也不要停止仍正常運行的本機服務。最新本機證據位於 `.runtime/cloud-host-20261029/private-deployment-20261030/turso-provisioning/`，不會納入來源包。
 
-### Render 私人庫存取仍待本人確認
+### 歷史 Render 私人庫存取阻擋（已由本人解決）
 
 2026-10-30 已嘗試在本人確認的 My Workspace 建立 `neighbour-yuenhk`，明確 Free／Singapore／手動部署，不傳任何私人資料或 key。官方工具回覆 HTTP 400：`passed in repository URL is invalid or unfetchable`，**未建立服務**。來源 URL 格式正確；目前連接不能取用新私人庫，確切 GitHub App 設定尚無法由工具查看。不要再用相同參數不停重試、把 repo 改成公開、放 token 進 Git URL 或新建重複庫。
 
-已請本人到 https://github.com/apps/render/installations/new ，在 YuenHK 的 Render Configure 保留原有 repo 存取，再加入 `neighbour-cloud`。如未連接 Git Deployment Credentials，需在 Render Account Settings 正常連接 GitHub。這是來源庫授權，不是 Turso 登入失敗；Turso 不必重做登入。官方步驟：https://render.com/docs/git-provider#fixing-github-app-permissions 。目前未有可用雲端網址，本機服務保持正常。
+已請本人到 https://github.com/apps/render/installations/new ，在 YuenHK 的 Render Configure 保留原有 repo 存取，再加入 `neighbour-cloud`。如未連接 Git Deployment Credentials，需在 Render Account Settings 正常連接 GitHub。這是來源庫授權，不是 Turso 登入失敗；Turso 不必重做登入。官方步驟：https://render.com/docs/git-provider#fixing-github-app-permissions 。此來源授權其後已由本人完成，Render service／首次建置結果見開首；本機服務保持正常。
 
 Linux amd64／Python 3.12 的 24 個相容 wheel 已在隔離目錄成功解析及下載（約 37 MB），含 libsql；沒有安裝到正式環境或執行 Linux。這只排除「沒有相容 wheel」的部分問題，**不是 Linux、512 MB 主機或實際 Render 建置通過**。
 

@@ -271,8 +271,8 @@
     },
     {
       "path": "deploy/cloud/README.zh-Hant.md",
-      "bytes": 48322,
-      "sha256": "b6bbbd7703278c1098e763a2c230223443a2425edb88c8db5904b77c6c6e000b"
+      "bytes": 51151,
+      "sha256": "4a710a2bedfbfd53472bba2c3f897f998969057eb2d4dda2a41d2eaf7e4619ba"
     },
     {
       "path": "deploy/cloud/bootstrap.py",
@@ -328,6 +328,21 @@
       "path": "deploy/cloud/libsql_connection.py",
       "bytes": 4806,
       "sha256": "91e09198fc4e04ba031039c862e08d73d6807a3ecd67a602d0856a62b976f191"
+    },
+    {
+      "path": "deploy/cloud/login-setup/index.html",
+      "bytes": 2551,
+      "sha256": "7a21ff5402ea7e839d09a6b34dcbadbcd200d146a89d30076b82ee878b404583"
+    },
+    {
+      "path": "deploy/cloud/login-setup/setup.js",
+      "bytes": 2689,
+      "sha256": "8255ad5b843007dcb8401b2151af209abff7c1fb916076b57b7450d0b958fe2a"
+    },
+    {
+      "path": "deploy/cloud/login_setup.py",
+      "bytes": 10747,
+      "sha256": "b92e630c0246aa4f7a7eb6a252e384c09235a7903bfe3102b1137f6a45c70712"
     },
     {
       "path": "deploy/cloud/photo_api.py",
@@ -1081,8 +1096,8 @@
     },
     {
       "path": "tools/cloud_bundle.py",
-      "bytes": 5291,
-      "sha256": "e7a0911025c39631965302be61867cf813c41a368d5bc892475826614d96a2dc"
+      "bytes": 5307,
+      "sha256": "82bd368927cafbf8179b7c17c1a9ab3b2cf7c2271b25a7992920a664e52835d6"
     },
     {
       "path": "tools/cloud_preflight.py",

@@ -16,7 +16,7 @@ TREES = {'edge_hub': {'.py', '.html', '.js', '.css', '.svg'},
          'airi_overlay': {'.py', '.ts', '.js', '.vue', '.css', '.json'},
          'airi_bridge': {'.ts', '.json'},
          'contracts': {'.json'},
-         'deploy/cloud': {'.py', '.md', '.json', '.txt', '.service'}}
+         'deploy/cloud': {'.py', '.md', '.json', '.txt', '.service', '.html', '.js'}}
 ROOT_FILES = ('pyproject.toml', 'package.json', 'pnpm-lock.yaml', 'pnpm-workspace.yaml')
 TOOLS = ('tools/cloud_bundle.py', 'tools/cloud_preflight.py')
 FORBIDDEN = {'.git', '.runtime', '.experiments', '.venv', '.venv-audio', 'node_modules',
