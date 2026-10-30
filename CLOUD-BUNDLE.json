@@ -6,8 +6,8 @@
   "contains_credentials": false,
   "requires": [
     "Linux host",
-    "pinned AIRI source/build and Node dependencies",
-    "SenseVoice model and tokens",
+    "reviewed isolated AIRI cloud asset manifest",
+    "approved free Cloudflare Whisper configuration",
     "explicit data cutover with usage counters",
     "private service credentials",
     "authenticated HTTPS ingress",
@@ -145,9 +145,34 @@
       "sha256": "e618234f46655b2162bdeae93e9659dabec411ba7ec0d3aeb29153c0ecba28fe"
     },
     {
+      "path": "airi_overlay/cloud-app.vue",
+      "bytes": 921,
+      "sha256": "8c358ac2dd90c81603f0b40b5d5f0fe72aeccfa2bd4a995441f6cec20c89e3b0"
+    },
+    {
+      "path": "airi_overlay/cloud-frame.js",
+      "bytes": 3244,
+      "sha256": "90acb2a8a130906a1b35c05d44116dad520a1437cd067a6fc7a8ee001e53e6d2"
+    },
+    {
+      "path": "airi_overlay/cloud-pixi-csp.ts",
+      "bytes": 370,
+      "sha256": "248233d16f04f5fa2c9d5ca365393ba6f881a48532675e395e7ae341c43fd016"
+    },
+    {
+      "path": "airi_overlay/cloud-profile-bootstrap.ts",
+      "bytes": 1145,
+      "sha256": "33c9db48fa21a8b388aebb253f9eb5223a7057b2688ea55ab9c70dabc4c839ac"
+    },
+    {
+      "path": "airi_overlay/cloud-session.js",
+      "bytes": 4599,
+      "sha256": "319c56f4fa7e275e8b95feed4b5250b1f9615e192f34e865ce046e07a817e93d"
+    },
+    {
       "path": "airi_overlay/cloud-transport.js",
-      "bytes": 7907,
-      "sha256": "225fd48c3c853c6253492e9a06948d6ff20bb7e10687cece40360895d2db2ac2"
+      "bytes": 8225,
+      "sha256": "bb97cc56ab609f66363bdb477c5d30de3ee58929d14a32f68eee8642525cbc4a"
     },
     {
       "path": "airi_overlay/embedded-settings.ts",
@@ -200,6 +225,11 @@
       "sha256": "7034166b97c14a88e600a8106dd304dbde0b643e2b0c74886f2dab64efb39589"
     },
     {
+      "path": "airi_overlay/pixi-csp.js",
+      "bytes": 8448,
+      "sha256": "de6dafa7bfbd50866183644173af8d088b04cf1e33cadcdc2f30cf24b39b32c8"
+    },
+    {
       "path": "airi_overlay/resident-api.js",
       "bytes": 5473,
       "sha256": "006d4077674a783622c46d92498387a9d4a682c3f0aa65bfe8abf3a2b8448935"
@@ -227,7 +257,7 @@
     {
       "path": "airi_overlay/resident-service-panel.vue",
       "bytes": 24576,
-      "sha256": "c3cd3c82e91336d86bad1b9f394102e2be3ccd9f729381e618869bcc3e55404f"
+      "sha256": "91dc855f74bd3eee18a7146f24e817ffc820b531f563685cac52194d5dce72e8"
     },
     {
       "path": "airi_overlay/resident-session.js",
@@ -271,8 +301,18 @@
     },
     {
       "path": "deploy/cloud/README.zh-Hant.md",
-      "bytes": 55419,
-      "sha256": "27fd762b1f30e707a6771d0c194483869019097797a11794dd9e68ccc3876520"
+      "bytes": 57873,
+      "sha256": "e057e505f32981fb6b9102dcb849769ed1bb0a35338c7a82c3b5d0506bdd4221"
+    },
+    {
+      "path": "deploy/cloud/THIRD-PARTY.md",
+      "bytes": 1802,
+      "sha256": "bd073fd16b2b288127a03665547fd3fd60402b44eded3bc375e9e707a1a1acd7"
+    },
+    {
+      "path": "deploy/cloud/admin_assets.py",
+      "bytes": 3618,
+      "sha256": "28d61076d089265005e32afb1a192f9000bca0f63d8f314939d52d1bbbd5d3e9"
     },
     {
       "path": "deploy/cloud/bootstrap.py",
@@ -311,8 +351,8 @@
     },
     {
       "path": "deploy/cloud/frontend_wiring.py",
-      "bytes": 990,
-      "sha256": "1a4c1b23df9b35c9269a06079fd1b5167133222a35580395728e82be36252fe7"
+      "bytes": 3220,
+      "sha256": "e37113c199ecd586bb8fc97fc30ae2d499335c61798599bc0cbbc38cf082d52a"
     },
     {
       "path": "deploy/cloud/google_identity.py",
@@ -321,18 +361,23 @@
     },
     {
       "path": "deploy/cloud/host.py",
-      "bytes": 11170,
-      "sha256": "c4cb76f30b3a529313e2e88a2aa1b33be6116f196d054d3113a1da9b0843ce64"
+      "bytes": 11449,
+      "sha256": "765acd2298578f58b448bee473687e07b1cf27dd4ef2baef69cccc654a50541d"
     },
     {
       "path": "deploy/cloud/http_app.py",
-      "bytes": 17016,
-      "sha256": "781768689182de755d6ebb41544979e82570a6e7f7978ee8af72a96c593242b7"
+      "bytes": 17810,
+      "sha256": "a4caf4e3858533b35505a895df09e1f88ef38b4c26b348cfeb4b16129e77d617"
     },
     {
       "path": "deploy/cloud/libsql_connection.py",
       "bytes": 4806,
       "sha256": "91e09198fc4e04ba031039c862e08d73d6807a3ecd67a602d0856a62b976f191"
+    },
+    {
+      "path": "deploy/cloud/licenses/pixi-6.5.10-MIT.txt",
+      "bytes": 1091,
+      "sha256": "ef9ae15b5a2b39f6e1445fb1e12ade9f000ebb19c173fb1e505879ba215d9c9d"
     },
     {
       "path": "deploy/cloud/login-setup/index.html",
@@ -390,6 +435,11 @@
       "sha256": "25144cf29a01b9a75b470ee638c8cf11282cab1da18ed5cb982a9d9b7abc10d2"
     },
     {
+      "path": "deploy/cloud/staff_api.py",
+      "bytes": 6588,
+      "sha256": "1021fb88618539437ce97f8f570d31eaebe923b1525e399c46c29631bbd461c4"
+    },
+    {
       "path": "deploy/cloud/stage-login/index.html",
       "bytes": 772,
       "sha256": "5119044aae74b8d756ba6e35bad13b91b21e93f3e36f3f8b372aac0c640d6ce9"
@@ -428,6 +478,41 @@
       "path": "deploy/cloud/voice_api.py",
       "bytes": 1904,
       "sha256": "ce55d1776858d633cda2e74c7493cdc75771143a37f19ba84080b0e7da70a0a0"
+    },
+    {
+      "path": "deploy/cloud/web/admin-entry.js",
+      "bytes": 1387,
+      "sha256": "c980776a48aae6614063409cad726f0d1c2f459fa335b84b58393f643970bc8e"
+    },
+    {
+      "path": "deploy/cloud/web/admin-request.js",
+      "bytes": 806,
+      "sha256": "5cf76eadbb988cf3af4e07f8019dba0f1606dd58c2b4aefd19d1acbf5c35bfe3"
+    },
+    {
+      "path": "deploy/cloud/web/frame-entry.js",
+      "bytes": 1053,
+      "sha256": "83db7e166cd0e41d56a98f412cb1288a190e1e2591417069015380aceb125dc8"
+    },
+    {
+      "path": "deploy/cloud/web/index.html",
+      "bytes": 1995,
+      "sha256": "f2119053c3d5c25087f8838c447e5b76bafe79daa5574eaa4d3d868cacda398f"
+    },
+    {
+      "path": "deploy/cloud/web/shell.css",
+      "bytes": 1596,
+      "sha256": "d03bf30f1adb2ef364ef7a10fd89d777f77320f1f89115a250290e56c34fad32"
+    },
+    {
+      "path": "deploy/cloud/web/shell.js",
+      "bytes": 3593,
+      "sha256": "fee38f2080496de2e210d277b6a0f1f88ea044530b34fb0a045181230d47c96d"
+    },
+    {
+      "path": "deploy/cloud/web_assets.py",
+      "bytes": 7528,
+      "sha256": "6ebbfe41689344f3ca7bc50f2e28a3055d30d29cdc14e549140ec2ca732ab0e4"
     },
     {
       "path": "edge_hub/__init__.py",
@@ -1131,8 +1216,13 @@
     },
     {
       "path": "tools/cloud_bundle.py",
-      "bytes": 5307,
-      "sha256": "82bd368927cafbf8179b7c17c1a9ab3b2cf7c2271b25a7992920a664e52835d6"
+      "bytes": 5373,
+      "sha256": "86780ac21b28ae6083f31e49691b03570bff41a6fb4f5864784083ccab11dbb7"
+    },
+    {
+      "path": "tools/cloud_frontend_assets.py",
+      "bytes": 4900,
+      "sha256": "494ee4b7d3de7e868e0ac712fd3947f165524b61cf80d348a94f7b2b5b21795a"
     },
     {
       "path": "tools/cloud_preflight.py",

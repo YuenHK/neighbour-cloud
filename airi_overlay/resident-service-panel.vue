@@ -248,7 +248,7 @@ function speak(text: string) {
   const nativePcm = speechSettings.activeSpeechProvider === 'openai-compatible-audio-speech'
     && /^http:\/\/(?:127\.0\.0\.1|localhost):8765\//.test(String(cfg?.baseUrl || ''))
     && speechSettings.activeSpeechVoiceId === 'zh-HK-HiuMaanNeural'
-  if (speechRuntime.isHost() && (residentApi.cloud || nativePcm)) {
+  if (residentApi.cloud || (speechRuntime.isHost() && nativePcm)) {
     clearAudio()
     speechActive.value = true
     emit('speaking', true)
@@ -330,7 +330,7 @@ async function sendMessage(text = draft.value, voice = true, inputEndedAt?: numb
         const nativePcm = speechSettings.activeSpeechProvider === 'openai-compatible-audio-speech'
           && /^http:\/\/(?:127\.0\.0\.1|localhost):8765\//.test(String(cfg?.baseUrl || ''))
           && speechSettings.activeSpeechVoiceId === 'zh-HK-HiuMaanNeural'
-        const pcm = speechRuntime.isHost() && (residentApi.cloud || nativePcm)
+        const pcm = residentApi.cloud || (speechRuntime.isHost() && nativePcm)
         if (pcm) {
           if (!pcmPlayer) {
             clearAudio()

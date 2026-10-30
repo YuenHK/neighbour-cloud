@@ -27,6 +27,7 @@ from deploy.cloud.google_identity import (
 )
 from deploy.cloud.photo_api import PHOTO_PATH, photo_router
 from deploy.cloud.quota_api import QUOTA_PATH, CloudQuotas, quota_router
+from deploy.cloud.staff_api import staff_path, staff_router
 from deploy.cloud.transcription_api import PATH as TRANSCRIPTION_PATH
 from deploy.cloud.transcription_api import (
     CloudTranscriptionBodyLimit,
@@ -34,6 +35,7 @@ from deploy.cloud.transcription_api import (
     transcription_router,
 )
 from deploy.cloud.voice_api import STREAM_PATHS, CloudVoiceBodyLimit, voice_router
+from deploy.cloud.web_assets import CloudWebAssets
 from edge_hub import azure_voice, cloudflare_gemma
 from edge_hub.browser_timing import BrowserTimings, timing_router
 from edge_hub.csv_export import ExportPreparationError, PreparedEventExport
@@ -98,11 +100,12 @@ def validate_origin(origin):
 
 
 class CloudBoundary:
-    def __init__(self, app, services, verifier, origin, *, storage_acceptance=False):
+    def __init__(self, app, services, verifier, origin, *, storage_acceptance=False, web_assets=None):
         host = validate_origin(origin)
         self.app, self.services, self.verifier = app, services, verifier
         self.origin, self.host = origin, host
         self.storage_acceptance = storage_acceptance
+        self.web_assets = web_assets or CloudWebAssets()
 
     async def __call__(self, scope, receive, send):
         if scope['type'] == 'lifespan':
@@ -127,6 +130,13 @@ class CloudBoundary:
             return await reject(403, '請從同一個服務頁面操作。')
         if path == '/health' and method in ('GET', 'HEAD'):
             return await self.app(scope, receive, send)
+        if method in ('GET', 'HEAD'):
+            public = self.web_assets.response(path, storage_acceptance=self.storage_acceptance,
+                                              client_id=self.verifier.client_id)
+            if public is not None:
+                if self.services.closed or not self.app.state.started:
+                    return await reject(503, '服務暫時未能使用。')
+                return await public(scope, receive, send)
         if self.storage_acceptance and method in ('GET', 'HEAD') and path in ('/', '/stage-login.js', '/login-config'):
             if self.services.closed or not self.app.state.started:
                 return await reject(503, '服務暫時未能使用。')
@@ -146,7 +156,7 @@ class CloudBoundary:
                     "img-src 'self' data: https://*.googleusercontent.com; frame-ancestors 'none'; base-uri 'none'"})
             return await response(scope, receive, send)
         if not (path.startswith(('/api/v1/resident/', '/api/v1/service-desk/'))
-                or path == '/api/v1/events.csv' or path in STREAM_PATHS or PHOTO_PATH.fullmatch(path)):
+                or path == '/api/v1/events.csv' or path in STREAM_PATHS or PHOTO_PATH.fullmatch(path) or staff_path(path)):
             return await reject(404, '此雲端入口未提供這項功能。')
         if self.services.closed or not self.app.state.started:
             return await reject(503, '服務暫時未能使用。')
@@ -182,7 +192,7 @@ class CloudServiceBodyLimit(ServiceBodyLimitMiddleware):
 
 
 def create_app(services, verifier, *, origin, model_client=None, voice_client=None, quota_client=None,
-               storage_acceptance=False):
+               storage_acceptance=False, web_assets=None):
     if (not isinstance(services, CloudServices) or services.closed
             or not isinstance(verifier, GoogleIdentityVerifier) or type(storage_acceptance) is not bool):
         raise ValueError('explicit_open_cloud_services_and_google_verifier_required')
@@ -243,7 +253,7 @@ def create_app(services, verifier, *, origin, model_client=None, voice_client=No
     @app.middleware('http')
     async def audit(request: Request, call_next):
         private = (private_staff_path(request.url.path, request.method)
-                   or request.url.path in ('/api/v1/events.csv', QUOTA_PATH))
+                   or request.url.path in ('/api/v1/events.csv', QUOTA_PATH) or staff_path(request.url.path))
         identity = None
         if private:
             try:
@@ -306,6 +316,7 @@ def create_app(services, verifier, *, origin, model_client=None, voice_client=No
     app.include_router(voice_router(lambda text: azure_voice.pcm_chunks(
         text, client=app.state.resident_voice_client)))
     app.include_router(photo_router(services, require_staff))
+    app.include_router(staff_router(services, require_staff))
     app.state.quotas = CloudQuotas(lambda: app.state.quota_client)
     app.include_router(quota_router(require_staff, app.state.quotas))
 
@@ -319,4 +330,4 @@ def create_app(services, verifier, *, origin, model_client=None, voice_client=No
         return StreamingResponse(prepared, media_type='text/csv',
             headers={'Content-Disposition': 'attachment; filename="events.csv"'}, background=BackgroundTask(prepared.close))
 
-    return CloudBoundary(app, services, verifier, origin, storage_acceptance=storage_acceptance)
+    return CloudBoundary(app, services, verifier, origin, storage_acceptance=storage_acceptance, web_assets=web_assets)

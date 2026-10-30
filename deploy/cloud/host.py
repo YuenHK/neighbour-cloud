@@ -138,6 +138,11 @@ class CloudHost:
                                        scratch_root=config.scratch_root, timeout=60)
         try:
             options = {'storage_acceptance': True} if self.storage_acceptance else {}
+            assets_root = Path(__file__).resolve().parents[2] / 'cloud_frontend'
+            if (assets_root / 'CLOUD-ASSETS.json').is_file():
+                from deploy.cloud.web_assets import CloudWebAssets
+
+                options['web_assets'] = CloudWebAssets(assets_root)
             return create_app(self._services, verifier, origin=config.origin, **options)
         except BaseException:
             self._close()

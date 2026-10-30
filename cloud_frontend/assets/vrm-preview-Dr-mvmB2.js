@@ -1,0 +1,1 @@
+import{t as e}from"./vrm-preview-Bidy64I5.js";export{e as loadVrmModelPreview};

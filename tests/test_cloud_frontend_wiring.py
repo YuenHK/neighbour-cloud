@@ -1,6 +1,6 @@
 import pytest
 
-from deploy.cloud.frontend_wiring import resident_page
+from deploy.cloud.frontend_wiring import cloud_main, resident_page
 
 
 @pytest.mark.parametrize('newline', ['\n', '\r\n'])
@@ -20,3 +20,16 @@ def test_cloud_branch_preserves_native_audio_and_original_line_endings(newline):
 def test_changed_or_ambiguous_vendor_source_requires_review():
     with pytest.raises(ValueError):
         resident_page('different upstream entry')
+
+
+def test_cloud_main_has_one_resident_route_and_no_large_font_preloads():
+    source = """const routeRecords = setupLayouts(routes as RouteRecordRaw[])
+    history: createWebHistory()
+    import '@proj-airi/font-cjkfonts-allseto/index.css'
+    import '@proj-airi/font-xiaolai/index.css'
+    """
+    result = cloud_main(source)
+    assert "route.path === '/'" in result and "createWebHistory('/cloud/resident')" in result
+    assert 'import ' not in result and cloud_main(result) == result
+    with pytest.raises(ValueError):
+        cloud_main('upstream changed')

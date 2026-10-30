@@ -1,0 +1,2 @@
+import{A as e,Mt as t,S as n,T as r,Y as i,k as a}from"./vue.runtime.esm-bundler-8DFEXDJo.js";import{n as o}from"./vue-router-CwW4PFgx.js";var s={style:{paddingBottom:`env(safe-area-inset-bottom, 0px)`,paddingTop:`env(safe-area-inset-top, 0px)`,paddingRight:`env(safe-area-inset-right, 0px)`,paddingLeft:`env(safe-area-inset-left, 0px)`},"h-full":``},c={class:`px-3 py-2 md:px-5 md:py-5`,flex:`~ col`,"h-full":``},l=e({__name:`home`,setup(e){return(e,l)=>(i(),r(`div`,s,[n(`div`,c,[a(t(o))])]))}});export{l as default};
+//# sourceMappingURL=home-hi-IVgQr.js.map

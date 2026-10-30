@@ -1,0 +1,2 @@
+let e=0;const t=new Float32Array(512);var n=class extends AudioWorkletProcessor{process(n,r,i){let a=n[0][0];if(!a)return!0;if(a.length>512)this.port.postMessage({buffer:a});else{let n=512-e;a.length>=n?(t.set(a.subarray(0,n),e),this.port.postMessage({buffer:t}),t.fill(0),t.set(a.subarray(n),0),e=a.length-n):(t.set(a,e),e+=a.length)}return!0}};registerProcessor(`vad-audio-worklet-processor`,n);
+//# sourceMappingURL=process.worklet-BdJ6RAS0.js.map

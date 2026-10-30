@@ -1,6 +1,8 @@
 // Opt-in cloud transport candidate. Importing it starts no login or request.
 // The server alone verifies Google signatures, subjects and permissions.
 const photoPath = /^\/api\/v1\/patrol\/events\/[\w-]{1,120}\/photo$/
+const staffEventPath = /^\/api\/v1\/events\/[\w-]{1,120}$/
+const followupPath = /^\/api\/v1\/patrol\/events\/[a-f0-9]{32}\/followup$/
 const allowedHeaders = new Set(['content-type', 'accept', 'x-resident-session', 'x-resident-turn'])
 const allowedOptions = new Set(['method', 'body', 'headers', 'signal', 'cache', 'credentials', 'redirect', 'mode', 'referrerPolicy'])
 const abortError = () => new DOMException('cloud_request_cancelled', 'AbortError')
@@ -99,6 +101,8 @@ export function createCloudTransport({ origin, tokenProvider, fetcher = (...args
       const url = new URL(path, origin)
       const supported = url.pathname.startsWith('/api/v1/resident/') || url.pathname.startsWith('/api/v1/service-desk/')
         || url.pathname === '/api/v1/events.csv' || photoPath.test(url.pathname)
+        || ['/api/v1/events', '/api/v1/event-stats', '/api/v1/patrol/followups'].includes(url.pathname)
+        || staffEventPath.test(url.pathname) || followupPath.test(url.pathname)
         || ['/v1/audio/resident-stream', '/_audio/v1/audio/resident-stream'].includes(url.pathname)
       if (url.origin !== origin || url.username || url.password || url.hash || !supported) {
         throw new Error('cloud_request_invalid')

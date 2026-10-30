@@ -1,5 +1,17 @@
 # 鄰伴獨立雲端部署準備
 
+## 2026-10-30 Google → 居民／管理介面候選
+
+新增同源 Google 登入外殼，身份只留記憶體；後端核對後才載入居民或職員畫面，登出／更換畫面清除舊請求。storage acceptance 仍不載入居民及管理 iframe，兩頁直接訪問為423，不能啟用咪高峰或寫正式資料。首次 Google 真登入已在上一版核對，不需重設帳戶。
+
+雲端 AIRI 使用獨立 App／profile，移除原生 WebSocket bridge、PWA、模型預載、未使用的 DuckDB 初始化及大型字型；保留原數字人渲染、PCM 嘴型、居民三分鐘交接與已批准的 Whisper 分支。原 vendor 逐檔 SHA 還原，正式 dist／本機服務沒改。隔離 frontend9 的 lint／typecheck／build 全部 exit0。以 SHA manifest 選出約64MB程式資產，未直接上傳原390MB dist；沒有本機 profile、source maps、service worker、Notebook模型或居民照片。公開示例模型及素材聲明見 THIRD-PARTY.md。
+
+實際隔離 Chromium 檢查發現並修正原生語音 host 門檻、Pixi CSP 相容、內嵌 WASM／ZIP blob 圖像讀取及多餘 CDN 字型宣告。沒有放開 JavaScript unsafe-eval、變更 Windows 執行政策或借用用戶的 Chrome profile。隔離瀏覽器已驗：stage 不建立媒體畫面、真正角色模型尺寸與畫布、三輪完整文字上下文、三次曉曼格式零值PCM替身、職員更新個案／屋苑資料分頁與登出；所有網絡攔截，零正式資料寫入／實際開咪播音／EP。供應商和 Google 身份都是替身，不能當新雲端真 AI／真聲音驗收。測試腳本 tests/isolated-cloud-ui.browser.cjs。
+
+管理台沿用個案、關懷、相片、屋苑資料及額度元件，以 Google 同源傳輸取代本機 operator key；移除原生 EP 背景、自訂供應商、Notebook資源及本機 iframe。職員事件／三相跟進有明確身份、版本衝突及相片核對；修正進度更新後相片保存狀態漏同步的候選缺陷。未知 commit 回覆保留 durable outbox，讀回鏡像後才完成；不重設完成日期或90日期限。隔離測試不是正式遠端資料驗收。
+
+**尚待：**真雲端完整前台／語音測試、正式一致快照與單寫入者切換、原quota／暫停／冷卻／短號／MB842／原刪除帳本及回條、備份與90日復原、Notebook-off／外網手機驗收。這次不會因程式已部署便解開驗收閘門，也不要求用戶再貼 key。
+
 ## 2026-10-30 雲端 Whisper 已獲用戶批准，候選接線完成
 
 用戶明確同意雲端版用現有 Cloudflare 免費 Whisper Turbo 辨識；錄音會交 Cloudflare，與 Gemma 共用免費額度，本機 SenseVoice／Gemma／曉曼不變。新增嚴格同源身份保護的 transcription 接口、完整最多45秒WAV驗證、先預留現有8,000-Neuron共用守護、短期同段去重／兩工作上限／逾時不重送。正式使用仍需明確 whisper Free／user_approved 設定及原有模型 key；staging 模式照舊拒絕 POST，不會為驗證而啟用供應商。

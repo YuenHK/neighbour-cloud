@@ -16,9 +16,9 @@ TREES = {'edge_hub': {'.py', '.html', '.js', '.css', '.svg'},
          'airi_overlay': {'.py', '.ts', '.js', '.vue', '.css', '.json'},
          'airi_bridge': {'.ts', '.json'},
          'contracts': {'.json'},
-         'deploy/cloud': {'.py', '.md', '.json', '.txt', '.service', '.html', '.js'}}
+         'deploy/cloud': {'.py', '.md', '.json', '.txt', '.service', '.html', '.js', '.css', '.svg'}}
 ROOT_FILES = ('pyproject.toml', 'package.json', 'pnpm-lock.yaml', 'pnpm-workspace.yaml')
-TOOLS = ('tools/cloud_bundle.py', 'tools/cloud_preflight.py')
+TOOLS = ('tools/cloud_bundle.py', 'tools/cloud_preflight.py', 'tools/cloud_frontend_assets.py')
 FORBIDDEN = {'.git', '.runtime', '.experiments', '.venv', '.venv-audio', 'node_modules',
              '__pycache__', '.env', 'data', 'output'}
 PRIVATE_SUFFIXES = {'.dpapi', '.sqlite3', '.sqlite', '.db', '.wav', '.mp3', '.log', '.pem', '.key'}
@@ -72,8 +72,8 @@ def build(root, output):
         contents.append((relative.as_posix(), data))
     manifest = {'format': 'neighbour-cloud-preparation-v1', 'kind': 'source-only',
                 'deployed': False, 'contains_resident_data': False, 'contains_credentials': False,
-                'requires': ['Linux host', 'pinned AIRI source/build and Node dependencies',
-                             'SenseVoice model and tokens', 'explicit data cutover with usage counters',
+                'requires': ['Linux host', 'reviewed isolated AIRI cloud asset manifest',
+                             'approved free Cloudflare Whisper configuration', 'explicit data cutover with usage counters',
                              'private service credentials', 'authenticated HTTPS ingress',
                              'off-Notebook end-to-end acceptance'], 'files': []}
     # Exclusive creation: never overwrite an earlier export or backup.

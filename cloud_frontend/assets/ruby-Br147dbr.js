@@ -1,0 +1,1 @@
+import{t as e}from"./ruby-C__Q2chg.js";export{e as default};
