@@ -65,11 +65,11 @@ def local_overview(*, now=None):
 
     rows = []
     for identity, platform, service, meter, configured, names, allocation, purpose, reset_label in (
-        ('cloudflare-gemma', 'Cloudflare Workers Free', '居民 Gemma 對話',
+        ('cloudflare-gemma', 'Cloudflare Workers Free', 'Gemma 對話及 Whisper 語音輸入',
          'cloudflare_gemma_neuron_reservations', bool(cloudflare_gemma.configuration()),
          ('cloudflare-gemma-quota-stop.json', 'cloudflare-gemma-cooldown.json'),
          '方案列示每日 10,000 Neurons；官方剩餘未回傳。',
-         '理解居民需要、自然聊天及延續本輪上下文；不轉用其他模型。',
+         '理解居民需要、自然聊天、延續本輪上下文，以及辨識廣東話錄音；兩項服務共用此每日額度，不轉用其他模型。',
          '方案按 UTC 每日重設；下方時間屬系統保守守護，並非官方餘額查詢結果。'),
         ('azure-voice', 'Microsoft Azure Speech · Free F0', '廣東話語音（曉曼）',
          'azure_tts_characters', azure_voice.configured(), ('azure-voice-control.json',),

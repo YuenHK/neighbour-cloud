@@ -16,6 +16,21 @@ def quoted(name):
     return '"' + name.replace('"', '""') + '"'
 
 
+def page_limit(source, table, columns, *, maximum=512):
+    """Bound the SQL response itself, before the driver's materialisation.
+
+    A fetchmany() on an unbounded remote SELECT is too late: the entire HTTP
+    result may already contain tens of MB of photos. MAX lengths are computed
+    by the SQL server and return only scalar metadata; CAST counts UTF-8 bytes.
+    """
+    estimates = source.execute('SELECT ' + ','.join(
+        f'COALESCE(MAX(LENGTH(CAST({quoted(column)} AS BLOB))),0)' for column in columns)
+        + f' FROM {quoted(table)}').fetchone()
+    if any(type(value) is not int or value < 0 for value in estimates):
+        raise ValueError('unsupported_snapshot_value_size')
+    return max(1, min(maximum, (512 * 1024) // (64 + sum(value + 16 for value in estimates))))
+
+
 def snapshot(source, destination, *, timeout=20, max_bytes=128 * 1024 * 1024,
              clock=time.monotonic):
     if (not 0 < timeout <= 120 or not 0 < max_bytes <= 512 * 1024 * 1024
@@ -81,10 +96,11 @@ def snapshot(source, destination, *, timeout=20, max_bytes=128 * 1024 * 1024,
                     names = ','.join(quoted(column) for column in columns)
                     ordering = quoted(hidden)
                 offset = 0
+                limit = page_limit(source, name, columns)
                 while True:
                     check()
                     cursor = source.execute(f'SELECT {names} FROM {quoted(name)} ORDER BY {ordering} LIMIT ? OFFSET ?',
-                                            (128, offset))
+                                            (limit, offset))
                     try:
                         rows = cursor.fetchall()
                     finally:

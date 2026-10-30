@@ -19,7 +19,9 @@ def cut(source, start, end):
 
 
 class CloudAdminAssets:
-    def __init__(self, static=STATIC):
+    def __init__(self, static=STATIC, *, governance=False):
+        if type(governance) is not bool:
+            raise ValueError('explicit_cloud_governance_assets_mode_required')
         static = Path(static)
         html = (static / 'admin.html').read_text(encoding='utf-8')
         inline = re.findall(r'<script>([\s\S]*?)</script>', html)
@@ -42,7 +44,7 @@ class CloudAdminAssets:
             '/cloud/admin/runtime.js': (runtime.encode(), 'text/javascript'),
             '/assets/service-shell.css': ((static / 'service-shell.css').read_bytes(), 'text/css'),
             '/assets/service/service-mark.svg': ((static / 'service-mark.svg').read_bytes(), 'image/svg+xml')}
-        for name in SCRIPTS:
+        for name in SCRIPTS + (('governance.js',) if governance else ()):
             script = (static / name).read_text(encoding='utf-8')
             if name == 'estate-management.js':
                 start = '  let resourcesReading = false'
@@ -54,6 +56,9 @@ class CloudAdminAssets:
                 script = script.replace(', avatar: []', '')
             if name == 'api-quota.js':
                 script = script.replace('本機', '系統守護')
+            if name == 'governance.js':
+                script = script.replace('已檢查資料庫及隔離復原；不包含相片原檔、金鑰、模型或機體控制設定，亦未取代正式資料。',
+                    '包括已保存的巡查相片；金鑰、模型及機體控制設定分開保留。復原前須再核對現行清除紀錄及用量，不會自動替換正式資料。')
             self.responses['/cloud/admin/' + name] = (
                 ("import { cloudFetch as fetch } from '/cloud/admin-request.js'\n" + script).encode(), 'text/javascript')
 

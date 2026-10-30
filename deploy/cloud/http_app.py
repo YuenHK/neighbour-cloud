@@ -25,6 +25,7 @@ from deploy.cloud.google_identity import (
     IdentityUnavailable,
     InvalidIdentity,
 )
+from deploy.cloud.maintenance import CloudMaintenance
 from deploy.cloud.photo_api import PHOTO_PATH, photo_router
 from deploy.cloud.quota_api import QUOTA_PATH, CloudQuotas, quota_router
 from deploy.cloud.staff_api import staff_path, staff_router
@@ -100,12 +101,13 @@ def validate_origin(origin):
 
 
 class CloudBoundary:
-    def __init__(self, app, services, verifier, origin, *, storage_acceptance=False, web_assets=None):
+    def __init__(self, app, services, verifier, origin, *, storage_acceptance=False, web_assets=None, maintenance=None):
         host = validate_origin(origin)
         self.app, self.services, self.verifier = app, services, verifier
         self.origin, self.host = origin, host
         self.storage_acceptance = storage_acceptance
-        self.web_assets = web_assets or CloudWebAssets()
+        self.web_assets = web_assets or CloudWebAssets(governance=maintenance is not None)
+        self.maintenance = maintenance
 
     async def __call__(self, scope, receive, send):
         if scope['type'] == 'lifespan':
@@ -156,7 +158,8 @@ class CloudBoundary:
                     "img-src 'self' data: https://*.googleusercontent.com; frame-ancestors 'none'; base-uri 'none'"})
             return await response(scope, receive, send)
         if not (path.startswith(('/api/v1/resident/', '/api/v1/service-desk/'))
-                or path == '/api/v1/events.csv' or path in STREAM_PATHS or PHOTO_PATH.fullmatch(path) or staff_path(path)):
+                or path == '/api/v1/events.csv' or path in STREAM_PATHS or PHOTO_PATH.fullmatch(path) or staff_path(path)
+                or (self.maintenance is not None and path in ('/api/v1/governance/retention', '/api/v1/governance/audit'))):
             return await reject(404, '此雲端入口未提供這項功能。')
         if self.services.closed or not self.app.state.started:
             return await reject(503, '服務暫時未能使用。')
@@ -174,8 +177,22 @@ class CloudBoundary:
         try:
             if self.storage_acceptance and method not in ('GET', 'HEAD'):
                 return await reject(423, '正式資料尚未切換；目前只供核對登入及資料，未開放居民操作。')
-            with self.services.scope():
-                await self.app(scope, receive, send)
+            if self.maintenance is not None:
+                if path == '/api/v1/governance/retention' and method == 'GET':
+                    if principal.role != 'staff':
+                        return await reject(403, '需要已核准的職員身份。')
+                    # Only cached operational state: no SQL/audit writes while
+                    # a coordinated maintenance snapshot owns the writer gate.
+                    return await JSONResponse(self.maintenance.public_status(), headers={
+                        'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff'})(scope, receive, send)
+                if not await self.maintenance.gate.enter():
+                    return await reject(503, '系統正在整理服務資料，請稍候再傳送；你的輸入可以保留。')
+            try:
+                with self.services.scope():
+                    await self.app(scope, receive, send)
+            finally:
+                if self.maintenance is not None:
+                    await self.maintenance.gate.leave()
         finally:
             _principal.reset(identity)
 
@@ -192,10 +209,15 @@ class CloudServiceBodyLimit(ServiceBodyLimitMiddleware):
 
 
 def create_app(services, verifier, *, origin, model_client=None, voice_client=None, quota_client=None,
-               storage_acceptance=False, web_assets=None):
+               storage_acceptance=False, web_assets=None, maintenance=None, release_probe=None):
     if (not isinstance(services, CloudServices) or services.closed
             or not isinstance(verifier, GoogleIdentityVerifier) or type(storage_acceptance) is not bool):
         raise ValueError('explicit_open_cloud_services_and_google_verifier_required')
+    if maintenance is not None and (not isinstance(maintenance, CloudMaintenance)
+            or maintenance.services is not services or storage_acceptance):
+        raise ValueError('explicit_matching_formal_cloud_maintenance_required')
+    if release_probe is not None and (maintenance is None or not callable(release_probe)):
+        raise ValueError('formal_maintenance_required_for_release_acceptance')
 
     @asynccontextmanager
     async def lifespan(app):
@@ -219,6 +241,34 @@ def create_app(services, verifier, *, origin, model_client=None, voice_client=No
             app.state.resident_voice_client = voice
             app.state.quota_client = quota
             cleanup.push_async_callback(app.state.resident_transcription.close)
+            if maintenance is not None:
+                maintenance.scheduled = True
+
+                def pending_work():
+                    return [item['task'] for item in app.state.resident_transcription.entries.values()
+                            if not item['task'].done()] + list(services.residents.search_pending.values())
+
+                async def run_maintenance():
+                    while not maintenance.gate.stopping:
+                        delay = 3600
+                        try:
+                            await maintenance.cycle(pending_work, after=release_probe)
+                        except (OSError, ValueError, RuntimeError, sqlite3.Error):
+                            delay = 60  # Read/reconcile durable state; never reset a pending backup.
+                        await asyncio.sleep(delay)
+
+                maintenance_task = asyncio.create_task(run_maintenance())
+
+                async def stop_maintenance():
+                    maintenance.gate.stopping = True
+                    maintenance_task.cancel()
+                    try:
+                        await maintenance_task
+                    except asyncio.CancelledError:
+                        pass
+                    maintenance.scheduled = False
+
+                cleanup.push_async_callback(stop_maintenance)
             app.state.started = True
             try:
                 yield
@@ -253,7 +303,7 @@ def create_app(services, verifier, *, origin, model_client=None, voice_client=No
     @app.middleware('http')
     async def audit(request: Request, call_next):
         private = (private_staff_path(request.url.path, request.method)
-                   or request.url.path in ('/api/v1/events.csv', QUOTA_PATH) or staff_path(request.url.path))
+                   or request.url.path in ('/api/v1/events.csv', QUOTA_PATH, '/api/v1/governance/audit') or staff_path(request.url.path))
         identity = None
         if private:
             try:
@@ -282,7 +332,9 @@ def create_app(services, verifier, *, origin, model_client=None, voice_client=No
 
     @app.get('/health')
     def health():
-        return JSONResponse({'status': 'candidate', 'public_ready': False, 'site_hardware': False},
+        ready = (maintenance is not None and maintenance.state['last_success'] is True
+                 and not maintenance.gate.blocked and not maintenance.gate.stopping)
+        return JSONResponse({'status': 'ready' if ready else 'candidate', 'public_ready': ready, 'site_hardware': False},
                             status_code=503 if services.closed or not app.state.started else 200)
 
     @app.get('/api/v1/resident/session')
@@ -290,7 +342,10 @@ def create_app(services, verifier, *, origin, model_client=None, voice_client=No
         principal = current_principal()
         if principal is None:
             raise HTTPException(401)
-        return {'authenticated': True, 'role': principal.role, 'storage_acceptance': storage_acceptance}
+        result = {'authenticated': True, 'role': principal.role, 'storage_acceptance': storage_acceptance}
+        if maintenance is not None:
+            result['governance_supported'] = True
+        return result
 
     async def strict_completion(payload, *, prompt, context='', client=None, model=GEMMA_MODEL):
         if model != GEMMA_MODEL:
@@ -320,6 +375,14 @@ def create_app(services, verifier, *, origin, model_client=None, voice_client=No
     app.state.quotas = CloudQuotas(lambda: app.state.quota_client)
     app.include_router(quota_router(require_staff, app.state.quotas))
 
+    if maintenance is not None:
+        @app.get('/api/v1/governance/audit')
+        def cloud_audit(limit: int = 50):
+            require_staff()
+            if type(limit) is not int or not 1 <= limit <= 100:
+                raise HTTPException(422, '請選擇有效紀錄數目。')
+            return {'items': services.journal.recent(limit)}
+
     @app.get('/api/v1/events.csv')
     def csv_export():
         require_staff()
@@ -330,4 +393,5 @@ def create_app(services, verifier, *, origin, model_client=None, voice_client=No
         return StreamingResponse(prepared, media_type='text/csv',
             headers={'Content-Disposition': 'attachment; filename="events.csv"'}, background=BackgroundTask(prepared.close))
 
-    return CloudBoundary(app, services, verifier, origin, storage_acceptance=storage_acceptance, web_assets=web_assets)
+    return CloudBoundary(app, services, verifier, origin, storage_acceptance=storage_acceptance,
+                         web_assets=web_assets, maintenance=maintenance)

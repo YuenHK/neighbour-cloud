@@ -34,10 +34,10 @@ SUFFIX_TYPES = {'.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'te
 
 
 class CloudWebAssets:
-    def __init__(self, resident_root=None):
+    def __init__(self, resident_root=None, *, governance=False):
         self.files = {}
         self.resident = None
-        self.admin = CloudAdminAssets()
+        self.admin = CloudAdminAssets(governance=governance)
         if resident_root is None:
             return
         root = Path(resident_root)

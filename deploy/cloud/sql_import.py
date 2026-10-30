@@ -12,7 +12,7 @@ import struct
 import time
 from contextlib import suppress
 
-from deploy.cloud.sql_snapshot import quoted
+from deploy.cloud.sql_snapshot import page_limit, quoted
 
 
 class ImportUncertain(RuntimeError):
@@ -84,25 +84,27 @@ def fingerprint(db, *, check=lambda: None, max_bytes=128 * 1024 * 1024):
     for name, columns, order in tables:
         check()
         digest.update(encoded(name))
-        cursor = db.execute('SELECT ' + ','.join(quoted(item) for item in columns)
-                            + f' FROM {quoted(name)} ORDER BY {order}')
-        try:
-            while True:
-                check()
-                rows = cursor.fetchmany(512)
-                if not rows:
-                    break
-                for row in rows:
-                    digest.update(b'r')
-                    for value in row:
-                        data = encoded(value)
-                        size += len(data)
-                        if size > max_bytes:
-                            raise ValueError('import_capacity')
-                        digest.update(data)
-                count += len(rows)
-        finally:
-            cursor.close()
+        limit, offset = page_limit(db, name, columns), 0
+        while True:
+            check()
+            cursor = db.execute('SELECT ' + ','.join(quoted(item) for item in columns)
+                                + f' FROM {quoted(name)} ORDER BY {order} LIMIT ? OFFSET ?', (limit, offset))
+            try:
+                rows = cursor.fetchall()
+            finally:
+                cursor.close()
+            if not rows:
+                break
+            for row in rows:
+                digest.update(b'r')
+                for value in row:
+                    data = encoded(value)
+                    size += len(data)
+                    if size > max_bytes:
+                        raise ValueError('import_capacity')
+                    digest.update(data)
+            count += len(rows)
+            offset += len(rows)
     return {'sha256': digest.hexdigest(), 'rows': count, 'tables': len(tables), 'content_bytes': size}
 
 

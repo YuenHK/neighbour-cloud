@@ -40,7 +40,7 @@ class BackupStore:
             raise BackupError('dedicated_backup_database_and_key_required')
         self.db, self.key = db, signing_key
         tables = {row[0] for row in db.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'")}
-        if tables != TABLES:
+        if tables not in (TABLES, TABLES | {'cloud_release_probes'}):
             if tables or initialize is not True:
                 raise BackupError('backup_database_requires_exact_initialization')
             with db:

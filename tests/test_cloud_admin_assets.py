@@ -56,3 +56,12 @@ def test_stage_cannot_load_staff_ui_and_production_staff_cannot_capture_mic():
     assert response.status_code == 200
     assert response.headers['permissions-policy'] == 'microphone=(), camera=(), autoplay=(self)'
     assert "frame-ancestors 'self'" in response.headers['content-security-policy']
+
+
+def test_formal_governance_assets_describe_cloud_photos_and_current_ledger_restore():
+    assets = CloudAdminAssets(governance=True)
+    content = assets.get('/cloud/admin/governance.js')[0].decode()
+    assert '包括已保存的巡查相片' in content
+    assert '不包含相片原檔' not in content
+    assert 'import { cloudFetch as fetch }' in content
+    assert '復原前須再核對現行清除紀錄及用量' in content

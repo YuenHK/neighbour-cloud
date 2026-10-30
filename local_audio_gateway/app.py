@@ -25,6 +25,7 @@ from starlette.concurrency import run_in_threadpool
 
 from edge_hub import azure_voice, gemini_voice, mimo_voice, siliconflow
 from edge_hub.cloud_credentials import siliconflow_enabled
+from edge_hub.cloud_primary import assert_native_writes_allowed
 from edge_hub.observability import HttpMetrics, MetricsMiddleware
 from edge_hub.phase_latency import phase_latency
 from local_audio_gateway.model_paths import sensevoice_root
@@ -34,6 +35,7 @@ from local_audio_gateway.singleflight import SynthesisFlights
 from local_audio_gateway.stt_availability import SttAvailability
 from local_audio_gateway.voice_style import spoken_cantonese, voice_profile
 
+assert_native_writes_allowed(Path(__file__).resolve().parents[1])
 _azure_flights = SynthesisFlights(parallel=2)
 app = FastAPI(title="智衛尖兵本地廣東話語音服務")
 

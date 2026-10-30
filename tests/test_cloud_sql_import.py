@@ -117,3 +117,30 @@ def test_readonly_header_metadata_avoids_redundant_setters_but_never_loses_nonze
     result = import_database(source, ReadonlyHeader())
     assert result['committed'] and fingerprint(source) == fingerprint(db) and attempted == []
     db.close()
+
+
+def test_large_photo_fingerprint_bounds_the_remote_sql_result_before_fetch():
+    db = sqlite3.connect(':memory:')
+    db.execute('CREATE TABLE photos(id INTEGER PRIMARY KEY,content BLOB)')
+    db.executemany('INSERT INTO photos VALUES(?,?)', [(i, b'PUBLIC-PHOTO-' * 3100) for i in range(80)])
+    db.commit()
+    sizes = []
+
+    class BoundedHTTP:
+        def __getattr__(self, name):
+            return getattr(db, name)
+
+        def execute(self, sql, parameters=()):
+            cursor = db.execute(sql, parameters)
+            if 'ORDER BY' in sql and 'FROM "photos"' in sql:
+                rows = cursor.fetchall()
+                size = sum(len(row[-1]) for row in rows)
+                sizes.append(size)
+                assert size <= 512 * 1024
+                # Return a normal DB cursor after checking the actual response.
+                return db.execute(sql, parameters)
+            return cursor
+
+    assert fingerprint(BoundedHTTP()) == fingerprint(db)
+    assert len(sizes) > 3 and max(sizes) <= 512 * 1024
+    db.close()

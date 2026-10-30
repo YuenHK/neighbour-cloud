@@ -103,6 +103,7 @@ export function createCloudTransport({ origin, tokenProvider, fetcher = (...args
         || url.pathname === '/api/v1/events.csv' || photoPath.test(url.pathname)
         || ['/api/v1/events', '/api/v1/event-stats', '/api/v1/patrol/followups'].includes(url.pathname)
         || staffEventPath.test(url.pathname) || followupPath.test(url.pathname)
+        || ['/api/v1/governance/audit', '/api/v1/governance/retention'].includes(url.pathname)
         || ['/v1/audio/resident-stream', '/_audio/v1/audio/resident-stream'].includes(url.pathname)
       if (url.origin !== origin || url.username || url.password || url.hash || !supported) {
         throw new Error('cloud_request_invalid')

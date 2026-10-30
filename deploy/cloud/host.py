@@ -7,11 +7,12 @@ Native services and their credential defaults are not changed.
 """
 import asyncio
 import base64
+import importlib
 import json
 import os
 import re
 import sqlite3
-from contextlib import suppress
+from contextlib import closing, suppress
 from dataclasses import dataclass
 from pathlib import Path
 from types import MappingProxyType
@@ -107,11 +108,15 @@ def ledger_key():
 
 
 class CloudHost:
-    def __init__(self, config, *, storage_acceptance=False):
+    def __init__(self, config, *, storage_acceptance=False, release=None):
         if type(storage_acceptance) is not bool:
             raise ValueError('explicit_cloud_host_mode_required')
         self.config = config
         self.storage_acceptance = storage_acceptance
+        if release is not None and (storage_acceptance or not isinstance(release, dict)
+                or set(release) != {'config_path', 'backup_url', 'initial_backup_id', 'probe_id'}):
+            raise ValueError('explicit_formal_release_configuration_required')
+        self.release = release
         self.application = None
         self._started_once = False
         self._services = None
@@ -138,11 +143,36 @@ class CloudHost:
                                        scratch_root=config.scratch_root, timeout=60)
         try:
             options = {'storage_acceptance': True} if self.storage_acceptance else {}
+            if self.release is not None:
+                from deploy.cloud.backup_store import BackupStore
+                from deploy.cloud.libsql_connection import Connection
+                from deploy.cloud.maintenance import CloudMaintenance
+                from deploy.cloud.release_probe import ReleaseProbe
+
+                def backup_connect():
+                    driver = importlib.import_module('libsql')
+                    key = credentials.decrypt_reference(credentials.reference('turso-data-token', mode=config.backend))
+                    return Connection(driver.connect(self.release['backup_url'], auth_token=key.decode('ascii'),
+                                                     timeout=15), driver.Error)
+
+                with closing(backup_connect()) as db:
+                    backup = BackupStore(db, ledger_key())
+                    latest = db.execute("SELECT id FROM cloud_backup_sets WHERE status='ready' ORDER BY created_ms DESC LIMIT 1").fetchone()
+                    if latest is None:
+                        raise HostConfigurationError('verified_durable_initial_backup_required')
+                    # Daily rotation may legitimately retire the initial ID;
+                    # verify the latest signed set, never reset a missing store.
+                    backup.manifest(latest[0])
+                options['maintenance'] = CloudMaintenance(self._services, profile, backup_connect,
+                    ledger_key(), scratch_root=config.scratch_root)
+                options['release_probe'] = ReleaseProbe(self._services, backup_connect, self.release['probe_id'])
             assets_root = Path(__file__).resolve().parents[2] / 'cloud_frontend'
+            if self.release is not None and not (assets_root / 'CLOUD-ASSETS.json').is_file():
+                raise HostConfigurationError('verified_cloud_frontend_assets_required')
             if (assets_root / 'CLOUD-ASSETS.json').is_file():
                 from deploy.cloud.web_assets import CloudWebAssets
 
-                options['web_assets'] = CloudWebAssets(assets_root)
+                options['web_assets'] = CloudWebAssets(assets_root, governance=self.release is not None)
             return create_app(self._services, verifier, origin=config.origin, **options)
         except BaseException:
             self._close()
@@ -224,6 +254,28 @@ class CloudHost:
 
 def create_host():
     """Uvicorn --factory entry; validates metadata without opening a DB."""
+    if 'NEIGHBOUR_RELEASE_ENVELOPE' in os.environ:
+        from deploy.cloud.managed_release import provision
+        from deploy.cloud.release_envelope import open_envelope
+
+        resolved = open_envelope(os.environ['NEIGHBOUR_RELEASE_ENVELOPE'],
+            os.environ.get('NEIGHBOUR_SECRET_TURSO_DATA'),
+            service_id=os.environ.get('RENDER_SERVICE_ID'), origin=os.environ.get('RENDER_EXTERNAL_URL'))
+        candidate = {key: value for key, value in os.environ.items()
+                     if key not in ('NEIGHBOUR_STAGE_ENVELOPE', 'NEIGHBOUR_MANAGED_STAGE')}
+        candidate.update(resolved)
+        release = provision(candidate['NEIGHBOUR_MANAGED_RELEASE'], environment=candidate)
+        # Switch only after authenticated decryption and all formal metadata,
+        # provider and completed cutover/restore attestations were accepted.
+        for key in ('NEIGHBOUR_STAGE_ENVELOPE', 'NEIGHBOUR_MANAGED_STAGE'):
+            os.environ.pop(key, None)
+        os.environ.update(resolved)
+        return CloudHost(read_configuration(), release=release)
+    if 'NEIGHBOUR_MANAGED_RELEASE' in os.environ:
+        from deploy.cloud.managed_release import provision
+
+        release = provision(os.environ['NEIGHBOUR_MANAGED_RELEASE'])
+        return CloudHost(read_configuration(), release=release)
     if 'NEIGHBOUR_STAGE_ENVELOPE' in os.environ:
         from deploy.cloud.managed_stage import provision
         from deploy.cloud.stage_envelope import open_envelope

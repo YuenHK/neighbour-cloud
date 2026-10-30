@@ -8,6 +8,17 @@ const flush = () => new Promise(resolve => setImmediate(resolve))
 const deferred = () => { let resolve; const promise = new Promise(done => { resolve = done }); return {promise, resolve} }
 const token = label => ({token: 'header.' + Buffer.from(label).toString('base64url') + '.signature', expiresAtMs: 300000})
 
+test('formal governance reads use the same memory-only Google transport and reject unrelated settings', async () => {
+  const {createCloudTransport} = await transportModule()
+  const urls = []
+  const api = createCloudTransport({origin, now: () => 1000, tokenProvider: () => token('staff'),
+    fetcher: async url => {urls.push(url); return new Response('{}')}})
+  await api.fetch('/api/v1/governance/retention')
+  await api.fetch('/api/v1/governance/audit?limit=20')
+  await assert.rejects(api.fetch('/api/v1/governance/settings'))
+  assert.deepEqual(urls, [origin + '/api/v1/governance/retention', origin + '/api/v1/governance/audit?limit=20'])
+})
+
 test('coalesced auth is reused for allowed same-origin requests without changing caller input', async () => {
   const {createCloudTransport} = await transportModule()
   const waiting = deferred(), requests = []

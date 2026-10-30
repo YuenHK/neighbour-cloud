@@ -35,6 +35,7 @@ from edge_hub.chat_gateway import (
     route_chat,
 )
 from edge_hub.cloud_credentials import siliconflow_enabled
+from edge_hub.cloud_primary import assert_native_writes_allowed
 from edge_hub.csv_export import ExportPreparationError, PreparedEventExport
 from edge_hub.deployment import loaded_identity, read_evidence_object
 from edge_hub.ep_acceptance import EpAcceptance, ep_acceptance_router
@@ -75,6 +76,7 @@ from edge_hub.siliconflow import CHAT_MODEL as SILICONFLOW_CHAT_MODEL
 from edge_hub.system_status import local_system_status
 from edge_hub.vision_runtime import VisionRuntime, configured_vision_enabled
 
+assert_native_writes_allowed(Path(__file__).resolve().parents[1])
 app = FastAPI(title="鄰伴智慧社區平台")
 ep_broker = EpFleetBroker(Path(__file__).resolve().parents[1], registry_path=os.environ.get('ZHIWEI_EP_REGISTRY'))
 ep_acceptance = EpAcceptance(ep_broker)
