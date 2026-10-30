@@ -2,19 +2,33 @@
 
 2026-10-29：用戶要求 Notebook 關機後仍可使用。此目錄是準備及核對工具，**尚未完成雲端部署**，不可把 ngrok Notebook 網址當成已完成。
 
+## 2026-10-30 已核實進度
+
+Turso 官方第一方登入已成功，帳戶 `yuenhk`；不再需要重試 Codex MCP 或找 API Tokens 選單。由官方 CLI v1.0.34 原碼建立的本機工具，加入只限此工具的 Windows CurrentUser DPAPI 保存及正常第一方登入連結；保留 state／TLS，沒有關閉 Codex issuer 檢查。憑證只加密保存在本機，不在程式庫、聊天或日誌。
+
+實際 Platform API 已核對訂閱 `starter` 為 **$0／月、overages=false**；此名稱不是 Render 的付費 Starter。已建立鄰伴專用 `neighbour` 群組、Singapore 的九個 `neighbour-stage-*` 驗收資料庫，**只放公開合成資料**，沒有搬居民資料。管理 token 僅該組織／群組的 read、db:create、db:mint-token、group:mint-token；資料寫入及唯讀 token 分開，不含刪除或計費管理權限。
+
+真實遠端驗收已確認：無憑證 401、提交後關閉／重新連線仍讀到 Unicode 及 BLOB、交易回滾、唯讀 token 拒絕寫入；九類 Store 的完整啟動、短編號、記憶、日誌、合成用量、暫停狀態及已簽署刪除紀錄也已核對，沒有產生本機 SQLite 後備。這是隔離庫驗收，不是正式搬遷或 Notebook-off 驗收。原本機用量、私人資料、MB842、簽名 key 及 EP audit 完整保留。
+
+已修正兩項真實供應商相容問題：Turso 拒絕 `PRAGMA query_only=ON`，新版 profile 改用供應商強制唯讀 token；也拒絕記憶連線的 `PRAGMA secure_delete=ON`，雲端只開已核對的既有表，原本機仍沿用原清除指令。**SQL 刪除不等於雲端磁碟／平台備份的物理抹除**，90 日保存及備份清理仍是正式上線前必須完成的項目。
+
+啟動將表格、欄位、quick_check、foreign_key_check 合併成每庫一輪查詢，仍保留短號、事件 stream／接收序列／完成日期及簽名檢查；雲端 Store 明確使用 `initialize=False`，不重跑本機建表、補號或升級。額外最多四個唯讀驗證執行緒可選，預設一個。Notebook 跨網絡九庫完整啟動實測 45.188 秒；這不是同區 Render 或對話延遲。API host 有 60 秒有界啟動預算，未就緒仍拒絕請求，不把超時當通過，也沒有自動重試或放寬資料完整性條件。
+
+私人來源庫 `YuenHK/neighbour-cloud` 已建立。尚未建立鄰伴 Render service、完整雲端前台／Google 登入／ASR、正式一致資料搬遷、唯一寫入者切換、持久備份及關機後外網驗收；不要直接公開原本機 app，也不要停止仍正常運行的本機服務。最新本機證據位於 `.runtime/cloud-host-20261029/private-deployment-20261030/turso-provisioning/`，不會納入來源包。
+
 ## 選擇及現實限制
 
-Oracle 註冊已由用戶確認失敗，**不再沿此路徑等候或重複註冊**。目前轉向 Render Free 程式託管與 Turso Free 永久資料庫。2026-10-30 用戶已回覆原待辦確認「同意，只用免費方案」：允許以現有 Google／GitHub 登入或建立這兩個免費帳戶，建立鄰伴專用 DB 憑證並只加密保存；不加信用卡、不升級或購買。歷史交接中的 pending 已由本次回覆取代，不要再次要求同一授權。尚未建立資源、部署或上傳私人資料。
+Oracle 註冊已由用戶確認失敗，**不再沿此路徑等候或重複註冊**。目前轉向 Render Free 程式託管與 Turso Free 永久資料庫。2026-10-30 用戶已回覆原待辦確認「同意，只用免費方案」：允許以現有 Google／GitHub 登入或建立這兩個免費帳戶，建立鄰伴專用 DB 憑證並只加密保存；不加信用卡、不升級或購買。歷史交接中的 pending 已由本次回覆取代，不要再次要求同一授權。目前僅建立下述隔離資源，未部署公開平台或上傳私人資料。
 
-本次開到 Render 登入頁後，瀏覽器控制中斷；接續工具明確回報 `Local browser use is disabled in Work settings`。這是工具設定阻擋，**不是用戶未授權**。不自行更改安全／工具權限、不從瀏覽器私有檔案提取登入狀態。其後 Render 官方連接工具已成功接通，用戶確認使用 My Workspace；GitHub 私人來源庫 `YuenHK/neighbour-cloud` 已建立並核對私有狀態、推送及遠端提交。這只是來源庫，尚未建立鄰伴 Render 服務或 Turso DB，也未上傳私人資料。
+本次開到 Render 登入頁後，瀏覽器控制中斷；接續工具明確回報 `Local browser use is disabled in Work settings`。這是工具設定阻擋，**不是用戶未授權**。不自行更改安全／工具權限、不從瀏覽器私有檔案提取登入狀態。其後 Render 官方連接工具已成功接通，用戶確認使用 My Workspace；GitHub 私人來源庫 `YuenHK/neighbour-cloud` 已建立並核對私有狀態、推送及遠端提交。這只是來源庫，尚未建立鄰伴 Render 服務；Turso 隔離 DB 的新進度見本文件開首，未上傳私人資料。
 
 其後用戶已確認「Browser 已啟用，Browse 允許／逐次批准」，但工具端新檢查仍回同一錯誤。不要再要求用戶重複更改同一設定／重批帳戶授權；這是介面確認與工具狀態的落差，確切原因未能確認。可使用已授權的官方連接工具／API，不能藉其他瀏覽器控制方式繞過限制。
 
-Turso 官方 MCP 設定已由用戶在本機加入，但 OAuth 被現版 CLI 的 issuer 安全檢查拒絕。2026-10-30 實際公開 metadata 的 issuer／token endpoint 在 `api.turso.tech`，授權入口在 `app.turso.tech`，未宣告 `authorization_response_iss_parameter_supported`。不要再重複登入、關閉驗證、改寫 metadata 或降級繞過。最新 Turso 官方 API 已支援組織／群組及個別權限限制，應選用該正式途徑；舊文章稱所有 API token 皆跨組織，已不能當作現況。尚未建立或接收這類憑證。
+Turso 官方 MCP 設定已由用戶在本機加入，但 OAuth 被現版 CLI 的 issuer 安全檢查拒絕。2026-10-30 實際公開 metadata 的 issuer／token endpoint 在 `api.turso.tech`，授權入口在 `app.turso.tech`，未宣告 `authorization_response_iss_parameter_supported`。不要再重複登入、關閉驗證、改寫 metadata 或降級繞過。最新 Turso 官方 API 已支援組織／群組及個別權限限制，應選用該正式途徑；舊文章稱所有 API token 皆跨組織，已不能當作現況。這類群組限定憑證其後已透過官方 API 建立並 DPAPI 保存，見開首。
 
 來源：https://docs.turso.tech/api-reference/authentication 、https://docs.turso.tech/api-reference/tokens/create
 
-2026-10-30 重新核對官方 Turso 價格頁：Free 列示 $0／月、100 個 DB、5 GB 儲存、每月讀取 5 億行／寫入 1,000 萬行，毋須信用卡。九個資料角色的數量在列示上限內；這不是實際帳戶方案、可用區域、剩餘額度或資料搬遷驗收。Render Free 閒置後的首次請求約需一分鐘喚醒，不能承諾即開即用或用假流量保持運行。
+2026-10-30 重新核對官方 Turso 價格頁：Free 列示 $0／月、100 個 DB、5 GB 儲存、每月讀取 5 億行／寫入 1,000 萬行，毋須信用卡。九個資料角色的數量在列示上限內；後續已另用實際帳戶 API 核對零元方案、禁超額及 Singapore；價目表本身不證明剩餘額度或搬遷成功。Render Free 閒置後的首次請求約需一分鐘喚醒，不能承諾即開即用或用假流量保持運行。
 
 來源：https://turso.tech/pricing 、https://render.com/docs/free
 
@@ -22,7 +36,7 @@ Turso 官方 MCP 設定已由用戶在本機加入，但 OAuth 被現版 CLI 的
 
 來源：https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm
 
-Render Free 閒置 15 分鐘後休眠，本機 SQLite／照片會在重啟後遺失，免費 Postgres 30 日到期，不能直接搬現有資料庫到該暫存磁碟。Turso 作永久 DB 的方向須先通過交易、錯誤、快照、90 日清理與備份相容測試；照片也要有永久保存方案，不能漏做。libsql 0.1.11 僅裝研究環境，現有正式 Store 未切換；其原生錯誤有 ValueError 而非只用 libsql.Error，適配器必須統一錯誤且不洩漏 SQL／私人值。
+Render Free 閒置 15 分鐘後休眠，本機 SQLite／照片會在重啟後遺失，免費 Postgres 30 日到期，不能直接搬現有資料庫到該暫存磁碟。Turso 作永久 DB 的方向須先通過交易、錯誤、快照、90 日清理與備份相容測試；照片也要有永久保存方案，不能漏做。libsql 0.1.11 僅裝研究環境，隔離遠端驗收已完成但原本機正式 Store 未切換；其原生錯誤有 ValueError 而非只用 libsql.Error，適配器必須統一錯誤且不洩漏 SQL／私人值。
 
 來源：https://render.com/docs/free
 
@@ -62,19 +76,21 @@ Windows 預設 DPAPI 不改。只有明確 `NEIGHBOUR_CREDENTIAL_BACKEND=systemd
 
 雲端設定內 `*-key.dpapi` 僅存 `NEIGHBOUR-SYSTEMD-CREDENTIAL-v1:<名稱>` 的參照，不存真 key。允許 cloudflare-gemma-key、azure-speech-f0-key、tavily-key 三項；真正值由主機的私密 systemd credentials 注入。不能把現有 Windows blob 當 Linux key，不能用普通文字包假稱加密，亦不能由網頁重設這些憑證。尚未匯出或上傳任何正式 key。
 
-Render 候選另支援明確 `NEIGHBOUR_CREDENTIAL_BACKEND=managed-environment`：設定檔只放 `NEIGHBOUR-HOST-SECRET-v1:<名稱>` 參照，從固定的 `NEIGHBOUR_SECRET_*` 執行期變數讀取。不能讓參照任意挑選其他環境變數，亦不接受跨 backend 的參照、空值或控制字元；錯誤不回顯 secret。此程式本身**不會加密環境變數**，實際 host secrets 保護及部署注入方式仍須核對，不能宣稱已加密上雲。額外保留 turso-data-token 及 retention-ledger-key 參照供日後 DB／刪除收據使用，目前沒有真 token 或簽名 key。
+Render 候選另支援明確 `NEIGHBOUR_CREDENTIAL_BACKEND=managed-environment`：設定檔只放 `NEIGHBOUR-HOST-SECRET-v1:<名稱>` 參照，從固定的 `NEIGHBOUR_SECRET_*` 執行期變數讀取。不能讓參照任意挑選其他環境變數，亦不接受跨 backend 的參照、空值或控制字元；錯誤不回顯 secret。此程式本身**不會加密環境變數**，實際 host secrets 保護及部署注入方式仍須核對，不能宣稱已加密上雲。額外保留 turso-data-token、turso-read-token 及 retention-ledger-key 參照供日後 DB／刪除收據使用，實際 staging 資料／唯讀 token 及 staging 專用簽名 key 只 DPAPI 保存；正式 key 沒有匯出或注入主機。
 
 官方設定方式：https://render.com/docs/configure-environment-variables
 
 ## 明確選用的遠端 DB 連線候選
 
-`database_profile.py` 只接受完整、標明已核對 Free 的 libSQL remote-primary 設定；這個標記本身不是官方帳戶查詢或搬遷成功證明。九個角色（個案、事件、屋苑資料、記憶、職員日誌、用量、控制狀態、照片、獨立刪除帳本）必須有不同的核准 Turso endpoint。只允許無內嵌密碼／query／port 的 `libsql://*.turso.io`；不接受任意 URL、重複 JSON 欄位、未列出的資料路徑或已有內容的本機 DB，亦不會在失敗時改用空的暫存 SQLite。
+`database_profile.py` 只接受完整、標明已核對 Free 的 libSQL remote-primary 設定；這個標記本身不是官方帳戶查詢或搬遷成功證明。新版 `neighbour-cloud-storage-v2` 使用 `plan_verification` 記錄官方 API 核對的來源、組織、零元方案、禁超額、UTC 時間及原回條 SHA256；不偽稱 `ui_verified`。每庫必須同時列 `credential=turso-data-token` 及 `read_credential=turso-read-token`。唯讀 URI 只取後者，不執行不相容的 query_only PRAGMA；讀取 key 不存在或失敗便停止，不改用寫入 key。v1 原明確 UI profile 保留原行為以便相容；生產雲端須使用已驗證的 v2。這些設定標記只是部署回條，不是每次呼叫都查官方計費或保證永遠免費。
+
+九個角色（個案、事件、屋苑資料、記憶、職員日誌、用量、控制狀態、照片、獨立刪除帳本）必須有不同的核准 Turso endpoint。只允許無內嵌密碼／query／port 的 `libsql://*.turso.io`；不接受任意 URL、重複 JSON 欄位、未列出的資料路徑或已有內容的本機 DB，亦不會在失敗時改用空的暫存 SQLite。
 
 個案、事件、資料、記憶、日誌及配額類別已有明確 `connection_factory=` 接口；原本未傳這個參數時仍使用原 SQLite。沒有改全域 sqlite3，也沒有在本機自動啟用 cloud profile。未知 EP 控制 DB 不會被映射到雲端。記憶初始化失敗、職員日誌及配額初始化的短連線都有關閉檢查。
 
 `file:...?mode=ro` 只映射到已綁定角色並在獨立連線設定 query_only；它不是任意檔案代理。密鑰／driver 錯誤不回顯敏感值，初始化失敗會關閉已建立的連線。可選 `.[cloud]` 固定 libsql 0.1.11、PyJWT 2.15.1 及 cryptography 50.0.2；沒有安裝到目前正式 venv。後兩項只放在獨立 `.experiments/cloud-auth-20261030/python` 研究環境，以官方 PyPI wheel 安裝並保存來源／摘要回條，沒有改動原本 AI 研究環境。
 
-限制：測試中的 endpoint 全由攔截 driver 導向 pytest 臨時 DB，分別用標準 SQLite 及真正的研究 libsql 本機引擎；**沒有測到遠端 Turso 網絡、付款層、延遲或容量**。目前主程式未選用此 factory；真實雲端啟動仍要接齊下述儲存 scope、CSV 快照 provider、保存／備份、照片路由及跨 DB 檢查，不能因建構子測試成功就公開。部署時還要在實際可用免費區域內盡量將程式與 DB 放同區，量度每輪 SQL 往返；不能假設搬上雲端一定更快。
+歷史離機測試的 endpoint 全由攔截 driver 導向 pytest 臨時 DB，分別用標準 SQLite 及真正的研究 libsql 本機引擎；其後的真實 Turso staging 與耗時證據見開首，仍未驗收正式資料切換或實際 Render 容量。目前主程式未選用此 factory；真實雲端啟動仍要接齊下述儲存 scope、CSV 快照 provider、保存／備份、照片路由及跨 DB 檢查，不能因建構子測試成功就公開。部署時還要在實際可用免費區域內盡量將程式與 DB 放同區，量度每輪 SQL 往返；不能假設搬上雲端一定更快。
 
 ## 用量及控制狀態的明確儲存 scope
 
@@ -96,7 +112,7 @@ Render 候選另支援明確 `NEIGHBOUR_CREDENTIAL_BACKEND=managed-environment`�
 
 ## 獨立啟動組件候選
 
-`bootstrap.open_services(profile, signing_key_loader=...)` 可明確組裝個案、事件、屋苑資料、明確記憶、職員查閱日誌、用量與控制、照片及獨立刪除帳本，並綁定前述 CSV 快照 provider。它不載入本機 `edge_hub.app`，不建立 EP／視覺／本機語音服務，不呼叫模型、網上搜尋或語音供應商，不啟動排程執行緒或任何現場動作；亦沒有可直接公開的 ASGI 入口。只有明確呼叫工廠時才會經所選 profile 存取 DB，單純 import 不連線。簽名 key 由呼叫者的私密載入器提供，不在程式內產生或輸出。
+`bootstrap.open_services(profile, signing_key_loader=...)` 可明確組裝個案、事件、屋苑資料、明確記憶、職員查閱日誌、用量與控制、照片及獨立刪除帳本，並綁定前述 CSV 快照 provider。它不載入本機 `edge_hub.app`，不建立 EP／視覺／本機語音服務，不呼叫模型、網上搜尋或語音供應商，不啟動排程執行緒或任何現場動作；另有上述 API-only ASGI 工廠，仍不能當作可公開的完整網站。只有明確呼叫工廠時才會經所選 profile 存取 DB，單純 import 不連線。簽名 key 由呼叫者的私密載入器提供，不在程式內產生或輸出。
 
 組裝前會逐一唯讀檢查九個角色的既有表格、目前需要的欄位、完整性及外鍵；缺表或舊欄位會停止，不能當新機重新初始化。個案短編號對照、事件串流識別、接收序列及已完成事件的完成日期也要完整，避免原本供本機初次啟動的補建程序重新編號、產生新串流身份或重算 90 日時間。控制旗標不能缺少，刪除帳本須通過現有簽名檢查。這些最低結構及關係檢查**不是完整資料指紋、已簽搬遷收據、外部帳本新鮮度或跨 DB 原子快照的證明**。
 
@@ -114,7 +130,7 @@ Render 候選另支援明確 `NEIGHBOUR_CREDENTIAL_BACKEND=managed-environment`�
 
 目前候選已接居民分流／搜尋規劃、個案／職員進度／短號、固定 Cloudflare Gemma adapter、屋苑知識與明確記憶管理、職員 CSV。原本機 resident guard 保持預設 loopback；雲端只在明確組裝時傳入已核對身份的依賴，不全域改判斷或偽裝成 localhost。Gemma 失敗不轉 Gemini／Ollama；需要本機處理的私人記憶上下文仍回明確暫不可用，不偷偷轉交雲端。也補正「頭先提過／上一句」被當成上網查詢的已重現問題；一般垃圾分類等資料查詢仍可走搜尋，不誤開單。
 
-**尚未有可用的居民／管理網上介面。** 真正 OAuth client／Google sub 核准、登入畫面與 token 更新、AIRI 同源託管及 WebSocket、實際曉曼播放、ASR、quota 工作台、照片／保存及備份整合仍待完成；居民面板的候選接線見下文。現候選不提供 robots／設定／API key 頁或 WebSocket；`/health` 也明確標示 `public_ready=false`，不是關機後外網驗收成功。原 Render／Turso 帳戶授權已取得，但工具連線仍受阻；此 API 未部署或啟動公網。
+**尚未有可用的居民／管理網上介面。** 真正 OAuth client／Google sub 核准、登入畫面與 token 更新、AIRI 同源託管及 WebSocket、實際曉曼播放、ASR、quota 工作台、照片／保存及備份整合仍待完成；居民面板的候選接線見下文。現候選不提供 robots／設定／API key 頁或 WebSocket；`/health` 也明確標示 `public_ready=false`，不是關機後外網驗收成功。原 Render／Turso 帳戶授權已取得，官方 Render 工具及 Turso 第一方 API 已接通；此 API 仍未部署或啟動公網。
 
 照片的職員讀取 API 候選已補上（見下文），但相片遷移、現場上傳、正式清理及管理介面仍未完成；不能把單一讀取接口當作完整巡查服務。
 

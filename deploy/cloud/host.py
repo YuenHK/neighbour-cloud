@@ -132,7 +132,7 @@ class CloudHost:
         profile = DatabaseProfile.from_file(config.database_profile,
             runtime_root=config.runtime_root, settings_root=config.settings_root)
         self._services = open_services(profile, signing_key_loader=ledger_key,
-                                       scratch_root=config.scratch_root)
+                                       scratch_root=config.scratch_root, timeout=60)
         try:
             return create_app(self._services, verifier, origin=config.origin)
         except BaseException:

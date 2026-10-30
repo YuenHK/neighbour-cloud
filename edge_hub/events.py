@@ -82,7 +82,9 @@ class Event(BaseModel):
 
 class EventStore:
     def __init__(self, database: str | Path = ":memory:", *, connection_factory=None,
-                 export_snapshot_factory=None) -> None:
+                 export_snapshot_factory=None, initialize=True) -> None:
+        if type(initialize) is not bool or (not initialize and connection_factory is None):
+            raise ValueError('explicit_existing_event_store_required')
         if export_snapshot_factory is not None and not callable(export_snapshot_factory):
             raise ValueError('explicit_event_export_snapshot_factory_required')
         self._export_snapshot_factory = export_snapshot_factory
@@ -99,7 +101,14 @@ class EventStore:
             self._export_metrics_lock = threading.Lock()
             self._export_metrics = {'active': 0, 'prepared_total': 0, 'rejected_total': 0, 'failed_total': 0}
             self._listeners: list[Callable[[Event], None]] = []
-            self._initialize_schema()
+            if initialize:
+                self._initialize_schema()
+            else:
+                rows = self._connection.execute('SELECT id,stream_id FROM event_stream_metadata').fetchall()
+                if (len(rows) != 1 or rows[0]['id'] != 1 or not isinstance(rows[0]['stream_id'], str)
+                        or not re.fullmatch('[0-9a-f]{32}', rows[0]['stream_id'])):
+                    raise ValueError('existing_event_stream_identity_required')
+                self._stream_id = rows[0]['stream_id']
         except BaseException:
             # Failed construction has no usable owner to call close(). Closing
             # also rolls back uncommitted migration writes and releases locks.

@@ -35,13 +35,16 @@ def validate_image(image, expected):
 
 
 class PhotoStore:
-    def __init__(self, connection, *, max_bytes=512 * 1024 * 1024):
-        if type(max_bytes) is not int or not 0 < max_bytes <= 2 * 1024 * 1024 * 1024:
+    def __init__(self, connection, *, max_bytes=512 * 1024 * 1024, initialize=True):
+        if (type(max_bytes) is not int or not 0 < max_bytes <= 2 * 1024 * 1024 * 1024
+                or type(initialize) is not bool):
             raise ValueError('invalid_cloud_photo_budget')
         self.db, self.max_bytes = connection, max_bytes
         self.lock = threading.RLock()
         if self.db.execute("SELECT 1 FROM sqlite_master WHERE name IN ('cloud_deletion_receipts','cloud_deletion_head')").fetchone():
             raise ValueError('cloud_photos_require_separate_deletion_ledger')
+        if not initialize:
+            return
         with self.transaction():
             self.db.execute('CREATE TABLE IF NOT EXISTS cloud_photos('
                             'key TEXT PRIMARY KEY,event_id TEXT NOT NULL,side TEXT NOT NULL,'

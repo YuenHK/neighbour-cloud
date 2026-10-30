@@ -38,7 +38,9 @@ class KnowledgeEdit(BaseModel):
 
 
 class EstateStore:
-    def __init__(self, database, *, connection_factory=None):
+    def __init__(self, database, *, connection_factory=None, initialize=True):
+        if type(initialize) is not bool or (not initialize and connection_factory is None):
+            raise ValueError('explicit_existing_estate_store_required')
         self.path = Path(database)
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self.lock = threading.Lock()
@@ -49,6 +51,8 @@ class EstateStore:
         self._facts_rows = ()
         self._facts_keywords = ()
         self._facts_index = None
+        if not initialize:
+            return
         with self.db:
             self.db.execute('CREATE TABLE IF NOT EXISTS estate_knowledge ('
                 'id TEXT PRIMARY KEY,title TEXT NOT NULL,keywords TEXT NOT NULL,answer TEXT NOT NULL,'

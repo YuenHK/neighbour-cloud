@@ -15,6 +15,7 @@ VARIABLES = {'cloudflare-gemma-key': 'NEIGHBOUR_SECRET_CLOUDFLARE_GEMMA',
              'azure-speech-f0-key': 'NEIGHBOUR_SECRET_AZURE_SPEECH_F0',
              'tavily-key': 'NEIGHBOUR_SECRET_TAVILY',
              'turso-data-token': 'NEIGHBOUR_SECRET_TURSO_DATA',
+             'turso-read-token': 'NEIGHBOUR_SECRET_TURSO_READ',
              'retention-ledger-key': 'NEIGHBOUR_SECRET_RETENTION_LEDGER'}
 NAMES = frozenset(VARIABLES)
 

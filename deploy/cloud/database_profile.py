@@ -10,6 +10,7 @@ import math
 import re
 import sqlite3
 from contextlib import suppress
+from datetime import UTC, datetime
 from pathlib import Path
 from types import MappingProxyType
 from urllib.parse import parse_qsl, urlsplit
@@ -28,6 +29,36 @@ ROLE_FILES = {
     'photos': ('runtime', 'cloud-photos.sqlite3'),
     'deletion_ledger': ('settings', 'cloud-deletion-ledger.sqlite3'),
 }
+
+
+def verified_format(manifest):
+    """Accept the original explicit UI marker or a separate API provenance.
+
+    Both are operator-provisioned attestations, not live billing enforcement.
+    API verification must not be relabelled as a UI inspection.
+    """
+    common = {'format', 'provider', 'plan', 'mode', 'databases'}
+    if manifest.get('format') == 'neighbour-cloud-storage-v1':
+        return set(manifest) == common | {'ui_verified'} and manifest['ui_verified'] is True
+    if manifest.get('format') != 'neighbour-cloud-storage-v2' or set(manifest) != common | {'plan_verification'}:
+        return False
+    proof = manifest['plan_verification']
+    fields = {'source', 'organization', 'plan_id', 'monthly_price', 'overages', 'checked_utc', 'receipt_sha256'}
+    if (not isinstance(proof, dict) or set(proof) != fields
+            or proof['source'] != 'turso-platform-api'
+            or not isinstance(proof['organization'], str)
+            or not re.fullmatch(r'[a-z0-9][a-z0-9-]{0,63}', proof['organization'])
+            or proof['plan_id'] not in ('starter', 'free') or proof['monthly_price'] != '0'
+            or proof['overages'] is not False
+            or not isinstance(proof['receipt_sha256'], str)
+            or not re.fullmatch(r'[0-9a-f]{64}', proof['receipt_sha256'])
+            or not isinstance(proof['checked_utc'], str) or len(proof['checked_utc']) > 40):
+        return False
+    try:
+        checked = datetime.fromisoformat(proof['checked_utc'])
+        return checked.tzinfo is not None and checked.utcoffset() == UTC.utcoffset(checked)
+    except ValueError:
+        return False
 
 
 def endpoint(value):
@@ -60,14 +91,19 @@ def host_secret():
     return credentials.decrypt_reference(credentials.reference('turso-data-token', mode=mode))
 
 
+def host_read_secret():
+    from edge_hub import cloud_host_credentials as credentials
+
+    mode = credentials.backend()
+    return credentials.decrypt_reference(credentials.reference('turso-read-token', mode=mode))
+
+
 class DatabaseProfile:
     def __init__(self, manifest, *, runtime_root, settings_root, secret_loader=host_secret,
-                 driver_loader=None):
-        fields = {'format', 'provider', 'plan', 'ui_verified', 'mode', 'databases'}
-        if (not isinstance(manifest, dict) or set(manifest) != fields
-                or manifest['format'] != 'neighbour-cloud-storage-v1'
+                 read_secret_loader=host_read_secret, driver_loader=None):
+        if (not isinstance(manifest, dict) or not verified_format(manifest)
                 or manifest['provider'] != 'turso-libsql' or manifest['plan'] != 'Free'
-                or manifest['ui_verified'] is not True or manifest['mode'] != 'remote-primary'
+                or manifest['mode'] != 'remote-primary'
                 or not isinstance(manifest['databases'], dict) or set(manifest['databases']) != set(ROLE_FILES)):
             raise ValueError('explicit_complete_free_cloud_database_profile_required')
         roots = {'runtime': Path(runtime_root), 'settings': Path(settings_root)}
@@ -76,9 +112,12 @@ class DatabaseProfile:
         if roots['runtime'].resolve() == roots['settings'].resolve():
             raise ValueError('distinct_cloud_database_roots_required')
         bindings = {}
+        server_read_only = manifest['format'] == 'neighbour-cloud-storage-v2'
         for role, entry in manifest['databases'].items():
-            if (not isinstance(entry, dict) or set(entry) != {'url', 'credential'}
-                    or entry['credential'] != 'turso-data-token'):
+            fields = {'url', 'credential'} | ({'read_credential'} if server_read_only else set())
+            if (not isinstance(entry, dict) or set(entry) != fields
+                    or entry['credential'] != 'turso-data-token'
+                    or (server_read_only and entry['read_credential'] != 'turso-read-token')):
                 raise ValueError('invalid_cloud_database_binding')
             bindings[role] = endpoint(entry['url'])
         if len(set(bindings.values())) != len(bindings):
@@ -89,6 +128,8 @@ class DatabaseProfile:
         self._paths = {str((roots[location] / filename).resolve()): role
                        for role, (location, filename) in ROLE_FILES.items()}
         self._secret_loader = secret_loader
+        self._read_secret_loader = read_secret_loader
+        self._server_read_only = server_read_only
         self._driver_loader = driver_loader or (lambda: importlib.import_module('libsql'))
 
     @classmethod
@@ -130,7 +171,8 @@ class DatabaseProfile:
         if role is None:
             raise ValueError('unbound_cloud_database_path')
         try:
-            raw_key = self._secret_loader()
+            loader = self._read_secret_loader if read_only and self._server_read_only else self._secret_loader
+            raw_key = loader()
             if (not isinstance(raw_key, bytes) or not 16 <= len(raw_key) <= 4096
                     or not raw_key.isascii() or any(value <= 32 or value == 127 for value in raw_key)):
                 raise ValueError('invalid')
@@ -147,7 +189,10 @@ class DatabaseProfile:
             raw = driver.connect(self._bindings[role], timeout=timeout,
                                  _check_same_thread=check_same_thread, auth_token=key)
             connection = Connection(raw, driver.Error)
-            if read_only:
+            # Real Turso rejects PRAGMA query_only. V2 uses a separately minted
+            # provider-enforced read-only token, never falls back to the writer.
+            # V1 remains supported for previous explicitly provisioned profiles.
+            if read_only and not self._server_read_only:
                 connection.execute('PRAGMA query_only=ON')
             return connection
         except errors:

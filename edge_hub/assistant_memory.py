@@ -45,10 +45,13 @@ class MemoryStore:
 
     SQL deletion is not erasure of existing browser history, backups or SSD cells.
     """
-    def __init__(self, path, *, connection_factory=None):
+    def __init__(self, path, *, connection_factory=None, initialize=True):
+        if type(initialize) is not bool or (not initialize and connection_factory is None):
+            raise ValueError('explicit_existing_memory_store_required')
         self.path = Path(path)
         self.lock = threading.Lock()
         self._connection_factory = connection_factory
+        self._initialize = initialize
 
     @contextmanager
     def connect(self):
@@ -56,10 +59,14 @@ class MemoryStore:
         connect = sqlite3.connect if self._connection_factory is None else self._connection_factory
         db = connect(self.path, timeout=2)
         try:
-            db.execute('PRAGMA secure_delete=ON')
-            db.execute('''CREATE TABLE IF NOT EXISTS memories (
-                id TEXT PRIMARY KEY, text TEXT NOT NULL UNIQUE,
-                revision INTEGER NOT NULL, updated_ms INTEGER NOT NULL)''')
+            if self._initialize:
+                db.execute('PRAGMA secure_delete=ON')
+                db.execute('''CREATE TABLE IF NOT EXISTS memories (
+                    id TEXT PRIMARY KEY, text TEXT NOT NULL UNIQUE,
+                    revision INTEGER NOT NULL, updated_ms INTEGER NOT NULL)''')
+            # Existing remote mode never initializes or claims disk erasure.
+            # Bootstrap verifies its schema; each operation fails normally if
+            # a required table/column later disappears, without repairing it.
             with db:
                 yield db
         finally:

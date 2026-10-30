@@ -271,13 +271,13 @@
     },
     {
       "path": "deploy/cloud/README.zh-Hant.md",
-      "bytes": 43239,
-      "sha256": "edbafb39a61ae21dbf854a8f3b8b1e9ab478c797b7bfbf66fe7baae8b3e6f006"
+      "bytes": 46990,
+      "sha256": "ef3d0b0c6a528c9a7fdba3e60aca505bbfa0d5bb222a052d8276becc26ca9cb8"
     },
     {
       "path": "deploy/cloud/bootstrap.py",
-      "bytes": 10901,
-      "sha256": "2641814b7e59ca4d09083b953c92f7199e8ff4ad7b2c34079008960f711f881a"
+      "bytes": 12639,
+      "sha256": "440f591fd88141aa4b54558fdc203d6428e535c637526c8839bc8a09a664311b"
     },
     {
       "path": "deploy/cloud/closed_backup.py",
@@ -296,8 +296,8 @@
     },
     {
       "path": "deploy/cloud/database_profile.py",
-      "bytes": 7719,
-      "sha256": "1e69e23dc38eb7f616ed44925b092e8cf17de726f91a45087189b1092bf68e62"
+      "bytes": 10172,
+      "sha256": "5611ba93a19680842e74ed14638a05faa249188298cbbf16d3db83b6b6eae227"
     },
     {
       "path": "deploy/cloud/deletion_ledger.py",
@@ -316,8 +316,8 @@
     },
     {
       "path": "deploy/cloud/host.py",
-      "bytes": 8456,
-      "sha256": "43aef6f45db2b2908a312b7cc74291657cc7d6a098bc14f7608a0ebf6194f684"
+      "bytes": 8468,
+      "sha256": "a1b9706c0e20372975a688d38b5c02e34c54a83fd35a0694fa911e2bc26a3139"
     },
     {
       "path": "deploy/cloud/http_app.py",
@@ -336,8 +336,8 @@
     },
     {
       "path": "deploy/cloud/photo_store.py",
-      "bytes": 9174,
-      "sha256": "68b9bf70436f8230fff8ff1107cc5655173822d22d08671b2969b2ca70208966"
+      "bytes": 9287,
+      "sha256": "502a983cfb4fb6c96276088a06db46669a5d6f6cfd3f7cd33f0a2c28f42a6200"
     },
     {
       "path": "deploy/cloud/quota_api.py",
@@ -401,8 +401,8 @@
     },
     {
       "path": "edge_hub/assistant_memory.py",
-      "bytes": 6282,
-      "sha256": "72fc5e686ffadf9efca54a9df90014fb4744621256c51e072b28edaf96663e11"
+      "bytes": 6783,
+      "sha256": "b46af29913d785151ee9eb46886cfd1a01184c832fd78aaa12a72c28a2a417d2"
     },
     {
       "path": "edge_hub/assistant_request.py",
@@ -451,8 +451,8 @@
     },
     {
       "path": "edge_hub/cloud_host_credentials.py",
-      "bytes": 4167,
-      "sha256": "3b3be140730da99516504beab321cf0662fad5a65c941d9dff378e1b1311802a"
+      "bytes": 4231,
+      "sha256": "1143e98f7a59d6d0644c9d3b59fc91c9dc2d530430688602fb4cdd6efa90a5f1"
     },
     {
       "path": "edge_hub/cloudflare_gemma.py",
@@ -521,8 +521,8 @@
     },
     {
       "path": "edge_hub/estate_services.py",
-      "bytes": 23521,
-      "sha256": "cc9703df9f65dbf1873946c6da541b2a631b5d1d6bf62f51657cd44f23bf535a"
+      "bytes": 23752,
+      "sha256": "8acf53e6e2ca0936c589b94aa5e341c4d8da1800a6a4735da71e982c7bca03b4"
     },
     {
       "path": "edge_hub/event_ingest.py",
@@ -541,8 +541,8 @@
     },
     {
       "path": "edge_hub/events.py",
-      "bytes": 17845,
-      "sha256": "60f4ff708b95cadd68ab3b096828fb608dd41b56671ca00125fc59afd110736e"
+      "bytes": 18513,
+      "sha256": "f847382af6fee4136d8f1cd35a00546146797e4ccad4ef9b196763fa61b46df2"
     },
     {
       "path": "edge_hub/evidence.py",
@@ -561,8 +561,8 @@
     },
     {
       "path": "edge_hub/governance.py",
-      "bytes": 6531,
-      "sha256": "b658bbe1daa5922a9666ee09acbf8790a7cdf8120ff1bbd48e5addaac957e81c"
+      "bytes": 6753,
+      "sha256": "17cfc996b6dc83938b524a7ad6ac17dc8867931f48803d7da4acb090b1d89283"
     },
     {
       "path": "edge_hub/knowledge_relevance.py",
@@ -766,8 +766,8 @@
     },
     {
       "path": "edge_hub/service_desk.py",
-      "bytes": 46075,
-      "sha256": "4c5f22701af307816f415f0c02b032b16ace12e45da0985eb16dd1e0b01d4a11"
+      "bytes": 46457,
+      "sha256": "805b1d87b46913ab3fa49ecdd42cf0a5ab867085ebc967c19f5d0aa273d94e50"
     },
     {
       "path": "edge_hub/service_identity.py",

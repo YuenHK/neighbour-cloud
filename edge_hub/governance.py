@@ -25,10 +25,14 @@ def private_staff_path(path, method):
 
 
 class AccessJournal:
-    def __init__(self, database, *, connection_factory=None):
+    def __init__(self, database, *, connection_factory=None, initialize=True):
+        if type(initialize) is not bool or (not initialize and connection_factory is None):
+            raise ValueError('explicit_existing_journal_required')
         self.path = Path(database)
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self._connection_factory = connection_factory
+        if not initialize:
+            return
         with closing(self.connect()) as db, db:
             db.execute('CREATE TABLE IF NOT EXISTS staff_access ('
                 'id INTEGER PRIMARY KEY,at_ms INTEGER NOT NULL,actor TEXT NOT NULL,'

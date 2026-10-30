@@ -159,7 +159,9 @@ def conversation_handoff(history, body, store, *, information_query=False):
 
 
 class ServiceDeskStore:
-    def __init__(self, database, *, connection_factory=None):
+    def __init__(self, database, *, connection_factory=None, initialize=True):
+        if type(initialize) is not bool or (not initialize and connection_factory is None):
+            raise ValueError('explicit_existing_case_store_required')
         if str(database) != ':memory:':
             Path(database).parent.mkdir(parents=True, exist_ok=True)
         connect = sqlite3.connect if connection_factory is None else connection_factory
@@ -167,6 +169,10 @@ class ServiceDeskStore:
         self.db.row_factory = sqlite3.Row
         self.lock = threading.RLock()
         self.patrol_sync = None
+        if not initialize:
+            # Cloud assembly has already verified the imported schema/aliases.
+            # Runtime startup must not run native first-use migrations.
+            return
         with self.db:
             self.db.execute('CREATE TABLE IF NOT EXISTS patrol_case_links ('
                             'event_id TEXT PRIMARY KEY,case_id TEXT UNIQUE NOT NULL,'

@@ -10,6 +10,7 @@ import math
 import re
 import sqlite3
 import time
+from concurrent.futures import ThreadPoolExecutor
 from contextlib import ExitStack, closing, contextmanager
 from types import SimpleNamespace
 
@@ -116,11 +117,13 @@ class CloudServices:
         return False
 
 
-def open_services(profile, *, signing_key_loader, scratch_root=None, timeout=20, clock=None):
+def open_services(profile, *, signing_key_loader, scratch_root=None, timeout=20, clock=None,
+                  validation_workers=1):
     """Assemble existing components only after checks; requires a fenced cutover."""
     if (not isinstance(profile, DatabaseProfile) or not callable(signing_key_loader)
             or type(timeout) not in (int, float) or not math.isfinite(timeout) or not 0 < timeout <= 60
-            or (clock is not None and not callable(clock))):
+            or (clock is not None and not callable(clock))
+            or type(validation_workers) is not int or not 1 <= validation_workers <= 4):
         raise ValueError('explicit_cloud_startup_configuration_required')
     stamp = clock or time.monotonic
     deadline = stamp() + timeout
@@ -143,28 +146,55 @@ def open_services(profile, *, signing_key_loader, scratch_root=None, timeout=20,
 
     paths = {role: (profile.runtime_root if area == 'runtime' else profile.settings_root) / filename
              for role, (area, filename) in ROLE_FILES.items()}
+
+    def verify_role(item):
+        role, path = item
+        # Each independent reader is closed by its own worker, even if a
+        # different role fails. No constructor, migration or writer runs.
+        with closing(profile.connect(path.as_uri() + '?mode=ro', uri=True, timeout=2)) as db:
+            check()
+            # SQLite's table-valued PRAGMAs let the remote primary return the
+            # same schema, column, integrity and FK checks in one round trip.
+            # Keep the result categories separate; empty/malformed integrity
+            # evidence is never success.
+            rows = db.execute("SELECT 'schema',type,name FROM sqlite_master WHERE name NOT LIKE 'sqlite_%' "
+                "UNION ALL SELECT 'column',m.name,p.name FROM sqlite_master m "
+                "JOIN pragma_table_info(m.name) p WHERE m.type='table' AND m.name NOT LIKE 'sqlite_%' "
+                "UNION ALL SELECT 'quick',quick_check,NULL FROM pragma_quick_check "
+                "UNION ALL SELECT 'foreign',\"table\",parent FROM pragma_foreign_key_check").fetchall()
+            if any(row[0] not in ('schema', 'column', 'quick', 'foreign') for row in rows):
+                raise ValueError('cloud_imported_metadata_invalid')
+            schema = [(row[1], row[2]) for row in rows if row[0] == 'schema']
+            if any(row[0] not in ('table', 'index') for row in schema):
+                raise ValueError('cloud_schema_requires_review')
+            tables = {row[1] for row in schema if row[0] == 'table'}
+            if not set(REQUIRED[role]).issubset(tables):
+                raise ValueError('cloud_imported_schema_missing')
+            actual = {}
+            for category, table, column in rows:
+                if category == 'column':
+                    actual.setdefault(table, set()).add(column)
+            for table, columns in REQUIRED[role].items():
+                if not set(columns.split()).issubset(actual.get(table, set())):
+                    raise ValueError('cloud_imported_columns_missing')
+            if ([row[1] for row in rows if row[0] == 'quick'] != ['ok']
+                    or any(row[0] == 'foreign' for row in rows)):
+                raise ValueError('cloud_imported_integrity_failed')
+            verify_identity_rows(db, role)
+            check()
+
     try:
         with ExitStack() as stack:
-            # Check every role read-only BEFORE any store constructor may write.
-            for role, path in paths.items():
-                check()
-                with closing(connect(path.as_uri() + '?mode=ro', uri=True, timeout=2)) as db:
-                    schema = db.execute("SELECT type,name FROM sqlite_master WHERE name NOT LIKE 'sqlite_%'").fetchall()
-                    if any(row[0] not in ('table', 'index') for row in schema):
-                        raise ValueError('cloud_schema_requires_review')
-                    tables = {row[1] for row in schema if row[0] == 'table'}
-                    if not set(REQUIRED[role]).issubset(tables):
-                        raise ValueError('cloud_imported_schema_missing')
-                    for table, columns in REQUIRED[role].items():
+            # All checks finish before constructors. A bounded optional pool
+            # overlaps independent network reads, never writes or migrations.
+            if validation_workers == 1:
+                for item in paths.items():
+                    check()
+                    verify_role(item)
+            else:
+                with ThreadPoolExecutor(max_workers=validation_workers, thread_name_prefix='cloud-preflight') as pool:
+                    for _ in pool.map(verify_role, paths.items()):
                         check()
-                        actual = {row[1] for row in db.execute(f'PRAGMA table_info("{table}")')}
-                        if not set(columns.split()).issubset(actual):
-                            raise ValueError('cloud_imported_columns_missing')
-                    if ([tuple(row) for row in db.execute('PRAGMA quick_check')] != [('ok',)]
-                            or db.execute('PRAGMA foreign_key_check').fetchone() is not None):
-                        raise ValueError('cloud_imported_integrity_failed')
-                    verify_identity_rows(db, role)
-                check()
 
             def owned(role):
                 check()
@@ -176,23 +206,24 @@ def open_services(profile, *, signing_key_loader, scratch_root=None, timeout=20,
             for name in sorted(NAMES):
                 controls.read(name)
             ledger = DeletionLedger(owned('deletion_ledger'), signing_key_loader())
-            photos = PhotoStore(owned('photos'))
+            photos = PhotoStore(owned('photos'), initialize=False)
             storage = RuntimeStorage(SimpleNamespace(settings_root=profile.settings_root, connect=connect), controls)
             with use_storage(storage):
                 CloudAllowance(paths['usage'])  # Runtime mode forbids empty-table creation.
                 check()
-                cases = ServiceDeskStore(paths['cases'], connection_factory=connect)
+                cases = ServiceDeskStore(paths['cases'], connection_factory=connect, initialize=False)
                 stack.callback(cases.close)
                 check()
-                estate = EstateStore(paths['estate'], connection_factory=connect)
+                estate = EstateStore(paths['estate'], connection_factory=connect, initialize=False)
                 stack.callback(estate.close)
                 check()
                 exports = EventExportSnapshot(paths['events'], connection_factory=connect, scratch_root=scratch_root)
-                events = EventStore(paths['events'], connection_factory=connect, export_snapshot_factory=exports)
+                events = EventStore(paths['events'], connection_factory=connect, export_snapshot_factory=exports,
+                                    initialize=False)
                 stack.callback(events.close)
-                memory = MemoryStore(paths['memory'], connection_factory=connect)
+                memory = MemoryStore(paths['memory'], connection_factory=connect, initialize=False)
                 memory.items()  # Exercise the lazy path under the same factory.
-                journal = AccessJournal(paths['journal'], connection_factory=connect)
+                journal = AccessJournal(paths['journal'], connection_factory=connect, initialize=False)
                 journal.recent(1)
                 check()
             owner.cases, owner.estate, owner.events = cases, estate, events
