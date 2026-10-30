@@ -161,8 +161,8 @@
     },
     {
       "path": "airi_overlay/cloud-profile-bootstrap.ts",
-      "bytes": 1145,
-      "sha256": "33c9db48fa21a8b388aebb253f9eb5223a7057b2688ea55ab9c70dabc4c839ac"
+      "bytes": 2468,
+      "sha256": "36136bb1ebdd83c9e406dfb3e8347ced3077b87a2504da000b8c4e6c465bd758"
     },
     {
       "path": "airi_overlay/cloud-session.js",
@@ -246,8 +246,13 @@
     },
     {
       "path": "airi_overlay/resident-pcm.js",
-      "bytes": 6515,
-      "sha256": "6e7e786293eca6f54ad233b2ba2a891e56bc6c631b2f3cc91a45a249a419c9b8"
+      "bytes": 7211,
+      "sha256": "6d9fa1df55846b56d74b4e597b4285dbde5d8b727a0b4025cc836576be31b4f8"
+    },
+    {
+      "path": "airi_overlay/resident-recovery.js",
+      "bytes": 3381,
+      "sha256": "13c0599e0ed51ee73f983c55c7b7c7454d451dfa4121bab5dd360cdefe77215d"
     },
     {
       "path": "airi_overlay/resident-response.js",
@@ -256,8 +261,8 @@
     },
     {
       "path": "airi_overlay/resident-service-panel.vue",
-      "bytes": 24576,
-      "sha256": "91dc855f74bd3eee18a7146f24e817ffc820b531f563685cac52194d5dce72e8"
+      "bytes": 24881,
+      "sha256": "fe4ae4ae229b3ffa67819332c88792fb99870c280fb496b919b9eb4ce6ae1c73"
     },
     {
       "path": "airi_overlay/resident-session.js",
@@ -305,14 +310,19 @@
       "sha256": "2b37538450f93d232401872e2dfe8042f4d878203ccb38732b9267eb9c77cceb"
     },
     {
+      "path": "deploy/cloud/REPAIR-2026-10-31.zh-Hant.md",
+      "bytes": 2084,
+      "sha256": "5856a19af83e49d90ce0fdfe3ed2705f7a40a6f45d417f18cf94eea78673bb59"
+    },
+    {
       "path": "deploy/cloud/THIRD-PARTY.md",
       "bytes": 1802,
       "sha256": "bd073fd16b2b288127a03665547fd3fd60402b44eded3bc375e9e707a1a1acd7"
     },
     {
       "path": "deploy/cloud/admin_assets.py",
-      "bytes": 4206,
-      "sha256": "eff3da1e7fab25f2a11af6ae9f3557c025f46fe2c45b10de5b9ed8a970e04bd2"
+      "bytes": 6078,
+      "sha256": "f704dd01dcd7aa3f87e3f7b709366c04a7ee02adef12ed91e72a69e6453dd0ef"
     },
     {
       "path": "deploy/cloud/backup_store.py",
@@ -356,8 +366,8 @@
     },
     {
       "path": "deploy/cloud/frontend_wiring.py",
-      "bytes": 3220,
-      "sha256": "e37113c199ecd586bb8fc97fc30ae2d499335c61798599bc0cbbc38cf082d52a"
+      "bytes": 4932,
+      "sha256": "ff7bc2de91018e85fa7069c20b3725fa64b6d1d72eccbdd18beef0a6ed33f1d0"
     },
     {
       "path": "deploy/cloud/google_identity.py",
@@ -366,18 +376,18 @@
     },
     {
       "path": "deploy/cloud/host.py",
-      "bytes": 14928,
-      "sha256": "84c1f172749b283cede7ce706b48c5fc48eb4c86886afc9f80376ce254550b83"
+      "bytes": 15468,
+      "sha256": "aee76a7d60d1c289b69b74e039d7c35b8baacca3bc0caee2ea54a0b5f95d2482"
     },
     {
       "path": "deploy/cloud/http_app.py",
-      "bytes": 21526,
-      "sha256": "02c1e78ee1a897d32c75d8dc3532324f3d64e5ef66168b81d029f031604001c9"
+      "bytes": 23840,
+      "sha256": "f9dbbf3fc4e3154e9799d14867e9fa07c8b5332794d25ce7be02561e5a449482"
     },
     {
       "path": "deploy/cloud/libsql_connection.py",
-      "bytes": 4806,
-      "sha256": "91e09198fc4e04ba031039c862e08d73d6807a3ecd67a602d0856a62b976f191"
+      "bytes": 5002,
+      "sha256": "6bc6b451b9665a1945878df93fe04f1d0931fe2a97fd71cd13a9d9fcaeae3617"
     },
     {
       "path": "deploy/cloud/licenses/pixi-6.5.10-MIT.txt",
@@ -435,9 +445,14 @@
       "sha256": "502a983cfb4fb6c96276088a06db46669a5d6f6cfd3f7cd33f0a2c28f42a6200"
     },
     {
+      "path": "deploy/cloud/presentation.py",
+      "bytes": 4036,
+      "sha256": "95dd4ba06cd29a741c5a87c222665c748a1cd247670af46eddc6947e5fa76dfa"
+    },
+    {
       "path": "deploy/cloud/quota_api.py",
-      "bytes": 8975,
-      "sha256": "e8fcd5bcfe5bd991feb1c84c406f358aa6876ff3bddc45c9fef5c953211273c4"
+      "bytes": 8920,
+      "sha256": "61415510261cb0ef93a18afdc0c4df41e8ca08a5acdd11ead19f99106e5f51b6"
     },
     {
       "path": "deploy/cloud/release_envelope.py",
@@ -463,6 +478,11 @@
       "path": "deploy/cloud/runtime_storage.py",
       "bytes": 691,
       "sha256": "f2f16f290593ac2b36431a7ef8af4732dc02d52108ea6eb28055247d3d4cb7a2"
+    },
+    {
+      "path": "deploy/cloud/site_access.py",
+      "bytes": 4755,
+      "sha256": "18ca45e434960610353a4012d3b8491fcaae5f8f6d0c31431be179c105f647c6"
     },
     {
       "path": "deploy/cloud/sql_import.py",
@@ -521,8 +541,8 @@
     },
     {
       "path": "deploy/cloud/web/admin-entry.js",
-      "bytes": 1472,
-      "sha256": "6a1d3801ced0b8a6b945f09b3c0f327e8fe63a848e39f48e976da7f0b697bbff"
+      "bytes": 1488,
+      "sha256": "753845c67cff28f3dfd45970b4997793baf81c6edff3da1dbc8dafe26205ec97"
     },
     {
       "path": "deploy/cloud/web/admin-request.js",
@@ -531,28 +551,43 @@
     },
     {
       "path": "deploy/cloud/web/frame-entry.js",
-      "bytes": 1053,
-      "sha256": "83db7e166cd0e41d56a98f412cb1288a190e1e2591417069015380aceb125dc8"
+      "bytes": 2114,
+      "sha256": "5fafe8a975dce86c65a8c942781f983fdde8b8a51b96a612fe85cd8fe7265e42"
     },
     {
       "path": "deploy/cloud/web/index.html",
-      "bytes": 1995,
-      "sha256": "f2119053c3d5c25087f8838c447e5b76bafe79daa5574eaa4d3d868cacda398f"
+      "bytes": 2412,
+      "sha256": "6bcfc4b0d6ee9510a16976308e99c2332d6cd1b7941bf1b303e4feba3560655c"
+    },
+    {
+      "path": "deploy/cloud/web/presentation.html",
+      "bytes": 1051,
+      "sha256": "6762d462d4c7331acc16073ceeaed3ebf1a23014995d9d45279b52be9eed8936"
+    },
+    {
+      "path": "deploy/cloud/web/presentation.js",
+      "bytes": 2074,
+      "sha256": "193ac49e72a40b87a9099b9aaf8433780abd2f4b9fe2031033b686bd1d9f0899"
+    },
+    {
+      "path": "deploy/cloud/web/quota-compact.js",
+      "bytes": 2546,
+      "sha256": "0a72c562f214a19c60d0cac529fb498aa19e3146dd8adbd002405ecf18990671"
     },
     {
       "path": "deploy/cloud/web/shell.css",
-      "bytes": 1596,
-      "sha256": "d03bf30f1adb2ef364ef7a10fd89d777f77320f1f89115a250290e56c34fad32"
+      "bytes": 2059,
+      "sha256": "e58ff40cf2595bf06c72c96fdada1c077927afd8675fdc0bf83738ad8c0ed4ce"
     },
     {
       "path": "deploy/cloud/web/shell.js",
-      "bytes": 3593,
-      "sha256": "fee38f2080496de2e210d277b6a0f1f88ea044530b34fb0a045181230d47c96d"
+      "bytes": 6747,
+      "sha256": "3c78dcac8b1884347e78e80254a25784d606a91fce3f49c91d20b42b804800e0"
     },
     {
       "path": "deploy/cloud/web_assets.py",
-      "bytes": 7570,
-      "sha256": "d82909465546ee1e850fd6cbe30fa5285424cc238be8e6f7b8c1ddaeb7d6d6e9"
+      "bytes": 7953,
+      "sha256": "dc49cf0fb36ad19f0689690401657c5b591363f4b94bb37283b4177510b992eb"
     },
     {
       "path": "edge_hub/__init__.py",
@@ -701,8 +736,8 @@
     },
     {
       "path": "edge_hub/estate_services.py",
-      "bytes": 23752,
-      "sha256": "8acf53e6e2ca0936c589b94aa5e341c4d8da1800a6a4735da71e982c7bca03b4"
+      "bytes": 24085,
+      "sha256": "4a1723c007020ca4f75d6d1e139901d89ac8346c376edb47cffcc1adaf6c7ef6"
     },
     {
       "path": "edge_hub/event_ingest.py",
@@ -946,8 +981,8 @@
     },
     {
       "path": "edge_hub/service_desk.py",
-      "bytes": 46457,
-      "sha256": "805b1d87b46913ab3fa49ecdd42cf0a5ab867085ebc967c19f5d0aa273d94e50"
+      "bytes": 46617,
+      "sha256": "3e5dab60b6bb942c6da8271656d01b2b36a8319d1d7ac935dac8a769333faa68"
     },
     {
       "path": "edge_hub/service_identity.py",

@@ -31,6 +31,10 @@ class Row:
 
 
 class Connection:
+    # Turso's remote primary rejects this connection-local SQLite PRAGMA.
+    # Callers must observe actual rows instead of treating a fixed version as current.
+    supports_data_version = False
+
     def __init__(self, connection, error_type):
         self._connection = connection
         self._error_type = error_type

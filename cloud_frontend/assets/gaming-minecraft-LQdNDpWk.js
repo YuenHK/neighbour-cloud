@@ -1,0 +1,2 @@
+import{A as e,C as t,Mt as n,Y as r}from"./vue.runtime.esm-bundler-8DFEXDJo.js";import{I as i}from"./components-BizQ1SnU.js";import{t as a}from"./route-block-BUY0QnxP.js";var o=e({__name:`gaming-minecraft`,setup(e){return(e,a)=>(r(),t(n(i)))}});typeof a==`function`&&a(o);var s=o;export{s as default};
+//# sourceMappingURL=gaming-minecraft-LQdNDpWk.js.map

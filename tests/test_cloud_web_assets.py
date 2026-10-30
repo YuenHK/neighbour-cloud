@@ -77,5 +77,7 @@ def test_cloud_copies_have_no_native_background_or_provider_bootstrap():
         assert native not in app
     bootstrap = (root / 'airi_overlay/cloud-profile-bootstrap.ts').read_text(encoding='utf-8')
     assert '__NEIGHBOUR_CLOUD_TRANSPORT__' in bootstrap
-    for native in ('fetch(', '127.0.0.1', 'settings/credentials', 'apiKey', 'api_key'):
+    for native in ('await fetch(', '127.0.0.1', 'settings/credentials', 'apiKey', 'api_key'):
         assert native not in bootstrap
+    assert "transport.fetch('/api/v1/resident/presentation'" in bootstrap
+    assert "wasm.wasmPaths = '/assets/onnx-3.8.1/'" in bootstrap

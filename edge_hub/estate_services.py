@@ -99,15 +99,22 @@ class EstateStore:
 
     def _refresh_facts_unlocked(self):
         # data_version observes other DB connections; total_changes observes
-        # writes on this connection. Never serve an old enabled/edited answer.
-        version = (self.db.execute('PRAGMA data_version').fetchone()[0], self.db.total_changes)
-        if version != self._facts_version:
-            rows = [{**dict(row), 'keywords': json.loads(row['keywords']), 'enabled': bool(row['enabled'])}
-                    for row in self.db.execute('SELECT * FROM estate_knowledge ORDER BY updated_ms DESC,id')]
-            self._facts_rows = tuple(rows)
-            self._facts_keywords = tuple(tuple(normalize_terms(key) for key in row['keywords']) for row in rows)
-            self._facts_index = None
-            self._facts_version = version
+        # writes on this connection. Remote Turso does not support that PRAGMA:
+        # one bounded facts-table read detects external edits, removals and
+        # enable changes without inventing a constant version or hiding errors.
+        version = None
+        if getattr(self.db, 'supports_data_version', True):
+            version = (self.db.execute('PRAGMA data_version').fetchone()[0], self.db.total_changes)
+            if version == self._facts_version:
+                return
+        rows = tuple({**dict(row), 'keywords': json.loads(row['keywords']), 'enabled': bool(row['enabled'])}
+                     for row in self.db.execute('SELECT * FROM estate_knowledge ORDER BY updated_ms DESC,id'))
+        if version is None and rows == self._facts_rows:
+            return
+        self._facts_rows = rows
+        self._facts_keywords = tuple(tuple(normalize_terms(key) for key in row['keywords']) for row in rows)
+        self._facts_index = None
+        self._facts_version = version
 
     def prepare_index(self):
         """Startup-only local work; no query, remote model, quota or resident data."""

@@ -16,7 +16,7 @@ try {
   })
   window.addEventListener('pagehide', () => transport.clearAuth(), { once: true })
   for (const name of ['photo-privacy', 'latest-photo', 'api-quota', 'work-sections', 'workspace-navigation',
-    'runtime', 'service-workbench', 'estate-management']) await import(`/cloud/admin/${name}.js`)
+    'runtime', 'service-workbench', 'estate-management', 'presentation']) await import(`/cloud/admin/${name}.js`)
   if (data.governance_supported === true) await import('/cloud/admin/governance.js')
 }
 catch {

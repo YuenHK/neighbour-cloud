@@ -10,6 +10,7 @@
 </div></details>
 <nav id="navigation" hidden><button id="resident" type="button">居民服務台</button><button id="staff" type="button" hidden>管理工作台</button><button id="signOut" type="button">登出</button></nav>
 </div></header>
-<main id="login"><h1>歡迎使用鄰伴</h1><p>請先用已核准的 Google 帳戶登入。</p><div id="googleButton"></div><p id="status" role="status">正在準備登入…</p></main>
+<main id="login"><h1>歡迎使用鄰伴</h1><p id="loginHint">正在準備居民服務台…</p><div id="googleButton"></div><p id="status" role="status">正在連接…</p></main>
+<main id="staffLogin" hidden><h1>管理工作台</h1><form id="staffLoginForm"><label>管理口令<input id="staffPassword" type="password" autocomplete="current-password" maxlength="128" required></label><p id="staffLoginStatus" role="status"></p><div class="login-actions"><button id="cancelStaffLogin" type="button">返回居民服務台</button><button type="submit">進入管理工作台</button></div></form></main>
 <section id="service" aria-label="服務畫面"></section><script type="module" src="/cloud/shell.js"></script>
 </body></html>

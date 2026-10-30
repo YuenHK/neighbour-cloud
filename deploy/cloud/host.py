@@ -171,8 +171,14 @@ class CloudHost:
                 raise HostConfigurationError('verified_cloud_frontend_assets_required')
             if (assets_root / 'CLOUD-ASSETS.json').is_file():
                 from deploy.cloud.web_assets import CloudWebAssets
-
-                options['web_assets'] = CloudWebAssets(assets_root, governance=self.release is not None)
+                public = self.release is not None and os.environ.get('NEIGHBOUR_PUBLIC_RESIDENT') == '1'
+                if public:
+                    from deploy.cloud.presentation import Presentation
+                    from deploy.cloud.site_access import SiteSessions
+                    options['site_access'] = SiteSessions(os.environ.get('NEIGHBOUR_STAFF_PASSWORD_HASH'))
+                    options['presentation'] = Presentation(self._services.estate)
+                options['web_assets'] = CloudWebAssets(assets_root, governance=self.release is not None,
+                                                       public_resident=public)
             return create_app(self._services, verifier, origin=config.origin, **options)
         except BaseException:
             self._close()

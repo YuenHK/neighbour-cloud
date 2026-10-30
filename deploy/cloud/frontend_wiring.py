@@ -67,3 +67,45 @@ def cloud_scene(source):
     while newline * 3 in source:
         source = source.replace(newline * 3, newline * 2)
     return source
+
+
+def cloud_input_recovery(source):
+    """Cloud-only bounded VAD reinitialization; never replays recorded audio."""
+    newline = '\r\n' if '\r\n' in source else '\n'
+    normal = source.replace('\r\n', '\n')
+    anchor = "import { VoiceTurn } from '../modules/voice-turn'"
+    old = """watch(vadInferenceError, (error) => {
+  if (error)
+    console.error('Voice activity detection failed:', error)
+})"""
+    new = """const inputRecovery = new InputRecovery()
+const inputRecovering = ref(false)
+watch(vadInferenceError, (error) => {
+  if (error)
+    console.error('Voice activity detection failed:', error)
+  if (!error || !cloudResidentInput || !enabled.value)
+    return
+  inputRecovering.value = true
+  void inputRecovery.run('vad', async () => {
+    if (!enabled.value)
+      return
+    disposeVAD()
+    await initVAD()
+    if (!enabled.value) {
+      disposeVAD()
+      return
+    }
+    if (vadInferenceError.value)
+      throw new Error('vad_recovery_incomplete')
+  }).finally(() => { inputRecovering.value = false })
+})
+onUnmounted(() => inputRecovery.close())"""
+    if normal.count(anchor) != 1 or normal.count(old) != 1:
+        raise ValueError('cloud_input_recovery_anchor_requires_review')
+    normal = normal.replace(anchor, "import { InputRecovery } from '../modules/resident-recovery.js'\n" + anchor, 1)
+    normal = normal.replace(old, new, 1)
+    binding = ':voice-unavailable="!!vadInferenceError || !!hearingPipeline.error"'
+    if normal.count(binding) != 1:
+        raise ValueError('cloud_input_recovery_binding_requires_review')
+    normal = normal.replace(binding, ':voice-unavailable="!!vadInferenceError" :voice-recovering="inputRecovering"')
+    return normal.replace('\n', newline)

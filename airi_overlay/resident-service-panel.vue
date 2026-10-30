@@ -16,9 +16,10 @@ import { ResidentPcm, ResidentTiming } from './resident-pcm.js'
 import { createResidentTextFilter, readResidentReply, residentMessageParts, residentPlainText, residentSpeechText } from './resident-response.js'
 import { ResidentSession } from './resident-session.js'
 
-defineProps<{ listening: boolean, voiceUnavailable?: boolean }>()
+defineProps<{ listening: boolean, voiceUnavailable?: boolean, voiceRecovering?: boolean }>()
 const emit = defineEmits<{ microphone: [], endSession: [], speaking: [boolean] }>()
 const cloudResident = Reflect.get(globalThis, '__NEIGHBOUR_CLOUD__') === true
+const presentation = Reflect.get(globalThis, '__NEIGHBOUR_PRESENTATION__') || {}
 const hubOrigin = cloudResident || Reflect.get(globalThis, '__NEIGHBOUR_REMOTE__') === true ? location.origin : 'http://127.0.0.1:8000'
 const residentApi = createResidentApi({
   cloud: cloudResident,
@@ -479,10 +480,10 @@ function checkIdle() {
     </header>
     <div ref="transcript" class="resident-transcript" aria-live="polite" aria-relevant="additions">
       <p v-if="!messages.length" class="resident-greeting">
-        查資料、傾偈、跟進事情，直接同我講就得。
+        {{ presentation.greeting || '查資料、傾偈、跟進事情，直接同我講就得。' }}
       </p>
       <div v-for="(message, index) in messages" :key="index" class="resident-bubble" :class="message.role">
-        <span>{{ message.role === 'user' ? '你' : '服務台' }}</span><p>
+        <span>{{ message.role === 'user' ? '你' : presentation.name || '服務台' }}</span><p>
           <template v-for="(part, partIndex) in residentMessageParts(message.content)" :key="partIndex">
             <a v-if="part.url" :href="part.url" target="_blank" rel="noopener noreferrer">{{ part.text }}</a><template v-else>
               {{ part.text }}
@@ -497,7 +498,10 @@ function checkIdle() {
     <p v-if="followupNotice" class="resident-panel-status" role="status">
       {{ followupNotice }}
     </p>
-    <p v-if="voiceUnavailable" class="resident-panel-status">
+    <p v-if="voiceRecovering" class="resident-panel-status">
+      正在自動恢復語音連接；你可以繼續打字。
+    </p>
+    <p v-else-if="voiceUnavailable" class="resident-panel-status">
       語音暫時未能使用，請先用文字傾談。
     </p>
     <form @submit.prevent="sendMessage()">

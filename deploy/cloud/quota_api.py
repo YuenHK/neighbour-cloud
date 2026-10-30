@@ -153,11 +153,11 @@ def quota_router(authorize, quotas):
             raise HTTPException(400, '用量會自動更新，毋須強制重新查詢。')
         rows = await run_in_threadpool(local_overview)
         rows.extend(search_rows(await quotas.reader.snapshot()))
-        return JSONResponse({'scope': 'cloud_candidate', 'public_ready': False, 'overview': {
+        return JSONResponse({'scope': 'cloud_service', 'overview': {
             'rows': rows, 'active_rows': rows, 'other_rows': [], 'capacity_summary': '',
             'updated_at_ms': int(datetime.now(UTC).timestamp() * 1000),
-            'local_functions': '屋苑資料、個案進度及明確記憶由永久資料庫處理；雲端語音輸入仍待驗證。',
-            'explanation': '官方餘額與系統保守守護分開顯示；未取得數字時不估算百分比。'}},
+            'local_functions': '屋苑資料、個案進度及明確記憶由永久資料庫處理。',
+            'explanation': '未取得官方餘額時，清楚標示系統估計可用量；並非官方計費紀錄。'}},
             headers={'Cache-Control': 'no-store'})
 
     return router

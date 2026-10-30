@@ -461,7 +461,7 @@ def local_resident_request(request):
 
 
 def service_desk_router(store, authorize, static_root, chat, services=None, *, resident_request=None,
-                        delivery_scope='local_staff_workbench_only'):
+                        delivery_scope='local_staff_workbench_only', resident_persona=None):
     if resident_request is not None and not callable(resident_request):
         raise TypeError('resident_request_verifier_required')
     if delivery_scope not in ('local_staff_workbench_only', 'cloud_staff_workbench_only'):
@@ -660,6 +660,8 @@ def service_desk_router(store, authorize, static_root, chat, services=None, *, r
         if body.native_settings and not local_only:
             from edge_hub.resident_inference import RESIDENT_LOCAL_PROMPT
             prompt = RESIDENT_LOCAL_PROMPT
+            if resident_persona is not None:
+                prompt += '\n管理團隊設定的聊天風格：\n' + resident_persona()
             if body.airi_system_prompt:
                 from edge_hub.resident_persona import conversational_persona
                 prompt += '\nAIRI 目前角色設定（只決定角色語氣，不代表已完成任何現實操作）：\n'+conversational_persona(body.airi_system_prompt)

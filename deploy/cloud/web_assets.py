@@ -25,6 +25,7 @@ SHELL = {
     '/cloud/cloud-session.js': (OVERLAY / 'cloud-session.js', 'text/javascript'),
     '/cloud/cloud-frame.js': (OVERLAY / 'cloud-frame.js', 'text/javascript'),
     '/cloud/cloud-transport.js': (OVERLAY / 'cloud-transport.js', 'text/javascript'),
+    '/cloud/resident-recovery.js': (OVERLAY / 'resident-recovery.js', 'text/javascript'),
 }
 SUFFIX_TYPES = {'.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml',
     '.png': 'image/png', '.avif': 'image/avif', '.webp': 'image/webp', '.ico': 'image/x-icon',
@@ -34,7 +35,10 @@ SUFFIX_TYPES = {'.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'te
 
 
 class CloudWebAssets:
-    def __init__(self, resident_root=None, *, governance=False):
+    def __init__(self, resident_root=None, *, governance=False, public_resident=False):
+        if type(public_resident) is not bool:
+            raise ValueError('explicit_public_resident_mode_required')
+        self.public_resident = public_resident
         self.files = {}
         self.resident = None
         self.admin = CloudAdminAssets(governance=governance)
@@ -90,7 +94,8 @@ class CloudWebAssets:
             # An ancestor policy cannot be widened by its resident iframe.
             headers['Permissions-Policy'] = 'microphone=(self), camera=(), autoplay=(self)'
         if path == '/login-config':
-            return JSONResponse({'client_id': client_id}, headers=headers)
+            return JSONResponse({'client_id': client_id,
+                **({'public_resident': True} if self.public_resident and not storage_acceptance else {})}, headers=headers)
         if path == '/cloud/signed-out':
             return HTMLResponse('<p>已登出，請從鄰伴登入頁重新進入。</p>', headers=headers)
         if path in SHELL:

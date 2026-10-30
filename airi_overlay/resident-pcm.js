@@ -1,6 +1,6 @@
 // Resident-only PCM playback. Every reset aborts network and stops scheduled nodes.
 export class ResidentPcm {
-  constructor({ fetcher = (...args) => globalThis.fetch(...args), endpoint = 'http://127.0.0.1:8765/v1/audio/resident-stream', context = /** @type {AudioContext | undefined} */ (undefined), started = () => {}, failed = () => {}, ended = () => {} } = {}) {
+  constructor({ fetcher = (...args) => globalThis.fetch(...args), endpoint = 'http://127.0.0.1:8765/v1/audio/resident-stream', context = /** @type {AudioContext | undefined} */ (undefined), started = () => {}, failed = () => {}, ended = () => {}, wait = /** @type {(ms: number) => Promise<void>} */ (ms => new Promise(resolve => setTimeout(resolve, ms))) } = {}) {
     this.fetcher = fetcher
     this.endpoint = endpoint
     this.context = context
@@ -8,6 +8,7 @@ export class ResidentPcm {
     this.started = started
     this.failed = failed
     this.ended = ended
+    this.wait = wait
     this.sealed = false
     this.sources = new Set()
     this.controller = new AbortController()
@@ -36,7 +37,8 @@ export class ResidentPcm {
     })
   }
 
-  async sentence(text) {
+  /** @param {string} text @param {number} attempt @returns {Promise<void>} */
+  async sentence(text, attempt = 0) {
     if (this.controller.signal.aborted)
       return
     this.context ??= new (globalThis.AudioContext || globalThis.webkitAudioContext)({ sampleRate: 24000 })
@@ -75,6 +77,15 @@ export class ResidentPcm {
           if (!frame.startsWith('data: '))
             throw new Error('invalid_frame')
           const data = JSON.parse(frame.slice(6))
+          // The router emits busy only before acquiring a synthesis slot.
+          // No provider was called and no audio was emitted: a bounded retry is safe.
+          if (data.error === 'busy' && bytes === 0 && attempt < 2) {
+            await reader.cancel().catch(() => {})
+            await this.wait(500 * (attempt + 1))
+            if (this.controller.signal.aborted)
+              return
+            return this.sentence(text, attempt + 1)
+          }
           if (data.error)
             throw new Error('voice_unavailable')
           if (data.done === true) {

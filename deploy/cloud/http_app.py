@@ -27,7 +27,12 @@ from deploy.cloud.google_identity import (
 )
 from deploy.cloud.maintenance import CloudMaintenance
 from deploy.cloud.photo_api import PHOTO_PATH, photo_router
+from deploy.cloud.presentation import PUBLIC_PATH as PRESENTATION_PUBLIC_PATH
+from deploy.cloud.presentation import STAFF_PATH as PRESENTATION_STAFF_PATH
+from deploy.cloud.presentation import Presentation, PresentationEdit
 from deploy.cloud.quota_api import QUOTA_PATH, CloudQuotas, quota_router
+from deploy.cloud.site_access import PATH as ACCESS_PATH
+from deploy.cloud.site_access import AccessInput, SiteSessions
 from deploy.cloud.staff_api import staff_path, staff_router
 from deploy.cloud.transcription_api import PATH as TRANSCRIPTION_PATH
 from deploy.cloud.transcription_api import (
@@ -101,13 +106,14 @@ def validate_origin(origin):
 
 
 class CloudBoundary:
-    def __init__(self, app, services, verifier, origin, *, storage_acceptance=False, web_assets=None, maintenance=None):
+    def __init__(self, app, services, verifier, origin, *, storage_acceptance=False, web_assets=None, maintenance=None, site_access=None):
         host = validate_origin(origin)
         self.app, self.services, self.verifier = app, services, verifier
         self.origin, self.host = origin, host
         self.storage_acceptance = storage_acceptance
         self.web_assets = web_assets or CloudWebAssets(governance=maintenance is not None)
         self.maintenance = maintenance
+        self.site_access = site_access
 
     async def __call__(self, scope, receive, send):
         if scope['type'] == 'lifespan':
@@ -163,12 +169,16 @@ class CloudBoundary:
             return await reject(404, '此雲端入口未提供這項功能。')
         if self.services.closed or not self.app.state.started:
             return await reject(503, '服務暫時未能使用。')
+        if self.site_access is not None and path == ACCESS_PATH and method == 'POST':
+            return await self.app(scope, receive, send)
         credentials = [v for k, v in headers if k.lower() == b'authorization']
         if (len(credentials) != 1 or not credentials[0].startswith(b'Bearer ')
                 or not 8 <= len(credentials[0]) <= 16391):
             return await reject(401, '請先使用已核准的 Google 帳戶登入。')
         try:
-            principal = await self.verifier.verify(credentials[0][7:].decode('ascii'))
+            token = credentials[0][7:].decode('ascii')
+            principal = await (self.site_access.verify(token)
+                if self.site_access is not None and self.site_access.owns(token) else self.verifier.verify(token))
         except (InvalidIdentity, UnicodeError):
             return await reject(401, '登入憑證未獲接納，請重新登入。')
         except IdentityUnavailable:
@@ -186,7 +196,9 @@ class CloudBoundary:
                     return await JSONResponse(self.maintenance.public_status(), headers={
                         'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff'})(scope, receive, send)
                 if not await self.maintenance.gate.enter():
-                    return await reject(503, '系統正在整理服務資料，請稍候再傳送；你的輸入可以保留。')
+                    return await JSONResponse({'detail': '系統正在整理服務資料，正在為你重新連接。',
+                        'code': 'service_maintenance', 'operation_outcome': 'not_attempted'}, status_code=503,
+                        headers={'Cache-Control': 'no-store'})(scope, receive, send)
             try:
                 with self.services.scope():
                     await self.app(scope, receive, send)
@@ -209,10 +221,14 @@ class CloudServiceBodyLimit(ServiceBodyLimitMiddleware):
 
 
 def create_app(services, verifier, *, origin, model_client=None, voice_client=None, quota_client=None,
-               storage_acceptance=False, web_assets=None, maintenance=None, release_probe=None):
+               storage_acceptance=False, web_assets=None, maintenance=None, release_probe=None, site_access=None, presentation=None):
     if (not isinstance(services, CloudServices) or services.closed
             or not isinstance(verifier, GoogleIdentityVerifier) or type(storage_acceptance) is not bool):
         raise ValueError('explicit_open_cloud_services_and_google_verifier_required')
+    if site_access is not None and (not isinstance(site_access, SiteSessions) or storage_acceptance):
+        raise ValueError('explicit_formal_site_access_required')
+    if presentation is not None and not isinstance(presentation, Presentation):
+        raise ValueError('explicit_cloud_presentation_required')
     if maintenance is not None and (not isinstance(maintenance, CloudMaintenance)
             or maintenance.services is not services or storage_acceptance):
         raise ValueError('explicit_matching_formal_cloud_maintenance_required')
@@ -226,6 +242,8 @@ def create_app(services, verifier, *, origin, model_client=None, voice_client=No
             limits=httpx.Limits(max_connections=4, max_keepalive_connections=4, keepalive_expiry=60))
         async with AsyncExitStack() as cleanup:
             cleanup.callback(services.close)
+            if site_access is not None:
+                cleanup.callback(site_access.close)
             cleanup.push_async_callback(verifier.aclose)
             if owned:
                 cleanup.push_async_callback(client.aclose)
@@ -283,6 +301,26 @@ def create_app(services, verifier, *, origin, model_client=None, voice_client=No
     app.state.started = False
     app.state.browser_timings = BrowserTimings()
     app.state.resident_transcription = Transcription(lambda: app.state.resident_cloud_client)
+    if presentation is not None:
+        @app.get(PRESENTATION_PUBLIC_PATH)
+        def resident_presentation():
+            return presentation.public()
+
+        @app.get(PRESENTATION_STAFF_PATH)
+        def staff_presentation():
+            require_staff()
+            return presentation.current(refresh=True)
+
+        @app.put(PRESENTATION_STAFF_PATH)
+        def save_presentation(payload: PresentationEdit):
+            require_staff()
+            return presentation.save(payload)
+    if site_access is not None:
+        @app.post(ACCESS_PATH)
+        async def site_login(payload: AccessInput):
+            result = await run_in_threadpool(site_access.resident if payload.password is None
+                else lambda: site_access.login(payload.password))
+            return JSONResponse(result, headers={'Cache-Control': 'no-store'})
     app.include_router(timing_router(resident_request=verified_resident_request, timings=app.state.browser_timings))
     app.add_middleware(CloudServiceBodyLimit)
     app.add_middleware(CloudVoiceBodyLimit)
@@ -303,7 +341,7 @@ def create_app(services, verifier, *, origin, model_client=None, voice_client=No
     @app.middleware('http')
     async def audit(request: Request, call_next):
         private = (private_staff_path(request.url.path, request.method)
-                   or request.url.path in ('/api/v1/events.csv', QUOTA_PATH, '/api/v1/governance/audit') or staff_path(request.url.path))
+                   or request.url.path in ('/api/v1/events.csv', QUOTA_PATH, '/api/v1/governance/audit', PRESENTATION_STAFF_PATH) or staff_path(request.url.path))
         identity = None
         if private:
             try:
@@ -363,7 +401,8 @@ def create_app(services, verifier, *, origin, model_client=None, voice_client=No
 
     static = Path(__file__).resolve().parents[2] / 'edge_hub/static'
     desk = service_desk_router(services.cases, require_staff, static, chat, services.residents,
-                               resident_request=verified_resident_request, delivery_scope='cloud_staff_workbench_only')
+                               resident_request=verified_resident_request, delivery_scope='cloud_staff_workbench_only',
+                               resident_persona=presentation.prompt if presentation is not None else None)
     include_selected(app, desk, ('/api/v1/resident/', '/api/v1/service-desk/'))
     app.include_router(resident_adapter_router(resident_request=verified_resident_request, completion=strict_completion))
     include_selected(app, estate_router(services.estate, require_staff),
@@ -394,4 +433,4 @@ def create_app(services, verifier, *, origin, model_client=None, voice_client=No
             headers={'Content-Disposition': 'attachment; filename="events.csv"'}, background=BackgroundTask(prepared.close))
 
     return CloudBoundary(app, services, verifier, origin, storage_acceptance=storage_acceptance,
-                         web_assets=web_assets, maintenance=maintenance)
+                         web_assets=web_assets, maintenance=maintenance, site_access=site_access)
