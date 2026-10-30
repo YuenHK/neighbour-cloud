@@ -144,3 +144,49 @@ def test_large_photo_fingerprint_bounds_the_remote_sql_result_before_fetch():
     assert fingerprint(BoundedHTTP()) == fingerprint(db)
     assert len(sizes) > 3 and max(sizes) <= 512 * 1024
     db.close()
+
+
+def test_turso_index_table_parenthesis_formatting_preserves_the_exact_sql_tokens():
+    source = sqlite3.connect(':memory:')
+    target = sqlite3.connect(':memory:')
+    source.execute('CREATE TABLE records(id INTEGER PRIMARY KEY,value TEXT)')
+    source.execute('CREATE UNIQUE INDEX example_index ON records(value)')
+    source.execute('INSERT INTO records VALUES(1,?)', ('PUBLIC-SYNTHETIC',))
+    source.commit()
+
+    class RemoteIndexFormatting:
+        def __getattr__(self, name):
+            return getattr(target, name)
+
+        def execute(self, sql, parameters=()):
+            if sql == 'CREATE UNIQUE INDEX example_index ON records(value)':
+                sql = 'CREATE UNIQUE INDEX example_index ON records (value)'
+            return target.execute(sql, parameters)
+
+    result = import_database(source, RemoteIndexFormatting())
+    assert result['committed'] and fingerprint(source) == fingerprint(target)
+    # The original snapshot and both stored definitions are retained unchanged.
+    assert source.execute("SELECT sql FROM sqlite_master WHERE name='example_index'").fetchone()[0].endswith('records(value)')
+    assert target.execute("SELECT sql FROM sqlite_master WHERE name='example_index'").fetchone()[0].endswith('records (value)')
+    target.execute('DROP INDEX example_index')
+    target.execute('CREATE UNIQUE INDEX example_index ON records (value COLLATE NOCASE)')
+    assert fingerprint(source) != fingerprint(target)
+    source.close()
+    target.close()
+
+
+def test_index_format_equivalence_never_changes_literals_predicates_columns_or_uniqueness():
+    original = sqlite3.connect(':memory:')
+    original.execute('CREATE TABLE records(id INTEGER PRIMARY KEY,value TEXT)')
+    original.execute("CREATE UNIQUE INDEX idx ON records(value) WHERE value!='a (b'")
+    variants = ["CREATE INDEX idx ON records(value) WHERE value!='a (b'",
+                "CREATE UNIQUE INDEX idx ON records(id) WHERE value!='a (b'",
+                "CREATE UNIQUE INDEX idx ON records(value) WHERE value!='a(b'",
+                "CREATE UNIQUE INDEX idx ON records(value) WHERE value='a (b'"]
+    for sql in variants:
+        other = sqlite3.connect(':memory:')
+        other.execute('CREATE TABLE records(id INTEGER PRIMARY KEY,value TEXT)')
+        other.execute(sql)
+        assert fingerprint(original) != fingerprint(other)
+        other.close()
+    original.close()

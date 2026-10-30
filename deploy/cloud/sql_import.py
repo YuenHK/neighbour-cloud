@@ -7,6 +7,7 @@ never call import_database again against a populated destination.
 """
 import hashlib
 import math
+import re
 import sqlite3
 import struct
 import time
@@ -74,6 +75,14 @@ def fingerprint(db, *, check=lambda: None, max_bytes=128 * 1024 * 1024):
     objects, tables, metadata, sequence = layout(db)
     digest, count, size = hashlib.sha256(), 0, 0
     for kind, name, sql in objects:
+        if kind == 'index':
+            # Real Turso inserts a formatting space at this unquoted table /
+            # parenthesis boundary. Ignore ONLY that token-preserving change.
+            # All other DDL bytes, quoted literals, predicates, collation,
+            # columns and uniqueness remain part of the exact digest. layout()
+            # and the original snapshot still retain the original SQL text.
+            sql = re.sub(r'\A(CREATE (?:UNIQUE )?INDEX [A-Za-z_][A-Za-z0-9_]* ON '
+                         r'[A-Za-z_][A-Za-z0-9_]*)[ \t\r\n]*\(', r'\1(', sql, count=1)
         for item in (kind, name, sql):
             digest.update(encoded(item))
     for key, value in sorted(metadata.items()):

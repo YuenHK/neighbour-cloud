@@ -301,8 +301,8 @@
     },
     {
       "path": "deploy/cloud/README.zh-Hant.md",
-      "bytes": 63422,
-      "sha256": "e3ca4bf480355558c53a1d88162816dc7e7424914119e426220b97147e7ad26b"
+      "bytes": 63940,
+      "sha256": "bafb8e4ce4bb74edb45438f4d4de79d5989960d065a40181bf6a1026d40bdaa8"
     },
     {
       "path": "deploy/cloud/THIRD-PARTY.md",
@@ -466,8 +466,8 @@
     },
     {
       "path": "deploy/cloud/sql_import.py",
-      "bytes": 9599,
-      "sha256": "fed3a474fe2d1348c5ba1f58f7047205558552817e508d0f2df0e306529586cf"
+      "bytes": 10192,
+      "sha256": "a11c25c52803d9668af3c2ce8ff439ecdd7dda61db50d58902475c6d14bfa8ee"
     },
     {
       "path": "deploy/cloud/sql_snapshot.py",
