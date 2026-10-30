@@ -107,8 +107,11 @@ def ledger_key():
 
 
 class CloudHost:
-    def __init__(self, config):
+    def __init__(self, config, *, storage_acceptance=False):
+        if type(storage_acceptance) is not bool:
+            raise ValueError('explicit_cloud_host_mode_required')
         self.config = config
+        self.storage_acceptance = storage_acceptance
         self.application = None
         self._started_once = False
         self._services = None
@@ -134,13 +137,37 @@ class CloudHost:
         self._services = open_services(profile, signing_key_loader=ledger_key,
                                        scratch_root=config.scratch_root, timeout=60)
         try:
-            return create_app(self._services, verifier, origin=config.origin)
+            options = {'storage_acceptance': True} if self.storage_acceptance else {}
+            return create_app(self._services, verifier, origin=config.origin, **options)
         except BaseException:
             self._close()
             raise
 
     async def __call__(self, scope, receive, send):
         if scope['type'] != 'lifespan':
+            if self.storage_acceptance and scope['type'] == 'http' and scope.get('path') == '/health/ingress':
+                # Bootstrap diagnostics reveal only the peer network class,
+                # never auth/forwarded addresses, configuration or DB contents.
+                import ipaddress
+
+                headers = scope.get('headers', [])
+                if (scope.get('method') not in ('GET', 'HEAD')
+                        or [v for k, v in headers if k.lower() == b'host']
+                        != [validate_origin(self.config.origin).encode('ascii')]):
+                    return await JSONResponse({'detail': 'not_found'}, status_code=404)(scope, receive, send)
+                network = None
+                try:
+                    peer = ipaddress.ip_address(scope['client'][0])
+                    for candidate in ('127.0.0.0/8', '10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16', '::1/128'):
+                        if peer in ipaddress.ip_network(candidate):
+                            network = candidate
+                            break
+                except (ValueError, KeyError, TypeError):
+                    pass
+                return await JSONResponse({'storage_acceptance': True, 'public_ready': False,
+                    'peer_network': network, 'request_scheme': scope.get('scheme'),
+                    'single_forwarded_https': [v for k, v in headers if k.lower() == b'x-forwarded-proto'] == [b'https']},
+                    headers={'Cache-Control': 'no-store'})(scope, receive, send)
             if self.application is not None:
                 return await self.application(scope, receive, send)
             if scope['type'] == 'http':
@@ -192,4 +219,20 @@ class CloudHost:
 
 def create_host():
     """Uvicorn --factory entry; validates metadata without opening a DB."""
+    if 'NEIGHBOUR_STAGE_ENVELOPE' in os.environ:
+        from deploy.cloud.managed_stage import provision
+        from deploy.cloud.stage_envelope import open_envelope
+
+        resolved = open_envelope(os.environ['NEIGHBOUR_STAGE_ENVELOPE'],
+            os.environ.get('NEIGHBOUR_SECRET_TURSO_DATA'),
+            service_id=os.environ.get('RENDER_SERVICE_ID'), origin=os.environ.get('RENDER_EXTERNAL_URL'))
+        candidate = {**os.environ, **resolved}
+        provision(candidate['NEIGHBOUR_MANAGED_STAGE'], environment=candidate)
+        os.environ.update(resolved)
+        return CloudHost(read_configuration(), storage_acceptance=True)
+    if 'NEIGHBOUR_MANAGED_STAGE' in os.environ:
+        from deploy.cloud.managed_stage import provision
+
+        provision(os.environ['NEIGHBOUR_MANAGED_STAGE'])
+        return CloudHost(read_configuration(), storage_acceptance=True)
     return CloudHost(read_configuration())

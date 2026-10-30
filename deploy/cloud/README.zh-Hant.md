@@ -1,5 +1,16 @@
 # 鄰伴獨立雲端部署準備
 
+## 2026-10-30 最新接續：Google 已核、隔離設定更新已測試
+
+本人已完成 Google 登入及首位職員綁定；不再需要重做本機設定。其後 Computer Use 在正常 Chrome 服務頁（包括先啟用視窗）仍無法可靠辨認網址而強制停止，沒有改安全設定或換瀏覽器控制繞過。本人已正常把 staging 設定存入 Render；手動觸發的 e6c3ce2 舊版本部署 update_failed，新版 managed-stage 尚未上線。
+
+新增只限隔離驗收的 stage_envelope：以本人已存入該服務的舊 staging writer 憑證作 HKDF-SHA256 的傳輸密鑰材料、隨機 salt 與 nonce，AES-256-GCM 驗證並綁定服務 ID／origin；Render 專用工具只接收密文。接收端先解密及核對完整 managed-stage metadata，成功才安裝七個允許變數；拒絕模型憑證、任意變數或改 forwarding trust，沒有明文金鑰進入聊天、來源庫、傳輸日誌或新剪貼簿。這個舊 SQL 憑證已撤銷資料庫存取，但作為傳輸密鑰仍須在 Render secret storage 保密；密文本身亦只存此服務，不能當公開設定。不得把此隔離入口用來切換正式資料。
+
+截圖曾包含 staging 憑證材料，已用官方 group rotate 撤銷該唯一合成資料群組的 SQL tokens；兩條舊 token 真遠端 HTTP 401，新 reader／writer 分開、14 日有效、只 DPAPI 保存。新建 neighbour-stage-deletion-ledger-r2 及新測試簽名 key，舊測試帳本／收據及加密備份保留不改；正式原 key、收據、MB842、居民資料與用量沒有改動或上傳。
+
+82 項受影響測試與 Ruff 通過，使用合成 Google／暫存 SQLite 與本機 libsql；真遠端舊 token 拒絕及新測試帳本重開另有回條。完整居民網站、正式 Google 外網登入、ASR、單正式 writer 搬遷及 Notebook-off 仍未驗收，不得稱整個平台已部署完成。
+
+
 2026-10-29：用戶要求 Notebook 關機後仍可使用。此目錄是準備及核對工具，**尚未完成雲端部署**，不可把 ngrok Notebook 網址當成已完成。
 
 ## 2026-10-30 Render 已建立，Google 登入設定進行中

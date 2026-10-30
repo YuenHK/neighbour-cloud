@@ -271,8 +271,8 @@
     },
     {
       "path": "deploy/cloud/README.zh-Hant.md",
-      "bytes": 51151,
-      "sha256": "4a710a2bedfbfd53472bba2c3f897f998969057eb2d4dda2a41d2eaf7e4619ba"
+      "bytes": 53047,
+      "sha256": "442d6fdfc6b785d3af39fc2d0481ed22dbd9dab84a8ddb8f667ed6bb8557f738"
     },
     {
       "path": "deploy/cloud/bootstrap.py",
@@ -316,13 +316,13 @@
     },
     {
       "path": "deploy/cloud/host.py",
-      "bytes": 8468,
-      "sha256": "a1b9706c0e20372975a688d38b5c02e34c54a83fd35a0694fa911e2bc26a3139"
+      "bytes": 11170,
+      "sha256": "c4cb76f30b3a529313e2e88a2aa1b33be6116f196d054d3113a1da9b0843ce64"
     },
     {
       "path": "deploy/cloud/http_app.py",
-      "bytes": 14181,
-      "sha256": "5d2663557f3d0d5ac51468b4ac90f9ea44f58013d973ec6801401c3a4ec8ba9a"
+      "bytes": 16331,
+      "sha256": "de01ecce8183c69f283e69ca19eaf955e14de5c973cdbefdf221b484950d6a90"
     },
     {
       "path": "deploy/cloud/libsql_connection.py",
@@ -343,6 +343,11 @@
       "path": "deploy/cloud/login_setup.py",
       "bytes": 10747,
       "sha256": "b92e630c0246aa4f7a7eb6a252e384c09235a7903bfe3102b1137f6a45c70712"
+    },
+    {
+      "path": "deploy/cloud/managed_stage.py",
+      "bytes": 4464,
+      "sha256": "55e0cf33b94dd47d8c96cd4312b7e31212c9060160c735fce89614223719ae7a"
     },
     {
       "path": "deploy/cloud/photo_api.py",
@@ -378,6 +383,26 @@
       "path": "deploy/cloud/sql_snapshot.py",
       "bytes": 6557,
       "sha256": "25144cf29a01b9a75b470ee638c8cf11282cab1da18ed5cb982a9d9b7abc10d2"
+    },
+    {
+      "path": "deploy/cloud/stage-login/index.html",
+      "bytes": 772,
+      "sha256": "5119044aae74b8d756ba6e35bad13b91b21e93f3e36f3f8b372aac0c640d6ce9"
+    },
+    {
+      "path": "deploy/cloud/stage-login/login.js",
+      "bytes": 1808,
+      "sha256": "059400bd6be1bedfd61c822ccbeaf90ab5aaeace7d2e7349eeb768d7a06d1ba4"
+    },
+    {
+      "path": "deploy/cloud/stage_envelope.py",
+      "bytes": 4016,
+      "sha256": "0954826090b32809e99965977099e714ea3bcad6488543c87df2b4f7615a24ac"
+    },
+    {
+      "path": "deploy/cloud/stage_transfer.py",
+      "bytes": 8924,
+      "sha256": "469f66fe6c2c1198e01292c6c1471524c5296418bd91eb1bdf9b06196d14c9d7"
     },
     {
       "path": "deploy/cloud/state_store.py",

@@ -17,7 +17,7 @@ from fastapi import APIRouter, FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from starlette.background import BackgroundTask
 from starlette.concurrency import run_in_threadpool
-from starlette.responses import JSONResponse, StreamingResponse
+from starlette.responses import HTMLResponse, JSONResponse, Response, StreamingResponse
 
 from deploy.cloud.bootstrap import CloudServices
 from deploy.cloud.google_identity import (
@@ -92,10 +92,11 @@ def validate_origin(origin):
 
 
 class CloudBoundary:
-    def __init__(self, app, services, verifier, origin):
+    def __init__(self, app, services, verifier, origin, *, storage_acceptance=False):
         host = validate_origin(origin)
         self.app, self.services, self.verifier = app, services, verifier
         self.origin, self.host = origin, host
+        self.storage_acceptance = storage_acceptance
 
     async def __call__(self, scope, receive, send):
         if scope['type'] == 'lifespan':
@@ -120,6 +121,24 @@ class CloudBoundary:
             return await reject(403, '請從同一個服務頁面操作。')
         if path == '/health' and method in ('GET', 'HEAD'):
             return await self.app(scope, receive, send)
+        if self.storage_acceptance and method in ('GET', 'HEAD') and path in ('/', '/stage-login.js', '/login-config'):
+            if self.services.closed or not self.app.state.started:
+                return await reject(503, '服務暫時未能使用。')
+            assets = Path(__file__).with_name('stage-login')
+            if path == '/login-config':
+                response = JSONResponse({'client_id': self.verifier.client_id})
+            elif path == '/':
+                response = HTMLResponse((assets / 'index.html').read_text(encoding='utf-8'))
+            else:
+                response = Response((assets / 'login.js').read_bytes(), media_type='text/javascript')
+            response.headers.update({'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff',
+                'Permissions-Policy': 'microphone=(), camera=(), autoplay=()',
+                'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
+                'Content-Security-Policy': "default-src 'none'; script-src 'self' https://accounts.google.com/gsi/client; "
+                    "style-src 'unsafe-inline' https://accounts.google.com/gsi/style; "
+                    "frame-src https://accounts.google.com/gsi/; connect-src 'self' https://accounts.google.com/gsi/; "
+                    "img-src 'self' data: https://*.googleusercontent.com; frame-ancestors 'none'; base-uri 'none'"})
+            return await response(scope, receive, send)
         if not (path.startswith(('/api/v1/resident/', '/api/v1/service-desk/'))
                 or path == '/api/v1/events.csv' or path in STREAM_PATHS or PHOTO_PATH.fullmatch(path)):
             return await reject(404, '此雲端入口未提供這項功能。')
@@ -137,6 +156,8 @@ class CloudBoundary:
             return await reject(503, '暫時未能核對登入身份，請稍後再試。')
         identity = _principal.set(principal)
         try:
+            if self.storage_acceptance and method not in ('GET', 'HEAD'):
+                return await reject(423, '正式資料尚未切換；目前只供核對登入及資料，未開放居民操作。')
             with self.services.scope():
                 await self.app(scope, receive, send)
         finally:
@@ -149,9 +170,10 @@ def include_selected(app, router, prefixes):
     app.include_router(selected)
 
 
-def create_app(services, verifier, *, origin, model_client=None, voice_client=None, quota_client=None):
+def create_app(services, verifier, *, origin, model_client=None, voice_client=None, quota_client=None,
+               storage_acceptance=False):
     if (not isinstance(services, CloudServices) or services.closed
-            or not isinstance(verifier, GoogleIdentityVerifier)):
+            or not isinstance(verifier, GoogleIdentityVerifier) or type(storage_acceptance) is not bool):
         raise ValueError('explicit_open_cloud_services_and_google_verifier_required')
 
     @asynccontextmanager
@@ -238,6 +260,13 @@ def create_app(services, verifier, *, origin, model_client=None, voice_client=No
         return JSONResponse({'status': 'candidate', 'public_ready': False, 'site_hardware': False},
                             status_code=503 if services.closed or not app.state.started else 200)
 
+    @app.get('/api/v1/resident/session')
+    def session():
+        principal = current_principal()
+        if principal is None:
+            raise HTTPException(401)
+        return {'authenticated': True, 'role': principal.role, 'storage_acceptance': storage_acceptance}
+
     async def strict_completion(payload, *, prompt, context='', client=None, model=GEMMA_MODEL):
         if model != GEMMA_MODEL:
             raise CloudUnavailable('fixed_gemma_only')
@@ -275,4 +304,4 @@ def create_app(services, verifier, *, origin, model_client=None, voice_client=No
         return StreamingResponse(prepared, media_type='text/csv',
             headers={'Content-Disposition': 'attachment; filename="events.csv"'}, background=BackgroundTask(prepared.close))
 
-    return CloudBoundary(app, services, verifier, origin)
+    return CloudBoundary(app, services, verifier, origin, storage_acceptance=storage_acceptance)
