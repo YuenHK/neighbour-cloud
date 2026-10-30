@@ -271,8 +271,8 @@
     },
     {
       "path": "deploy/cloud/README.zh-Hant.md",
-      "bytes": 40589,
-      "sha256": "526de80a990370f3a8ef4f17232911de7e56937c86193074da331e8282568dcd"
+      "bytes": 43239,
+      "sha256": "edbafb39a61ae21dbf854a8f3b8b1e9ab478c797b7bfbf66fe7baae8b3e6f006"
     },
     {
       "path": "deploy/cloud/bootstrap.py",
@@ -315,9 +315,14 @@
       "sha256": "839314359ab752b8668393a53f5b2f96cb66e9c6bcb13c4fc864734f118f4049"
     },
     {
+      "path": "deploy/cloud/host.py",
+      "bytes": 8456,
+      "sha256": "43aef6f45db2b2908a312b7cc74291657cc7d6a098bc14f7608a0ebf6194f684"
+    },
+    {
       "path": "deploy/cloud/http_app.py",
-      "bytes": 14131,
-      "sha256": "cb06cea9dd98498fee103c178ea1f1bd034a9bbd0621443f7a808335a569f3e0"
+      "bytes": 14181,
+      "sha256": "5d2663557f3d0d5ac51468b4ac90f9ea44f58013d973ec6801401c3a4ec8ba9a"
     },
     {
       "path": "deploy/cloud/libsql_connection.py",

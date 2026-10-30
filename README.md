@@ -9,3 +9,5 @@ Fixed services: Cloudflare Gemma dialogue, Azure HiuMaan F0 speech, and existing
 Pending release gates: executable cloud host and authenticated static/login boot, real Google audience and permitted identities, cloud ASR, verified Turso Free resources, consistent private data import with one formal writer, quota/control/deletion-receipt preservation, backups/restore and external end-to-end acceptance.
 
 EP hardware and all robot actions are outside this deployment. The existing local platform and its data remain intact. See deploy/cloud/README.zh-Hant.md for candidate implementation and limitations.
+
+The explicit API factory `deploy.cloud.host:create_host` validates provisioned metadata and opens remote stores only during ASGI startup. It preserves the original binary deletion-ledger key using a base64 host-secret envelope. Relevant isolated regression tests are under `tests/`; they use synthetic identities/data and temporary stores, not real provider calls. This still does not supply frontend hosting, real login, ASR, migration or a public-ready service.

@@ -78,19 +78,24 @@ def storage_failure(request, *, not_attempted=False):
         headers={'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff'})
 
 
+def validate_origin(origin):
+    if not isinstance(origin, str):
+        raise TypeError('exact_https_cloud_origin_required')
+    parsed = urlsplit(origin)
+    if (parsed.scheme != 'https' or not parsed.hostname or parsed.username or parsed.password
+            or parsed.port is not None or parsed.path or parsed.query or parsed.fragment
+            or not parsed.hostname.isascii() or not re.fullmatch(r'[a-z0-9.-]{1,253}', parsed.hostname)
+            or any(not label or len(label) > 63 or label.startswith('-') or label.endswith('-')
+                   for label in parsed.hostname.split('.')) or origin != 'https://' + parsed.hostname):
+        raise ValueError('exact_https_cloud_origin_required')
+    return parsed.hostname
+
+
 class CloudBoundary:
     def __init__(self, app, services, verifier, origin):
-        if not isinstance(origin, str):
-            raise TypeError('exact_https_cloud_origin_required')
-        parsed = urlsplit(origin)
-        if (parsed.scheme != 'https' or not parsed.hostname or parsed.username or parsed.password
-                or parsed.port is not None or parsed.path or parsed.query or parsed.fragment
-                or not parsed.hostname.isascii() or not re.fullmatch(r'[a-z0-9.-]{1,253}', parsed.hostname)
-                or any(not label or len(label) > 63 or label.startswith('-') or label.endswith('-')
-                       for label in parsed.hostname.split('.')) or origin != 'https://' + parsed.hostname):
-            raise ValueError('exact_https_cloud_origin_required')
+        host = validate_origin(origin)
         self.app, self.services, self.verifier = app, services, verifier
-        self.origin, self.host = origin, parsed.hostname
+        self.origin, self.host = origin, host
 
     async def __call__(self, scope, receive, send):
         if scope['type'] == 'lifespan':

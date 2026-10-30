@@ -6,9 +6,13 @@
 
 Oracle 註冊已由用戶確認失敗，**不再沿此路徑等候或重複註冊**。目前轉向 Render Free 程式託管與 Turso Free 永久資料庫。2026-10-30 用戶已回覆原待辦確認「同意，只用免費方案」：允許以現有 Google／GitHub 登入或建立這兩個免費帳戶，建立鄰伴專用 DB 憑證並只加密保存；不加信用卡、不升級或購買。歷史交接中的 pending 已由本次回覆取代，不要再次要求同一授權。尚未建立資源、部署或上傳私人資料。
 
-本次開到 Render 登入頁後，瀏覽器控制中斷；接續工具明確回報 `Local browser use is disabled in Work settings`。這是工具設定阻擋，**不是用戶未授權**。不自行更改安全／工具權限、不從瀏覽器私有檔案提取登入狀態。已提供 Render 連接工具選項；仍須核實真正連接狀態，不能把建議安裝當成已登入。
+本次開到 Render 登入頁後，瀏覽器控制中斷；接續工具明確回報 `Local browser use is disabled in Work settings`。這是工具設定阻擋，**不是用戶未授權**。不自行更改安全／工具權限、不從瀏覽器私有檔案提取登入狀態。其後 Render 官方連接工具已成功接通，用戶確認使用 My Workspace；GitHub 私人來源庫 `YuenHK/neighbour-cloud` 已建立並核對私有狀態、推送及遠端提交。這只是來源庫，尚未建立鄰伴 Render 服務或 Turso DB，也未上傳私人資料。
 
-其後用戶已確認「Browser 已啟用，Browse 允許／逐次批准」，但工具端新檢查仍回同一錯誤。不要再要求用戶重複更改同一設定／重批帳戶授權；這是介面確認與工具狀態的落差，確切原因未能確認。須先恢復官方工具連線，再繼續實際帳戶／資源操作，不能藉其他控制方式繞過限制。
+其後用戶已確認「Browser 已啟用，Browse 允許／逐次批准」，但工具端新檢查仍回同一錯誤。不要再要求用戶重複更改同一設定／重批帳戶授權；這是介面確認與工具狀態的落差，確切原因未能確認。可使用已授權的官方連接工具／API，不能藉其他瀏覽器控制方式繞過限制。
+
+Turso 官方 MCP 設定已由用戶在本機加入，但 OAuth 被現版 CLI 的 issuer 安全檢查拒絕。2026-10-30 實際公開 metadata 的 issuer／token endpoint 在 `api.turso.tech`，授權入口在 `app.turso.tech`，未宣告 `authorization_response_iss_parameter_supported`。不要再重複登入、關閉驗證、改寫 metadata 或降級繞過。最新 Turso 官方 API 已支援組織／群組及個別權限限制，應選用該正式途徑；舊文章稱所有 API token 皆跨組織，已不能當作現況。尚未建立或接收這類憑證。
+
+來源：https://docs.turso.tech/api-reference/authentication 、https://docs.turso.tech/api-reference/tokens/create
 
 2026-10-30 重新核對官方 Turso 價格頁：Free 列示 $0／月、100 個 DB、5 GB 儲存、每月讀取 5 億行／寫入 1,000 萬行，毋須信用卡。九個資料角色的數量在列示上限內；這不是實際帳戶方案、可用區域、剩餘額度或資料搬遷驗收。Render Free 閒置後的首次請求約需一分鐘喚醒，不能承諾即開即用或用假流量保持運行。
 
@@ -43,6 +47,16 @@ EP 在屋苑內網，需要現場裝置作連接。此批不會連線、初始�
 新主機需另外準備固定 AIRI commit `dbf812488829a61cc2e95909e021b215704d066c`、現有 overlay、Node 22／pnpm 10.33.0、已驗證前台、Python 3.12、SenseVoice 模型、永久資料磁碟及 HTTPS 認證。尚未有 Linux 主機，不能宣稱容器建置、ARM wheel 或開機部署已通過。
 
 ## 金鑰
+
+### 可啟動的 API 工廠（仍非完整居民網站）
+
+`deploy.cloud.host:create_host` 已提供明確的 Uvicorn ASGI 工廠。只在 lifespan 啟動時開啟已匯入的遠端 DB；單純 import、建立工廠或缺設定都不會連線。正常關閉、啟動失敗或取消會清理取得的組件；啟動失敗會明確失敗，不讓前台等住或自動重試。這仍不包含靜態前台／真實 Google 登入、ASR、跨庫搬遷及單一寫入者證明；健康回覆保留 `public_ready=false`，不能直接建立公開服務當作完成。
+
+`NEIGHBOUR_CLOUD_CONFIG` 必須指向已有的絕對 JSON 路徑。格式 `neighbour-cloud-host-v1`，只允許 `format`、`origin`、`google_client_id`、`accounts`、`database_profile`、`runtime_root`、`settings_root`、`scratch_root`。origin 必須是完全吻合的 HTTPS origin；accounts 是已核准 Google subject 對 staff／resident 的對照，至少有一位職員。三個目錄須已存在、不同；settings_root 必須吻合明確雲端 backend 的 `NEIGHBOUR_SETTINGS_ROOT`。拒絕原生 DPAPI 模式、重複／額外欄位及 symlink 路徑，不產生空資料庫／用量或預設身份。
+
+原刪除帳本簽名 key 可能包含任意二進位 bytes。供此工廠使用的 host secret 必須是 `base64:<原 key 的標準 base64>`；工廠會先解碼，再用原 bytes 核對簽名，不能把 base64 文字當新 key、另造 key 或重置現有收據。key 不可進入此 JSON、程式庫、日誌或聊天。
+
+本批 45 項相關離機測試及變更檔 Ruff 通過，包含兩個本機 DB 引擎、假身份／供應商、合成帳本、失敗及取消清理。沒有真 Turso／Render 推論、語音或硬件請求；Linux、實際平台 proxy／HTTPS、登入、前台及 Notebook-off 驗收仍待完成。
 
 Windows 預設 DPAPI 不改。只有明確 `NEIGHBOUR_CREDENTIAL_BACKEND=systemd` 才啟用新主機模式；同時需已存在的絕對 `NEIGHBOUR_SETTINGS_ROOT` 及 systemd 提供的 `CREDENTIALS_DIRECTORY`。
 
