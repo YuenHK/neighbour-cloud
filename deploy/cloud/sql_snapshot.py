@@ -85,6 +85,7 @@ def snapshot(source, destination, *, timeout=20, max_bytes=128 * 1024 * 1024,
                 names = ','.join(quoted(column) for column in columns)
                 primary = [row[1] for row in sorted(fields, key=lambda row: row[5]) if row[5]]
                 ordering = ','.join(quoted(column) for column in primary) if primary else '_rowid_'
+                hidden = None
                 if name not in without_rowid:
                     raise ValueError('unsupported_snapshot_table_flags')
                 if not without_rowid[name]:
@@ -95,12 +96,23 @@ def snapshot(source, destination, *, timeout=20, max_bytes=128 * 1024 * 1024,
                     columns.insert(0, hidden)
                     names = ','.join(quoted(column) for column in columns)
                     ordering = quoted(hidden)
-                offset = 0
+                offset, last_rowid = 0, None
                 limit = page_limit(source, name, columns)
                 while True:
                     check()
-                    cursor = source.execute(f'SELECT {names} FROM {quoted(name)} ORDER BY {ordering} LIMIT ? OFFSET ?',
-                                            (limit, offset))
+                    if hidden is not None:
+                        # Rowid is a unique integer with an existing seek index.
+                        # OFFSET repeatedly reads every earlier audit/photo row
+                        # and can exhaust a Free rows-read allowance by itself.
+                        where = '' if last_rowid is None else f' WHERE {quoted(hidden)}> ?'
+                        parameters = (limit,) if last_rowid is None else (last_rowid, limit)
+                        cursor = source.execute(f'SELECT {names} FROM {quoted(name)}{where} ORDER BY {ordering} LIMIT ?', parameters)
+                    else:
+                        # WITHOUT ROWID may have custom PK/column collations;
+                        # retain its previous ordering rather than risk skipping
+                        # equal-collation keys with a naive tuple continuation.
+                        cursor = source.execute(f'SELECT {names} FROM {quoted(name)} ORDER BY {ordering} LIMIT ? OFFSET ?',
+                                                (limit, offset))
                     try:
                         rows = cursor.fetchall()
                     finally:
@@ -116,6 +128,11 @@ def snapshot(source, destination, *, timeout=20, max_bytes=128 * 1024 * 1024,
                                        f'VALUES ({",".join("?" for _ in columns)})', [tuple(row) for row in rows])
                     count += len(rows)
                     offset += len(rows)
+                    if hidden is not None:
+                        next_rowid = rows[-1][0]
+                        if type(next_rowid) is not int or (last_rowid is not None and next_rowid <= last_rowid):
+                            raise ValueError('snapshot_rowid_continuation_invalid')
+                        last_rowid = next_rowid
             # Preserve AUTOINCREMENT after deletions; never renumber a case.
             if source.execute("SELECT 1 FROM sqlite_master WHERE name='sqlite_sequence'").fetchone():
                 target.execute('DELETE FROM sqlite_sequence')

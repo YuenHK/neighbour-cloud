@@ -98,6 +98,41 @@ def test_snapshot_multiple_bounded_pages_preserve_all_rows(source, tmp_path):
         assert restored.execute('SELECT COUNT(*),SUM(id) FROM facts').fetchone() == (311, sum(range(311)))
 
 
+def test_large_rowid_backup_uses_indexed_continuation_without_rescanning_prior_pages(source, tmp_path):
+    source.execute('CREATE TABLE records(_rowid_ TEXT,rowid TEXT,payload BLOB)')
+    rows = [(index * 31 - 21000, 'PUBLIC-'+str(index), 'row-'+str(index), b'PUBLIC-SYNTHETIC') for index in range(1300)]
+    source.executemany('INSERT INTO records(oid,_rowid_,rowid,payload) VALUES(?,?,?,?)', rows)
+    source.commit()
+    calls = []
+
+    class NoOffsetScan:
+        def __getattr__(self, name):
+            return getattr(source, name)
+
+        def execute(self, sql, parameters=()):
+            if sql.startswith('SELECT ') and ('FROM "records" ORDER BY' in sql or 'FROM "records" WHERE' in sql):
+                assert 'OFFSET' not in sql
+                calls.append((sql, parameters))
+            return source.execute(sql, parameters)
+
+    result = snapshots.snapshot(NoOffsetScan(), tmp_path/'continued.sqlite3')
+    assert result['rows'] == len(rows) and len(calls) >= 3
+    assert any('WHERE "oid"> ?' in sql for sql, _ in calls[1:])
+    with sqlite3.connect(tmp_path/'continued.sqlite3') as restored:
+        assert restored.execute('SELECT oid,_rowid_,rowid,payload FROM records ORDER BY oid').fetchall() == rows
+
+
+def test_without_rowid_collation_ties_never_skip_rows(source, tmp_path):
+    source.execute('CREATE TABLE names(name TEXT COLLATE NOCASE,version INTEGER, '
+                   'PRIMARY KEY(name COLLATE BINARY,version)) WITHOUT ROWID')
+    rows = [(str(index)+'a',1) for index in range(600)]+[(str(index)+'A',1) for index in range(600)]
+    source.executemany('INSERT INTO names VALUES(?,?)', rows)
+    source.commit()
+    assert snapshots.snapshot(source,tmp_path/'names.sqlite3')['rows'] == len(rows)
+    with sqlite3.connect(tmp_path/'names.sqlite3') as restored:
+        assert set(restored.execute('SELECT * FROM names')) == set(rows)
+
+
 def test_snapshot_rejects_missing_foreign_reference(source, tmp_path):
     source.execute('PRAGMA foreign_keys=OFF')
     source.execute('CREATE TABLE parent(id INTEGER PRIMARY KEY)')
