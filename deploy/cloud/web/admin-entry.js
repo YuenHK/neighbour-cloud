@@ -1,5 +1,5 @@
 import { createCloudTransport } from '/cloud/cloud-transport.js'
-import { frameIdentity } from '/cloud/cloud-frame.js'
+import { createFrameBroker, frameIdentity } from '/cloud/cloud-frame.js'
 
 let transport
 try {
@@ -14,6 +14,11 @@ try {
     __NEIGHBOUR_CLOUD__: { value: true }, __NEIGHBOUR_REMOTE__: { value: true },
     __NEIGHBOUR_CLOUD_TRANSPORT__: { value: transport },
   })
+  const settings = document.getElementById('cloudAiriSettings')
+  const broker = createFrameBroker({ origin: location.origin, frameWindow: () => settings?.contentWindow,
+    tokenProvider: () => identity })
+  window.addEventListener('message', broker.receive)
+  window.addEventListener('pagehide', () => broker.close(), { once: true })
   window.addEventListener('pagehide', () => transport.clearAuth(), { once: true })
   for (const name of ['photo-privacy', 'latest-photo', 'api-quota', 'work-sections', 'workspace-navigation',
     'runtime', 'service-workbench', 'estate-management', 'presentation']) await import(`/cloud/admin/${name}.js`)

@@ -36,11 +36,12 @@ def test_cloud_workbench_reuses_required_controls_without_native_settings_or_bac
     parser.feed(html)
     assert not parser.stack
     for required in ('tab-work', 'tab-care', 'tab-reports', 'tab-knowledge', 'tab-usage',
-                     'tab-avatar', 'panel-avatar', 'cloudPresentationForm',
+                     'tab-avatar', 'panel-avatar', 'cloudAiriSettings',
                      'serviceCases', 'knowledgeForm', 'apiQuotaRows', 'caseAlert'):
         assert required in parser.ids
     assert parser.scripts == [{'type': 'module', 'src': '/cloud/admin-entry.js'}]
-    for native in ('airiSettingsFrame', '<iframe', 'localResourcesCard', '__LOCAL_OPERATOR_TOKEN__',
+    assert 'microphone \'none\'; camera \'none\'; autoplay \'none\'' in html
+    for native in ('airiSettingsFrame', 'localResourcesCard', '__LOCAL_OPERATOR_TOKEN__',
                    'ep-background.js', '127.0.0.1', '__SERVICE_SHELL__', '<script>'):
         assert native not in html
     assert assets.get('/cloud/admin/governance.js') is None

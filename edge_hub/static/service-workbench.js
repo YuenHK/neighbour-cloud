@@ -85,10 +85,10 @@
     let deferredEdit = false
     for (const row of data.items) {
       const previous = existing.get(row.id)
-      const editing = previous?.contains(document.activeElement) && document.activeElement.matches('textarea,input,select')
+      const editing = previous?.querySelector('dialog[open]') || (previous?.contains(document.activeElement) && document.activeElement.matches('textarea,input,select'))
       if (previous && (previous.caseSnapshot === JSON.stringify(row) || editing)) {
         const changed = previous.caseSnapshot !== JSON.stringify(row)
-        previous.querySelectorAll('button').forEach(button => { button.disabled = changed })
+        previous.querySelectorAll('button:not([data-case-close])').forEach(button => { button.disabled = changed })
         deferredEdit ||= changed
         cards.push(previous)
         existing.delete(row.id)
@@ -181,12 +181,41 @@
           void update(row, save, '', false, values)
         })
       }
+      // Keep the live list short. Existing validated forms and draft handling
+      // stay in a native modal rather than expanding underneath every case.
+      const dialog = document.createElement('dialog')
+      dialog.className = 'service-case-dialog'
+      const heading = append(dialog, 'div', '', 'service-case-dialog-heading')
+      const title = append(heading, 'h3', `個案 ${row.case_number || row.id.slice(0, 8)} · ${labels[row.kind]}`)
+      title.id = `case-title-${row.id}`
+      dialog.setAttribute('aria-labelledby', title.id)
+      const close = append(heading, 'button', '關閉')
+      close.type = 'button'
+      close.dataset.caseClose = 'true'
+      close.addEventListener('click', () => dialog.close())
+      const body = append(dialog, 'div', '', 'service-case-dialog-body')
+      while (card.firstChild) body.append(card.firstChild)
+      const summary = append(card, 'div', '', 'service-case-summary')
+      const top = append(summary, 'div', '', 'service-case-summary-heading')
+      append(top, 'strong', `#${row.case_number || row.id.slice(0, 8)} · ${labels[row.kind]}`)
+      append(top, 'span', `${urgentCare ? '需即時關懷 · ' : ''}${states[row.status]}`,
+        `service-badge${row.overdue || urgentCare ? ' warning' : ''}`)
+      const quote = row.message.includes('居民原話：') ? row.message.split('居民原話：').slice(1).join('居民原話：').split('\n主動分流')[0]
+        : row.message.replace(/^【[^】]*】/, '')
+      append(summary, 'p', quote, 'service-case-preview')
+      append(summary, 'small', `${row.unit || row.location || '待補充位置'} · ${row.team || labels[row.kind]}`)
+      if (row.due_at_ms) append(summary, 'small', `${row.overdue ? '已過跟進期限' : '跟進期限'}：${new Date(row.due_at_ms).toLocaleString('zh-HK', { hour12: false })}`)
+      const open = append(card, 'button', '查看及跟進', 'service-case-open')
+      open.type = 'button'
+      open.addEventListener('click', () => dialog.showModal())
+      dialog.addEventListener('close', () => { open.focus(); void load() })
+      card.append(dialog)
       cards.push(card)
       existing.delete(row.id)
     }
     for (const card of existing.values()) {
       if (card.contains(document.activeElement) && document.activeElement.matches('textarea,input,select')) {
-        card.querySelectorAll('button').forEach(button => { button.disabled = true })
+        card.querySelectorAll('button:not([data-case-close])').forEach(button => { button.disabled = true })
         cards.push(card)
         deferredEdit = true
       }
@@ -222,7 +251,7 @@
         node('caseStatus').textContent = '求助單暫時未能更新，以下不是最新狀態；操作已暫停。'
         for (const id of ['caseNewCount', 'caseActiveCount', 'caseClosedCount'])
           node(id).textContent = '—'
-        node('serviceCases').querySelectorAll('button').forEach((button) => {
+        node('serviceCases').querySelectorAll('button:not([data-case-close])').forEach((button) => {
           button.disabled = true
         })
         node('casesNext').disabled = true
@@ -246,6 +275,7 @@
     try {
       const body = correction ? { expected_revision: row.revision, ...correction } : { expected_revision: row.revision, status: progressOnly || row.status === 'new' ? 'acknowledged' : 'resolved', assignee: row.assignee || '管理團隊', note: note.trim() || row.note || '' }
       await request(`/${row.id}${correction ? '/details' : ''}`, { method: 'PATCH', body: JSON.stringify(body) })
+      button.closest('dialog')?.close()
       if (correction) corrections.delete(row.id)
       else drafts.delete(row.id)
       node('caseAlert').textContent = ''

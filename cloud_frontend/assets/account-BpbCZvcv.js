@@ -1,2 +1,0 @@
-import{A as e,C as t,Y as n}from"./vue.runtime.esm-bundler-8DFEXDJo.js";import{c as r}from"./vue-router-CwW4PFgx.js";import{n as i,u as a}from"./storage-Dzgkz699.js";import{t as o}from"./route-block-BUY0QnxP.js";import{t as s}from"./account-settings-page-DUfe2t9x.js";var c=e({__name:`index`,setup(e){let o=i(),c=r();function l(){o.needsLogin=!0}async function u(){await a(),c.push(`/settings`)}return(e,r)=>(n(),t(s,{onLogin:l,onLogout:u}))}});typeof o==`function`&&o(c);var l=c;export{l as default};
-//# sourceMappingURL=account-BpbCZvcv.js.map

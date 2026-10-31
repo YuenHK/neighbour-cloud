@@ -30,7 +30,7 @@ SHELL = {
 SUFFIX_TYPES = {'.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml',
     '.png': 'image/png', '.avif': 'image/avif', '.webp': 'image/webp', '.ico': 'image/x-icon',
     '.wasm': 'application/wasm', '.zip': 'application/zip', '.onnx': 'application/octet-stream',
-    '.json': 'application/json', '.hdr': 'application/octet-stream', '.vrma': 'application/octet-stream',
+    '.json': 'application/json', '.hdr': 'application/octet-stream', '.vrma': 'application/octet-stream', '.vrm': 'application/octet-stream',
     '.woff': 'font/woff', '.woff2': 'font/woff2'}
 
 
@@ -107,7 +107,7 @@ class CloudWebAssets:
                 return JSONResponse({'detail': '正式資料仍在準備，未開放管理操作。'}, status_code=423, headers=headers)
             headers['Content-Security-Policy'] = (
                 "default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; "
-                "img-src 'self' data: blob:; frame-src 'none'; frame-ancestors 'self'; base-uri 'none'")
+                "img-src 'self' data: blob:; frame-src 'self'; frame-ancestors 'self'; base-uri 'none'")
             headers['Permissions-Policy'] = 'microphone=(), camera=(), autoplay=(self)'
             return Response(admin[0], media_type=admin[1], headers=headers)
         if path in ('/cloud/resident', '/cloud/resident/'):

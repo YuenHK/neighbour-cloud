@@ -1,0 +1,21 @@
+{
+  "model": {
+    "repository": "onnx-community/silero-vad",
+    "revision": "e71cae966052b992a7eca6b17738916ce0eca4ec",
+    "files": [
+      {
+        "path": "onnx/model.onnx",
+        "bytes": 2243022,
+        "sha256": "a4a068cd6cf1ea8355b84327595838ca748ec29a25bc91fc82e6c299ccdc5808"
+      },
+      {
+        "path": "README.md",
+        "bytes": 59,
+        "sha256": "394ac7912169c60fa95cc6c33c615f78368749f0f305b6cb43058a28233cf00a"
+      }
+    ],
+    "source": "HuggingFace model repository, public files only",
+    "quota_consuming_inference": false
+  },
+  "license": "MIT License\n\nCopyright (c) 2020-present Silero Team\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE."
+}

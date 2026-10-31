@@ -79,5 +79,5 @@ def test_cloud_copies_have_no_native_background_or_provider_bootstrap():
     assert '__NEIGHBOUR_CLOUD_TRANSPORT__' in bootstrap
     for native in ('await fetch(', '127.0.0.1', 'settings/credentials', 'apiKey', 'api_key'):
         assert native not in bootstrap
-    assert "transport.fetch('/api/v1/resident/presentation'" in bootstrap
+    assert "settingsMode ? '/api/v1/service-desk/presentation' : '/api/v1/resident/presentation'" in bootstrap
     assert "wasm.wasmPaths = '/assets/onnx-3.8.1/'" in bootstrap

@@ -15,6 +15,22 @@ DEFAULT = {'name': '鄰伴', 'greeting': '查資料、傾偈、跟進事情，�
            'persona': '', 'background': 'mint'}
 
 
+class AiriCharacter(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True, str_strip_whitespace=True)
+    name: str = Field(min_length=1, max_length=40)
+    description: str = Field(default='', max_length=1200)
+    personality: str = Field(default='', max_length=1200)
+    scenario: str = Field(default='', max_length=1200)
+    system_prompt: str = Field(default='', max_length=4000)
+
+
+class AiriPreferences(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    stage_model: Literal['preset-live2d-1', 'preset-live2d-2', 'preset-vrm-1', 'preset-vrm-2'] = 'preset-live2d-2'
+    scene_background: Literal['none', 'builtin:cozy-tea-corner', 'builtin:cute-streaming-room'] = 'none'
+    card: AiriCharacter | None = None
+
+
 class PresentationEdit(BaseModel):
     model_config = ConfigDict(extra='forbid', strict=True, str_strip_whitespace=True)
     expected_revision: int = Field(ge=1)
@@ -22,6 +38,7 @@ class PresentationEdit(BaseModel):
     greeting: str = Field(min_length=1, max_length=200)
     persona: str = Field(max_length=1200)
     background: Literal['mint', 'sky', 'warm']
+    airi: AiriPreferences = Field(default_factory=AiriPreferences)
 
     @field_validator('name', 'greeting', 'persona')
     @classmethod
@@ -69,11 +86,16 @@ class Presentation:
             return dict(self._cached)
 
     def public(self):
-        return {key: value for key, value in self.current().items() if key != 'persona'}
+        value = {key: value for key, value in self.current().items() if key != 'persona'}
+        value['airi'] = {key: item for key, item in value['airi'].items() if key != 'card'}
+        return value
 
     def prompt(self):
         value = self.current()
-        return ('你的稱呼是「' + value['name'] + '」。' + value['persona'])
+        card = value['airi'].get('card')
+        character = '\n'.join(card[key] for key in ('description', 'personality', 'scenario', 'system_prompt')) if card else ''
+        return ('你的稱呼是「' + value['name'] + '」。' + value['persona']
+                + ('\nAIRI 角色設定（語氣及背景，不代表已完成現實操作）：\n' + character if character else ''))
 
     def save(self, edit):
         with self.estate.lock:
@@ -84,6 +106,8 @@ class Presentation:
                     if existing['revision'] != edit.expected_revision:
                         raise HTTPException(409, '設定已有更新，請重新查看後再儲存。')
                     payload = edit.model_dump(exclude={'expected_revision'})
+                    if 'airi' not in edit.model_fields_set:
+                        payload['airi'] = existing['airi']
                     self.estate.db.execute('UPDATE cloud_presentation SET revision=revision+1,payload=? WHERE id=1',
                                           (json.dumps(payload, ensure_ascii=True),))
                 self._cached = {**payload, 'revision': edit.expected_revision + 1}

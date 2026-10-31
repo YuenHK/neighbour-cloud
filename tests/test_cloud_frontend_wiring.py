@@ -1,6 +1,6 @@
 import pytest
 
-from deploy.cloud.frontend_wiring import cloud_main, resident_page
+from deploy.cloud.frontend_wiring import cloud_audio_device, cloud_main, resident_page
 
 
 @pytest.mark.parametrize('newline', ['\n', '\r\n'])
@@ -22,11 +22,20 @@ def test_changed_or_ambiguous_vendor_source_requires_review():
         resident_page('different upstream entry')
 
 
+def test_cloud_mic_enable_is_local_to_one_frame_not_shared_with_staff_or_next_tab():
+    source = "  const audioInputEnabled = useLocalStorageManualReset<boolean>('settings/audio/input/enabled', false)\n"
+    value = cloud_audio_device(source)
+    assert 'useLocalStorage' not in value
+    assert 'refManualReset<boolean>' in value and "get('settings') !== '1'" in value
+    assert cloud_audio_device(value) == value
+
+
 def test_cloud_main_has_one_resident_route_and_no_large_font_preloads():
     source = """const routeRecords = setupLayouts(routes as RouteRecordRaw[])
     history: createWebHistory()
     import '@proj-airi/font-cjkfonts-allseto/index.css'
     import '@proj-airi/font-xiaolai/index.css'
+    void bootstrapLocalProfile()
     """
     result = cloud_main(source)
     assert "route.path === '/'" in result and "createWebHistory('/cloud/resident')" in result

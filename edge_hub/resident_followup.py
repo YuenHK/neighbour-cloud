@@ -35,24 +35,27 @@ def expressed_need(history, *, reported_context=False):
     third_party_only = bool(re.search(r'(?:朋友|鄰居|邻居|同事|家人|媽媽|妈妈|爸爸|佢|他|她).{0,12}(?:壓力|压力|焦慮|焦虑|孤單|孤独|唔開心)', text)) and not re.search(r'我(?:最近|而家|覺得|觉得|感到|有啲|有点|都|好|很)', text)
     self_report = (self_report or bool(re.search(r'壓力好大|好大壓力|压力好大|好焦慮|好焦虑|好孤單|好孤独|頂唔順|捱唔住', text))) and not third_party_only
     distress = bool(re.search(r'壓力|压力|焦慮|焦虑|恐慌|情緒|情绪|孤單|孤独|冇人理|沒人理|好難受|很難受|好傷心|很伤心|撐唔住|撑不住|頂唔順|頂唔住|捱唔住|失眠', text))
-    mild = bool(re.search(r'唔開心|不開心|不开心|心煩|心烦|委屈|煩惱|烦恼', text))
-    persistent = len([item for item in users if re.search(r'唔開心|不開心|不开心|心煩|心烦|委屈|煩惱|烦恼', item)]) >= 2
+    mild = bool(re.search(r'唔開心|不開心|不开心|心煩|心烦|委屈|煩惱|烦恼|心情.{0,4}(?:唔好|唔係幾好|低落)|好煩|好烦|想喊|想哭|迷惘|冇人聽我講', text))
+    # A direct disclosure can omit "我" in Cantonese. Third-party and public
+    # information exclusions still apply, as do explicit contact opt-outs.
+    self_report = self_report or (not third_party_only and bool(re.match(r'^(?:唔知點解|呢排|近排|最近|成日).{0,12}(?:想喊|想哭|心情|低落|迷惘)', text)))
     explicit_condition = bool(re.search(r'我(?:曾經|曾经|已經|已经)?(?:有|患有|被診斷|被诊断).{0,8}(?:抑鬱|抑郁|焦慮症|焦虑症|精神病|精神分裂|躁鬱|躁郁)', text))
     information = bool(re.search(r'係咩|是什麼|是什么|定義|定义|介紹|介绍|機構|机构|熱線|热线', text)) and not re.search(r'我.{0,12}(?:需要|想搵|想找|幫我|帮我)', text)
     negated = bool(re.search(r'(?:冇|沒有|没有|唔覺得|不覺得|不觉得).{0,4}(?:壓力|压力|唔開心|焦慮|焦虑|孤單|孤独|失眠)', text))
-    strong_or_ongoing = bool(re.search(r'好唔開心|很不開心|很不开心|最近|成日|呢排|近排|一直|持續|持续', text))
-    if (explicit_condition or (self_report and not information and not negated and (distress or (mild and (persistent or strong_or_ongoing))))):
+    # The operator explicitly requested early support for potential distress,
+    # including a first mild disclosure. This is a concern record, not a diagnosis.
+    if (explicit_condition or (self_report and not information and not negated and (distress or mild))):
         return {'topic': 'care', 'kind': 'human_support', 'reason': '居民表達情緒／壓力或主動提及支援需要，請職員關懷核實。'}
     if re.search(OUTREACH, text) and any(re.search(r'壓力|压力|孤單|孤独|情緒|情绪|唔開心|難受|失眠', item) for item in users):
         return {'topic': 'care', 'kind': 'human_support', 'reason': '居民希望職員聯絡，先前有表達關懷需要。'}
     if re.search(r'我(?:想|需要|希望).{0,10}(?:社工|真人).{0,12}(?:幫|帮|支援|協助|协助|聯絡|联系|傾|見)', text):
         return {'topic': 'care', 'kind': 'human_support', 'reason': '居民主動希望獲得真人／社工支援，聯絡安排待職員核實。'}
     # A concrete local report may be phrased as a question. A general how-to is not a report.
-    local_report = reported_context or bool(re.search(r'我(?:屋企|家|嘅|的|住)|(?:大堂|走廊|停車場|停车场|花園|花园|平台|門口|门口)|(?:見到|看到|發現|发现)|[A-Za-z0-9一二三四五六七八九十]+座|有(?:好多|一堆|成堆|一灘|啲)?(?:垃圾|積水|积水|漏水)|^水喉漏水[。！!]*$', text))
+    local_report = reported_context or bool(re.search(r'我(?:屋企|家|嘅|的|住)|屋企|屋內|屋内|(?:大堂|走廊|停車場|停车场|花園|花园|平台|門口|门口)|(?:見到|看到|發現|发现)|[A-Za-z0-9一二三四五六七八九十]+座|有(?:好多|一堆|成堆|一灘|啲)?(?:垃圾|積水|积水|漏水)|^水喉漏水[。！!]*$', text))
     request = bool(re.search(r'幫我|帮我|幫手|帮忙|搵人|找人|報修|报修|通知|投訴|投诉|處理|处理|安排|我想|我需要|我希望', text))
     for topic, kind, pattern in (
         ('danger', 'hazard', r'火警|著火|着火|煙味|烟味|被困|困住|有人跌低|有人打交|漏電|漏电|火花|插蘇.*(?:焦|黑|煙|燶)|電線.*(?:破|外露|露銅)'),
-        ('water', 'water', r'漏水|積水|积水|水喉.*(?:爆|壞|坏)'),
+        ('water', 'water', r'漏水|積水|积水|(?:水喉|水管).*(?:爆|壞|坏|有問題|有问题|塞)'),
         ('litter', 'litter', r'垃圾|污糟|清潔|清洁'),
         ('lift', 'general', r'升降機|電梯|电梯'),
         ('repair', 'general', r'壞咗|壞了|坏了|故障|維修|维修|燈.*(?:唔著|不亮)'),
@@ -94,6 +97,41 @@ def contact_values(text):
     return unit if unit_volunteered else '', phone['number'] if phone else standalone[0] if standalone else ''
 
 
+def session_contacts(history):
+    """Only the current resident's volunteered values, never assistant guesses."""
+    unit = phone = ''
+    for item in history:
+        if item['role'] != 'user':
+            continue
+        text = item['content']
+        if re.search(HYPOTHETICAL, text):
+            continue
+        if re.search(OPT_OUT, text):
+            unit = phone = ''
+            continue
+        new_unit, new_phone = contact_values(text)
+        unit, phone = new_unit or unit, new_phone or phone
+    return unit, phone
+
+
+def capture_contacts(history, body, store):
+    """Capture volunteered detail before a progress/crisis branch can return."""
+    if not body.session_id or not body.submission_id:
+        return
+    text = history[-1]['content']
+    if re.search(HYPOTHETICAL, text):
+        return
+    unit, phone = contact_values(text)
+    if not unit and not phone:
+        return
+    from edge_hub.resident_threads import session_rows
+    rows = session_rows(store, body.session_id)
+    store.update_automatic_contacts([row['submission_id'] for row in rows], unit=unit, phone=phone)
+    for row in rows:
+        if row['kind'] == 'human_support':
+            store.support_contact(row['submission_id'], f'{unit} {phone}')
+
+
 def intake(history, body, store, *, unanswered_estate=False):
     """Return a confirmed local receipt separately from model completion success."""
     if not body.session_id or not body.submission_id:
@@ -115,6 +153,9 @@ def intake(history, body, store, *, unanswered_estate=False):
         return None
     declined = bool(re.search(OPT_OUT, text))
     unit, phone = contact_values(text)
+    if not declined:
+        prior_unit, prior_phone = session_contacts(history)
+        unit, phone = unit or prior_unit, phone or prior_phone
     requested = bool(re.search(OUTREACH, text))
     rows = session_rows(store, body.session_id)
     updated = []
@@ -138,7 +179,7 @@ def intake(history, body, store, *, unanswered_estate=False):
         return None
     from edge_hub.service_desk import ResidentCase
     place = re.search(r'(?:大堂|走廊|升降機|電梯|电梯|停車場|停车场|花園|花园|平台|門口|门口)[^，。！？\n]{0,12}', text)
-    location = unit if need['kind'] == 'human_support' else unit_reference(text) or (place[0] if place else '')
+    location = unit if need['kind'] == 'human_support' else unit_reference(text) or (place[0] if place else unit)
     prefix = CARE_PREFIX if need['kind'] == 'human_support' else REQUEST_PREFIX
     message = f'{prefix}{need["reason"]}\n居民原話：{text[:900]}\n主動分流，待職員核實；不是醫療診斷，亦未代表已聯絡到人。'
     if requested:

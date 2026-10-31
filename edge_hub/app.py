@@ -15,7 +15,6 @@ from fastapi import (
     WebSocket,
     status,
 )
-from fastapi.exception_handlers import request_validation_exception_handler
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, StreamingResponse
@@ -49,6 +48,7 @@ from edge_hub.estate_services import EstateStore, ResidentServices, estate_route
 from edge_hub.event_ingest import IngestEvent
 from edge_hub.event_request import EventBodyLimitMiddleware, RobotBodyLimitMiddleware
 from edge_hub.event_stream import EventFanout, stream_events
+from edge_hub.event_validation import redact_event_validation
 from edge_hub.events import Event, EventStatus, EventStore, EventStreamMismatch
 from edge_hub.evidence import delete_event_evidence
 from edge_hub.faq import FaqEntry, FaqResult, OfflineFaq
@@ -83,27 +83,7 @@ ep_acceptance = EpAcceptance(ep_broker)
 ep_manual_pairing = EpManualPairing(ep_broker, ep_acceptance)
 
 
-@app.exception_handler(RequestValidationError)
-async def redact_event_validation(request: Request, error: RequestValidationError):
-    if request.url.path.startswith(('/api/v1/service-desk/', '/api/v1/resident/')):
-        return JSONResponse({'detail': '請檢查必填內容及字數。'}, status_code=422,
-                            headers={'Cache-Control': 'no-store'})
-    if request.url.path.startswith('/api/v1/assistant/') or request.url.path == '/v1/chat/completions':
-        return JSONResponse({'detail': 'assistant request failed validation'}, status_code=422,
-                            headers={'Cache-Control': 'no-store'})
-    if request.url.path == '/api/v1/robot' or request.url.path.startswith('/api/v1/robot/'):
-        # Pydantic errors can include submitted lease credentials and private extras.
-        return JSONResponse({'detail': 'robot request failed validation'}, status_code=422,
-                            headers={'Cache-Control': 'no-store'})
-    creating = request.method == 'POST' and request.url.path.rstrip('/') == '/api/v1/events'
-    reviewing = (request.method == 'PATCH'
-                 and getattr(request.scope.get('route'), 'path', None) == '/api/v1/events/{event_id}')
-    if creating or reviewing:
-        # Error inputs may contain private data or unpaired Unicode surrogates.
-        return JSONResponse({'detail': 'event payload failed validation'}, status_code=422,
-                            headers={'Cache-Control': 'no-store'})
-    return await request_validation_exception_handler(request, error)
-
+app.add_exception_handler(RequestValidationError, redact_event_validation)
 
 @app.middleware('http')
 async def protect_cloud_origin(request: Request, call_next):

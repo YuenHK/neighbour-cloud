@@ -573,16 +573,29 @@ def service_desk_router(store, authorize, static_root, chat, services=None, *, r
         context = ''
         local_only = bool(body.profile) and not body.native_settings
         explicit_memory = bool(re.match(r'^(?:幫我|帮我)?(?:記住|记住|忘記|忘记|刪除記憶|删除记忆)', history[-1]['content'].strip()))
+        if not explicit_memory:
+            from edge_hub.resident_followup import capture_contacts
+            try:
+                capture_contacts(history, body, store)
+            except sqlite3.Error:
+                # The dialogue can continue, but never claim an unconfirmed
+                # contact update succeeded. The existing records are retained.
+                context += '\n本輪補充聯絡資料未能確認保存，唔好聲稱已更新。'
         crisis = None if explicit_memory else crisis_plan(history)
         if crisis:
             answer = crisis['answer']
             support_id = session_submission(body.session_id, body.submission_id)
             if support_id:
                 try:
+                    from edge_hub.resident_followup import session_contacts
                     from edge_hub.resident_threads import record_crisis
+                    unit, phone = session_contacts(history)
                     support = ResidentCase(submission_id=support_id, kind='human_support',
+                        location=unit, contact=phone,
                         message=PREFIX+'居民直接表達：'+crisis['disclosure']+'（只記錄本人表達，非醫療診斷；聯絡資料如有提供，見聯絡欄。）', confirmed=True)
                     receipt = record_crisis(store, support, body.session_id) if body.session_id else store.create(support)
+                    if unit or phone:
+                        store.support_contact(support_id, f'{unit} {phone}')
                     if crisis['contact_pending'] and body.session_id:
                         attached = store.support_contact(support_id, history[-1]['content'])
                         if not attached:
@@ -602,8 +615,17 @@ def service_desk_router(store, authorize, static_root, chat, services=None, *, r
                 followup = intake(history, body, store)
             except (sqlite3.Error, HTTPException):
                 followup = {'delivered': False, 'notice': '今次未能確認送到管理工作台，對話仍可繼續；請稍後再試轉交。'}
+        if (followup and followup.get('delivered') and followup.get('kind') == 'water'
+                and re.search(r'水喉|水管', history[-1]['content'])):
+            # A local repair report is staff work, not an invitation for a
+            # language model to invent tradespeople or their contact details.
+            return reply('水管出問題真係唔方便。師傅或公司資料要先由管理處核實；'
+                         '你嘅需要已交到管理工作台，等職員核實同安排跟進。')
         public_query = services is not None and getattr(services, 'public_query', lambda text: False)(history[-1]['content'])
         care = {} if explicit_memory or public_query or followup else care_plan(history)
+        if followup and followup.get('kind') == 'human_support':
+            from edge_hub.resident_crisis import CARE_CONTEXT
+            context += '\n' + CARE_CONTEXT
         if body.native_settings and care.get('kind') == 'reflection':
             care = {'context': '居民正在傾訴，請用 AIRI 已選角色及語氣承接具體處境，不機械化重複安慰，不追問住址或聯絡；未表示想安排聯絡時先專心聽。'}
         if care.get('answer'):

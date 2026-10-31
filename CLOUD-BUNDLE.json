@@ -146,8 +146,8 @@
     },
     {
       "path": "airi_overlay/cloud-app.vue",
-      "bytes": 921,
-      "sha256": "8c358ac2dd90c81603f0b40b5d5f0fe72aeccfa2bd4a995441f6cec20c89e3b0"
+      "bytes": 2065,
+      "sha256": "3e4270fa11a85eca18abc73ba65138962debfec7144f17a8d2931357d8ab8100"
     },
     {
       "path": "airi_overlay/cloud-frame.js",
@@ -161,13 +161,18 @@
     },
     {
       "path": "airi_overlay/cloud-profile-bootstrap.ts",
-      "bytes": 2468,
-      "sha256": "36136bb1ebdd83c9e406dfb3e8347ced3077b87a2504da000b8c4e6c465bd758"
+      "bytes": 3208,
+      "sha256": "310490c322bfc6d456b2cec7906a17da1ad55ba79dea1ccb5afa52d74530ffb2"
     },
     {
       "path": "airi_overlay/cloud-session.js",
       "bytes": 4599,
       "sha256": "319c56f4fa7e275e8b95feed4b5250b1f9615e192f34e865ce046e07a817e93d"
+    },
+    {
+      "path": "airi_overlay/cloud-settings.vue",
+      "bytes": 8769,
+      "sha256": "34bdc7c48725f1af6feb48e3f26dc56846a7ff44e36d4ba7ba5029701b928df9"
     },
     {
       "path": "airi_overlay/cloud-transport.js",
@@ -261,8 +266,8 @@
     },
     {
       "path": "airi_overlay/resident-service-panel.vue",
-      "bytes": 24881,
-      "sha256": "fe4ae4ae229b3ffa67819332c88792fb99870c280fb496b919b9eb4ce6ae1c73"
+      "bytes": 25826,
+      "sha256": "ecaae0f4237a270076a7d4993cc260bcdddb169742d8c1a1eb57ce5460ebd506"
     },
     {
       "path": "airi_overlay/resident-session.js",
@@ -366,8 +371,8 @@
     },
     {
       "path": "deploy/cloud/frontend_wiring.py",
-      "bytes": 4932,
-      "sha256": "ff7bc2de91018e85fa7069c20b3725fa64b6d1d72eccbdd18beef0a6ed33f1d0"
+      "bytes": 9798,
+      "sha256": "aab4ad6c9c21581406fe627e28c358ad24bd28445fbc807a82a80a7453666a18"
     },
     {
       "path": "deploy/cloud/google_identity.py",
@@ -446,8 +451,8 @@
     },
     {
       "path": "deploy/cloud/presentation.py",
-      "bytes": 4036,
-      "sha256": "95dd4ba06cd29a741c5a87c222665c748a1cd247670af46eddc6947e5fa76dfa"
+      "bytes": 5394,
+      "sha256": "eb018fe5b77e0dac4c7ee3534d9da8d2e1d0d216aff6c50fd9c678c98bdfe13c"
     },
     {
       "path": "deploy/cloud/quota_api.py",
@@ -541,8 +546,8 @@
     },
     {
       "path": "deploy/cloud/web/admin-entry.js",
-      "bytes": 1488,
-      "sha256": "753845c67cff28f3dfd45970b4997793baf81c6edff3da1dbc8dafe26205ec97"
+      "bytes": 1843,
+      "sha256": "751e2d110a9ae49496fe429a1ff8f0f04967cdca07b2a0ef6572a079c654abe2"
     },
     {
       "path": "deploy/cloud/web/admin-request.js",
@@ -551,8 +556,8 @@
     },
     {
       "path": "deploy/cloud/web/frame-entry.js",
-      "bytes": 2114,
-      "sha256": "5fafe8a975dce86c65a8c942781f983fdde8b8a51b96a612fe85cd8fe7265e42"
+      "bytes": 2486,
+      "sha256": "ba1bded699667eb272945c52b4c5de413d5e8a474f68f99c27d3178e6a30fb53"
     },
     {
       "path": "deploy/cloud/web/index.html",
@@ -561,13 +566,13 @@
     },
     {
       "path": "deploy/cloud/web/presentation.html",
-      "bytes": 1051,
-      "sha256": "6762d462d4c7331acc16073ceeaed3ebf1a23014995d9d45279b52be9eed8936"
+      "bytes": 307,
+      "sha256": "e4638052769aea283cfa8b941e65aa75960e2f9bcd24bf71608bac3b5c3bed52"
     },
     {
       "path": "deploy/cloud/web/presentation.js",
-      "bytes": 2074,
-      "sha256": "193ac49e72a40b87a9099b9aaf8433780abd2f4b9fe2031033b686bd1d9f0899"
+      "bytes": 812,
+      "sha256": "d688988f6658e7c1f9a3cf5f96d14de05c25ad9b81eb2704ea43d6243eebd3d0"
     },
     {
       "path": "deploy/cloud/web/quota-compact.js",
@@ -581,13 +586,13 @@
     },
     {
       "path": "deploy/cloud/web/shell.js",
-      "bytes": 6747,
-      "sha256": "3c78dcac8b1884347e78e80254a25784d606a91fce3f49c91d20b42b804800e0"
+      "bytes": 7455,
+      "sha256": "9270c14c6c0f255db0908e63ccccca68dac727d97e9b29698d2b9f7a4cbe2344"
     },
     {
       "path": "deploy/cloud/web_assets.py",
-      "bytes": 7953,
-      "sha256": "dc49cf0fb36ad19f0689690401657c5b591363f4b94bb37283b4177510b992eb"
+      "bytes": 7989,
+      "sha256": "18fc0dbcd6f7fdc082cbc204363f9445146201160bd923029cba9b69b8ad6336"
     },
     {
       "path": "edge_hub/__init__.py",
@@ -601,8 +606,8 @@
     },
     {
       "path": "edge_hub/app.py",
-      "bytes": 31633,
-      "sha256": "d0e1fa7ff74943dbffc760afcc3c402a77aff0cbcd2ee51df60a668696ec2e4c"
+      "bytes": 30114,
+      "sha256": "1737e415559ac3363f18a7814452aef840e5ddd92d498510af56ce0a35b36fcb"
     },
     {
       "path": "edge_hub/approved_photo.py",
@@ -755,6 +760,11 @@
       "sha256": "a0861002f1e96e559a87f21afd4c157af793d706a5f840bef55cea538ade65df"
     },
     {
+      "path": "edge_hub/event_validation.py",
+      "bytes": 1824,
+      "sha256": "a2a43fe573543f4dd15220a258859d01a0b8f2efbb8cbd2dffef0b72401584e1"
+    },
+    {
       "path": "edge_hub/events.py",
       "bytes": 18513,
       "sha256": "f847382af6fee4136d8f1cd35a00546146797e4ccad4ef9b196763fa61b46df2"
@@ -901,8 +911,8 @@
     },
     {
       "path": "edge_hub/resident_cases.py",
-      "bytes": 4753,
-      "sha256": "bdd49f3645ff385a067a861e1053268a7c21cb2923470f2a4cc42cb6baa0777f"
+      "bytes": 5037,
+      "sha256": "df2b56eb2a177f89cf6df11ba610cca8b75920d9897a573574e0ea2e8d132dca"
     },
     {
       "path": "edge_hub/resident_cloud.py",
@@ -911,8 +921,8 @@
     },
     {
       "path": "edge_hub/resident_crisis.py",
-      "bytes": 5356,
-      "sha256": "ca54a3fc62f0f626de720bcaa30ccc73f67c733ea50596ec4a32ea79cbb95c58"
+      "bytes": 6690,
+      "sha256": "3b28098435b2bf0f7bd69ceeb5388f3c214e7e9f8cef60ca3238a45995f4c9f1"
     },
     {
       "path": "edge_hub/resident_delivery.py",
@@ -921,8 +931,8 @@
     },
     {
       "path": "edge_hub/resident_followup.py",
-      "bytes": 13391,
-      "sha256": "e31d5907edb3d0c425c343c711b73b3c648df03c668fa3c9e34ebb5e104c18bf"
+      "bytes": 15145,
+      "sha256": "4cc85b0b9ac650c2a39165bc141882b61878c717d724346ade9f0c58174c0ed8"
     },
     {
       "path": "edge_hub/resident_inference.py",
@@ -981,8 +991,8 @@
     },
     {
       "path": "edge_hub/service_desk.py",
-      "bytes": 46617,
-      "sha256": "3e5dab60b6bb942c6da8271656d01b2b36a8319d1d7ac935dac8a769333faa68"
+      "bytes": 48100,
+      "sha256": "eb235fa7f59e321ad275a2351eedb1f9fcd095f0976ccca4af7487a5769fd162"
     },
     {
       "path": "edge_hub/service_identity.py",
@@ -1146,8 +1156,8 @@
     },
     {
       "path": "edge_hub/static/service-shell.css",
-      "bytes": 24806,
-      "sha256": "17fc855632ad04e3c9c6047e75ba1e2ed436faf6cd530d78a1a69893ce375540"
+      "bytes": 26322,
+      "sha256": "d39216a11fb2df74cad4c88326cccc744373a69a620db9bbd512af2ae93c510c"
     },
     {
       "path": "edge_hub/static/service-shell.js",
@@ -1156,8 +1166,8 @@
     },
     {
       "path": "edge_hub/static/service-workbench.js",
-      "bytes": 14705,
-      "sha256": "1aae4ca2062ac3b6dd1127b60a1a04b61e2148eca586afcb8dec2e2198549a00"
+      "bytes": 16999,
+      "sha256": "3dd84120062a71157aa85877d09b7c554835dd20ad9a6dea7b70a21d4c5683eb"
     },
     {
       "path": "edge_hub/static/simulation-control.html",
@@ -1301,8 +1311,8 @@
     },
     {
       "path": "tools/cloud_frontend_assets.py",
-      "bytes": 4900,
-      "sha256": "494ee4b7d3de7e868e0ac712fd3947f165524b61cf80d348a94f7b2b5b21795a"
+      "bytes": 4920,
+      "sha256": "3855383d34e7a9178ced375f8b48ff4dfc9331b0e7c154fac22c353385b6b0c6"
     },
     {
       "path": "tools/cloud_preflight.py",

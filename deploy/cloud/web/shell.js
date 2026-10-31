@@ -6,6 +6,15 @@ let frame, broker, expire, provider, role
 let publicMode = false
 let requestedArea = 'resident'
 let opening = false
+let navigationEpoch = 0
+let navigationAbort = new AbortController()
+function beginNavigation() {
+  navigationEpoch++
+  navigationAbort.abort()
+  navigationAbort = new AbortController()
+  opening = false
+  session.clear()
+}
 function closeService() {
   broker?.close()
   if (broker) window.removeEventListener('message', broker.receive)
@@ -55,7 +64,8 @@ const session = createCloudSession({ origin: location.origin, onClear: closeServ
 async function access(body) {
   const response = await fetch('/api/v1/resident/access', { method: 'POST',
     headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
-    cache: 'no-store', credentials: 'omit', redirect: 'error', signal: AbortSignal.timeout(12000) })
+    cache: 'no-store', credentials: 'omit', redirect: 'error',
+    signal: AbortSignal.any([navigationAbort.signal, AbortSignal.timeout(12000)]) })
   if (!response.ok) throw new Error(response.status === 401 ? '管理口令不正確。' : '暫時未能連接，請稍後再試。')
   const data = await response.json()
   if (typeof data.token !== 'string') throw new Error('服務連接未完成。')
@@ -63,6 +73,7 @@ async function access(body) {
 }
 async function startResident() {
   if (opening) return
+  const epoch = navigationEpoch
   opening = true
   requestedArea = 'resident'
   node('staffLogin').hidden = true
@@ -72,36 +83,40 @@ async function startResident() {
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
         const value = await access({})
+        if (epoch !== navigationEpoch) return
         const result = await session.accept(value)
+        if (epoch !== navigationEpoch) return
         if (result.state !== 'ready') throw new Error('服務連接未完成。')
         return
       }
       catch {
+        if (epoch !== navigationEpoch) return
         node('status').textContent = '正在重新連接服務，請稍候…'
         if (attempt < 2) await new Promise(resolve => setTimeout(resolve, 600 * (attempt + 1)))
       }
     }
     node('status').textContent = '暫時未能連接，請按上方「居民服務台」再試。'
   }
-  finally { opening = false }
+  finally { if (epoch === navigationEpoch) opening = false }
 }
 node('resident').onclick = () => {
-  if (publicMode) void startResident()
+  if (publicMode) { beginNavigation(); void startResident() }
   else show('resident')
 }
 node('staff').onclick = () => {
   if (role === 'staff' && provider) { show('staff'); return }
   if (!publicMode) return
-  session.clear()
+  beginNavigation()
   node('login').hidden = true
   node('staffLogin').hidden = false
   node('staffLoginStatus').textContent = ''
   node('staffPassword').focus()
 }
-node('cancelStaffLogin').onclick = () => void startResident()
+node('cancelStaffLogin').onclick = () => { beginNavigation(); void startResident() }
 node('staffLoginForm').onsubmit = async (event) => {
   event.preventDefault()
   if (opening) return
+  const epoch = navigationEpoch
   const password = node('staffPassword').value
   node('staffPassword').value = ''
   opening = true
@@ -109,15 +124,18 @@ node('staffLoginForm').onsubmit = async (event) => {
   node('staffLoginStatus').textContent = '正在進入…'
   try {
     const value = await access({ password })
+    if (epoch !== navigationEpoch) return
     const result = await session.accept(value)
+    if (epoch !== navigationEpoch) return
     if (result.state !== 'ready' || result.role !== 'staff') throw new Error('暫時未能進入管理工作台。')
   }
   catch (error) {
+    if (epoch !== navigationEpoch) return
     node('login').hidden = true
     node('staffLogin').hidden = false
     node('staffLoginStatus').textContent = error.message
   }
-  finally { opening = false }
+  finally { if (epoch === navigationEpoch) opening = false }
 }
 node('signOut').onclick = () => {
   if (publicMode) void startResident()

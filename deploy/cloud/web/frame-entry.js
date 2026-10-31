@@ -8,6 +8,7 @@ try {
     onClose() { transport?.clearAuth(); location.replace('/cloud/signed-out') } })
   const claims = JSON.parse(atob(identity.token.split('.')[1].replaceAll('-', '+').replaceAll('_', '/')))
   const canRenew = claims.role === 'resident'
+  const settingsMode = new URLSearchParams(location.search).get('settings') === '1'
   let renewing
   const base = createCloudTransport({ origin: location.origin, tokenProvider: () => identity })
   async function renew() {
@@ -26,6 +27,11 @@ try {
     return renewing
   }
   transport = { fetch: recoveringFetch(base, { renew }), clearAuth: () => base.clearAuth() }
+  if (settingsMode) {
+    const proof = await transport.fetch('/api/v1/resident/session', { signal: AbortSignal.timeout(10000) })
+    const data = await proof.json()
+    if (!proof.ok || data.role !== 'staff' || data.authenticated !== true) throw new Error('staff_settings_required')
+  }
   Object.defineProperties(globalThis, {
     __NEIGHBOUR_CLOUD__: { value: true }, __NEIGHBOUR_REMOTE__: { value: true },
     __NEIGHBOUR_CLOUD_TRANSPORT__: { value: transport },

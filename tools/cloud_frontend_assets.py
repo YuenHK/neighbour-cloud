@@ -53,7 +53,7 @@ def package(source, output, verification):
         elif relative.parts[0] == 'assets' and path.suffix in SUFFIX_TYPES:
             if path.suffix == '.wasm' and not path.name.startswith('ort-wasm-'):
                 continue
-            if path.suffix == '.zip' and not path.name.startswith('hiyori_free_zh-'):
+            if path.suffix == '.zip' and not path.name.startswith(('hiyori_free_zh-', 'hiyori_pro_zh-')):
                 continue
             selected.append(path)
     paths = {path.relative_to(source).as_posix() for path in selected}

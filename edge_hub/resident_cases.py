@@ -32,6 +32,10 @@ def unit_reference(text):
     text = unicodedata.normalize('NFKC', text).upper()
     unit = re.search(rf'(?:[A-Z]|{NUMBER})[座棟栋](?:\s*(?:{NUMBER}|[A-Z])(?:樓|楼|層|层|室|單位|单位|號|号)?\s*){{0,3}}', text)
     if not unit:
+        # A volunteered floor/flat is useful even when the estate has no block
+        # or its block has not yet been supplied. Never invent a block prefix.
+        unit = re.search(rf'{NUMBER}[樓楼層层]\s*(?:{NUMBER}|[A-Z])(?:室|單位|单位|號|号)', text)
+    if not unit:
         return ''
     value = re.sub(r'\s+', '', unit[0]).replace('栋', '座').replace('棟', '座').replace('楼', '樓').replace('層', '樓').replace('层', '樓')
     value = value.replace('單位', '室').replace('单位', '室').replace('號', '室').replace('号', '室')

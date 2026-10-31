@@ -16,7 +16,7 @@ import { ResidentPcm, ResidentTiming } from './resident-pcm.js'
 import { createResidentTextFilter, readResidentReply, residentMessageParts, residentPlainText, residentSpeechText } from './resident-response.js'
 import { ResidentSession } from './resident-session.js'
 
-defineProps<{ listening: boolean, voiceUnavailable?: boolean, voiceRecovering?: boolean }>()
+defineProps<{ listening: boolean, voiceUnavailable?: boolean, voiceRecovering?: boolean, inputStatus?: string }>()
 const emit = defineEmits<{ microphone: [], endSession: [], speaking: [boolean] }>()
 const cloudResident = Reflect.get(globalThis, '__NEIGHBOUR_CLOUD__') === true
 const presentation = Reflect.get(globalThis, '__NEIGHBOUR_PRESENTATION__') || {}
@@ -58,7 +58,7 @@ const session = new ResidentSession(async (body: unknown, signal: AbortSignal, o
   const selected = { provider: consciousness.activeProvider, model: consciousness.activeModel || consciousness.customModelName }
   const residentBody = body as { session_id?: string, submission_id?: string, messages: { role: string, content: string }[] }
   const history = residentBody.messages.map(message => message.role === 'assistant' ? { ...message, content: residentPlainText(message.content) } : message).filter(message => message.content.trim())
-  const response = await residentApi.chat({ ...(body as object), messages: history, airi_system_prompt: String(airiCard.systemPrompt || '').slice(0, 4000) }, deadline)
+  const response = await residentApi.chat({ ...(body as object), messages: history, airi_system_prompt: Reflect.get(globalThis, '__NEIGHBOUR_CLOUD__') === true ? '' : String(airiCard.systemPrompt || '').slice(0, 4000) }, deadline)
   if (response.ok && response.headers?.get('content-type')?.includes('application/json')) {
     const plan = await response.clone().json()
     if (!deadline.aborted && typeof plan.followup?.notice === 'string')
@@ -433,6 +433,8 @@ async function transcribeAudio(audio: Blob) {
     }, controller.signal)
     if (epoch !== session.generation || controller.signal.aborted)
       throw new Error('resident_transcription_cancelled')
+    if (!text.trim())
+      status.value = '未辨識到清楚內容；等朗讀完再講，或者先打字同我傾。'
     return text
   }
   catch {
@@ -504,11 +506,20 @@ function checkIdle() {
     <p v-else-if="voiceUnavailable" class="resident-panel-status">
       語音暫時未能使用，請先用文字傾談。
     </p>
+    <p v-else-if="listening && inputStatus === 'starting'" class="resident-panel-status">
+      正在準備收音，未開始聆聽；你可以先打字。
+    </p>
+    <p v-else-if="listening && inputStatus === 'waiting'" class="resident-panel-status">
+      收音未啟動或已中斷，點一下語音掣重新啟動。
+    </p>
+    <p v-else-if="listening && inputStatus === 'speaking'" class="resident-panel-status">
+      朗讀完會繼續聆聽；想先講可以按「停止朗讀」。
+    </p>
     <form @submit.prevent="sendMessage()">
       <label class="resident-input-label" for="residentDraft">想講啲咩？</label><textarea id="residentDraft" v-model="draft" rows="2" maxlength="2000" required placeholder="直接講，或者喺度打字…" @input="touch" />
       <div class="resident-panel-actions">
         <button type="button" :aria-pressed="listening" @click="emit('microphone')">
-          {{ listening ? '正在聆聽 · 暫停' : '開始語音傾談' }}
+          {{ listening ? inputStatus === 'starting' ? '準備收音中 · 暫停' : inputStatus === 'failed' ? '重新準備語音' : inputStatus === 'waiting' ? '點一下啟動收音' : inputStatus === 'speaking' ? '朗讀中 · 暫停收音' : '正在聆聽 · 暫停' : '開始語音傾談' }}
         </button><button v-if="busy" type="button" @click="cancelWaiting">
           停止等候
         </button><button class="primary" type="submit" :disabled="busy || !draft.trim()">

@@ -34,6 +34,11 @@ def cloud_main(source):
         'history: createWebHistory()': "history: createWebHistory('/cloud/resident')",
         "import '@proj-airi/font-cjkfonts-allseto/index.css'": '// Cloud uses the service desk system font.',
         "import '@proj-airi/font-xiaolai/index.css'": '// No 50 MB font preload in the cloud entry.',
+        'void bootstrapLocalProfile()': """void bootstrapLocalProfile().catch(() => {
+  const app = document.getElementById('app')
+  if (app)
+    app.replaceChildren(Object.assign(document.createElement('p'), { textContent: '畫面資料暫時未能載入，請由平台重新開啟此頁。未載入的設定不會覆蓋原有資料。' }))
+})""",
     }
     for old, new in replacements.items():
         if new in source:
@@ -80,6 +85,63 @@ def cloud_input_recovery(source):
 })"""
     new = """const inputRecovery = new InputRecovery()
 const inputRecovering = ref(false)
+const inputStatus = ref('starting')
+let inputFrameAt = 0
+watch(vadFrames, () => {
+  if (enabled.value && stream.value) {
+    inputFrameAt = Date.now()
+    inputStatus.value = 'ready'
+  }
+})
+function resumeMicrophone() {
+  if (!enabled.value) {
+    enabled.value = true
+    return
+  }
+  // This synchronous call preserves the resident's click activation when a
+  // browser suspends the input AudioContext. It opens no second microphone.
+  if (inputStatus.value !== 'ready') {
+    if (vadInferenceError.value) {
+      disposeVAD()
+      void initVAD()
+      return
+    }
+    void resumeVAD()
+    if (!stream.value || !stream.value.getAudioTracks().some(track => track.readyState === 'live')) {
+      settingsAudioDeviceStore.stopStream()
+      void settingsAudioDeviceStore.startStream().catch(() => {
+        enabled.value = false
+      })
+    }
+    return
+  }
+  enabled.value = false
+}
+const inputWatchdog = setInterval(() => {
+  if (!enabled.value) {
+    inputStatus.value = 'paused'
+    return
+  }
+  if (vadInferenceError.value) {
+    inputStatus.value = 'failed'
+    return
+  }
+  if (!vadLoaded.value || !stream.value) {
+    inputStatus.value = 'starting'
+    return
+  }
+  const alive = stream.value.getAudioTracks().some(track => track.readyState === 'live' && track.enabled && !track.muted)
+  if (!alive) {
+    inputStatus.value = 'waiting'
+    return
+  }
+  if (Date.now() - inputFrameAt > 5000) {
+    inputStatus.value = 'waiting'
+    if (inputFrameAt && !document.hidden) void inputRecovery.run('resume', async () => {
+      await Promise.race([resumeVAD(), new Promise((_, reject) => setTimeout(() => reject(new Error('input_resume_timeout')), 2000))])
+    })
+  }
+}, 1000)
 watch(vadInferenceError, (error) => {
   if (error)
     console.error('Voice activity detection failed:', error)
@@ -99,13 +161,62 @@ watch(vadInferenceError, (error) => {
       throw new Error('vad_recovery_incomplete')
   }).finally(() => { inputRecovering.value = false })
 })
-onUnmounted(() => inputRecovery.close())"""
+onUnmounted(() => {
+  inputRecovery.close()
+  clearInterval(inputWatchdog)
+})"""
     if normal.count(anchor) != 1 or normal.count(old) != 1:
         raise ValueError('cloud_input_recovery_anchor_requires_review')
     normal = normal.replace(anchor, "import { InputRecovery } from '../modules/resident-recovery.js'\n" + anchor, 1)
     normal = normal.replace(old, new, 1)
+    capture = 'inferenceError: vadInferenceError } = useVAD'
+    if normal.count(capture) != 1:
+        raise ValueError('cloud_input_progress_anchor_requires_review')
+    normal = normal.replace(capture, 'inferenceError: vadInferenceError, processedFrames: vadFrames, resume: resumeVAD } = useVAD')
     binding = ':voice-unavailable="!!vadInferenceError || !!hearingPipeline.error"'
     if normal.count(binding) != 1:
         raise ValueError('cloud_input_recovery_binding_requires_review')
-    normal = normal.replace(binding, ':voice-unavailable="!!vadInferenceError" :voice-recovering="inputRecovering"')
+    normal = normal.replace(binding, ':voice-unavailable="!!vadInferenceError" :voice-recovering="inputRecovering" :input-status="residentSpeaking ? \'speaking\' : inputStatus"')
+    normal = normal.replace('@microphone="enabled = !enabled"', '@microphone="resumeMicrophone"')
     return normal.replace('\n', newline)
+
+
+def cloud_vad_runtime(source):
+    """Add an explicit user-gesture resume without changing native source."""
+    newline = '\r\n' if '\r\n' in source else '\n'
+    normal = source.replace('\r\n', '\n')
+    anchor = '  function stop() {\n'
+    if normal.count(anchor) != 1:
+        raise ValueError('cloud_vad_resume_anchor_requires_review')
+    normal = normal.replace(anchor, "  function resume() {\n    return audioContext?.state !== 'closed' ? audioContext.resume() : Promise.resolve()\n  }\n\n" + anchor)
+    normal = normal.replace('    initialize,\n    start,', '    initialize,\n    resume,\n    start,')
+    return normal.replace('\n', newline)
+
+
+def cloud_vad_store(source):
+    """Expose actual processed input frames, not merely an enabled switch."""
+    newline = '\r\n' if '\r\n' in source else '\n'
+    normal = source.replace('\r\n', '\n')
+    anchor = '  const isSpeechProb = ref(0)'
+    if normal.count(anchor) != 1:
+        raise ValueError('cloud_vad_progress_anchor_requires_review')
+    normal = normal.replace(anchor, anchor + '\n  const processedFrames = ref(0)')
+    normal = normal.replace('          isSpeechProb.value = data.probability', '          processedFrames.value++\n          isSpeechProb.value = data.probability')
+    normal = normal.replace('    isSpeechProb,\n', '    isSpeechProb,\n    processedFrames,\n')
+    normal = normal.replace('    init,\n    start,', '    init,\n    resume: () => manager.value?.resume() ?? Promise.resolve(),\n    start,')
+    return normal.replace('\n', newline)
+
+
+def cloud_audio_device(source):
+    """Each cloud frame owns its mic switch; staff/teardown cannot mute peers."""
+    old = "const audioInputEnabled = useLocalStorageManualReset<boolean>('settings/audio/input/enabled', false)"
+    new = "const audioInputEnabled = refManualReset<boolean>(new URLSearchParams(location.search).get('settings') !== '1')"
+    if new in source:
+        return source
+    if source.count(old) != 1:
+        raise ValueError('cloud_input_local_state_anchor_requires_review')
+    source = source.replace(old, new)
+    if "import { defineStore } from 'pinia'" in source:
+        source = source.replace("import { defineStore } from 'pinia'",
+                                "import { refManualReset } from '@vueuse/core'\nimport { defineStore } from 'pinia'")
+    return source
