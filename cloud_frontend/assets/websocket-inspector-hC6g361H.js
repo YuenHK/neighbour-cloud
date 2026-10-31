@@ -1,2 +1,0 @@
-import{wt as e}from"./vue.runtime.esm-bundler-BpXz90Lz.js";import{n as t}from"./pinia-bjccLMo5.js";import{n}from"./index.browser-DB_U4Cep.js";var r=t(`devtools:websocket-inspector`,()=>{let t=e([]),r=e(!0),i=e(1e3);function a(e,a){r.value&&(t.value.unshift({id:n(),timestamp:Date.now(),direction:e,event:a}),t.value.length>i.value&&t.value.pop())}function o(){t.value=[]}return{history:t,isEnabled:r,maxHistory:i,add:a,clear:o}});export{r as t};
-//# sourceMappingURL=websocket-inspector-hC6g361H.js.map

@@ -1,1 +1,0 @@
-import{x as e}from"./core-B3k9dxHx.js";export{e as toJSONSchema};

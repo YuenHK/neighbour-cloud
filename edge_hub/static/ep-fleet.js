@@ -2,6 +2,7 @@
 globalThis.EpFleetKeys = Object.freeze({ w: 'forward', arrowup: 'forward', s: 'backward', arrowdown: 'backward', a: 'left', arrowleft: 'left', d: 'right', arrowright: 'right', q: 'turn_left', e: 'turn_right' })
 
 if (typeof document !== 'undefined' && document.body?.dataset.epUi === 'fleet') {
+  const hardwareOnly = document.body.dataset.hardwareOnly === 'true'
   const node = id => document.getElementById(id)
   const models = new Map()
   const controls = new Map()
@@ -93,10 +94,14 @@ if (typeof document !== 'undefined' && document.body?.dataset.epUi === 'fleet') 
     const patrol = model?.patrol || {}
     if (irHold && (irHold.id !== selected || model?.connection !== 'connected')) stopInfrared()
     node('infraredWarning').disabled = !model || model.connection !== 'connected'
-    node('patrolToggle').disabled = patrolBusy || !model || (!patrol.enabled && (model.connection !== 'connected' || !model.video_enabled))
+    node('patrolToggle').disabled = hardwareOnly || patrolBusy || !model || (!patrol.enabled && (model.connection !== 'connected' || !model.video_enabled))
     node('patrolToggle').textContent = patrol.enabled ? '巡邏回報：開' : '巡邏回報：關'
     node('patrolToggle').setAttribute('aria-pressed', String(!!patrol.enabled))
     node('patrolStatus').textContent = patrol.last_error || ({ off: '開啟鏡頭後可啟用，回報附相片供職員核實。', waiting: '等待本機辨識…', queued: '多機輪流辨識 · 等候處理最新畫面…', analysing: '正在辨識最新畫面…', collecting_photos: '發現候選 · 正在收集現場相片…', waiting_stationary: '等候機體停穩，再拍攝環境相片。', waiting_camera: '鏡頭已停止或未有新影像，暫停辨識。', observing: '巡邏觀察中 · 候選附相片，等候職員核實。', unavailable: '本機辨識暫未完成，請人工查看鏡頭。' }[patrol.state || 'off'])
+    if (hardwareOnly) {
+      node('patrolStatus').textContent = '自動巡查回報尚未接通雲端；目前可人手遙控及查看鏡頭。'
+      for (const id of ['patrolZone', 'patrolRestricted', 'patrolCloud']) node(id).disabled = true
+    }
     node('warningStatus').textContent = ({ starting: '已要求綠色彈道燈及提示音，請現場核實。', completed: '機體已回覆完成，實際效果請現場核實。', unconfirmed: '彈道燈、提示音或關燈未完全確認，請現場查看，沒有自動重試。' }[model?.warning?.state] || '')
     if (patrolSelected !== selected) {
       patrolSelected = selected
@@ -261,7 +266,7 @@ if (typeof document !== 'undefined' && document.body?.dataset.epUi === 'fleet') 
     try {
       const result = await api('fleet', undefined, 'GET')
       controlFault = result.safety_hold === true
-      manualOperation = result.manual_only === true
+      manualOperation = hardwareOnly || result.manual_only === true
       node('fleetLayout').classList.toggle('has-control-fault', controlFault)
       node('makeQr').disabled = result.safety_hold === true || qrBusy
       node('manualWifiQr').disabled = result.safety_hold === true

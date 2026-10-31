@@ -79,3 +79,26 @@ def test_airi_settings_reject_unmanaged_provider_secrets_and_oversize_prompt(bad
     with pytest.raises(ValidationError):
         PresentationEdit(expected_revision=1, name='鄰伴', greeting='你好', persona='',
                          background='mint', airi=bad)
+
+
+def test_robot_endpoint_is_staff_only_and_survives_older_editor_save(tmp_path):
+    from deploy.cloud.presentation import Presentation, PresentationEdit, install
+    from edge_hub.estate_services import EstateStore
+    estate = EstateStore(tmp_path / 'estate.sqlite3')
+    try:
+        install(estate.db)
+        settings = Presentation(estate)
+        endpoint = 'https://synthetic.ngrok-free.app'
+        settings.save(PresentationEdit(expected_revision=1, name='鄰伴', greeting='你好',
+            persona='', background='mint', robot_remote_url=endpoint))
+        assert 'robot_remote_url' not in settings.public()
+        result = settings.save(PresentationEdit(expected_revision=2, name='鄰伴', greeting='歡迎',
+            persona='', background='mint'))
+        assert result['robot_remote_url'] == endpoint
+        for bad in ('http://127.0.0.1:8000', 'https://evil.invalid', endpoint + '/redirect',
+                    'https://user:password@synthetic.ngrok-free.app'):
+            with pytest.raises(ValueError):
+                PresentationEdit(expected_revision=3, name='鄰伴', greeting='你好', persona='',
+                    background='mint', robot_remote_url=bad)
+    finally:
+        estate.close()

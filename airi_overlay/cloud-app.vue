@@ -3,13 +3,14 @@ import { useDisplayModelsStore } from '@proj-airi/stage-ui/stores/display-models
 import { useAiriCardStore } from '@proj-airi/stage-ui/stores/modules/airi-card'
 import { useSettings, useSettingsAudioDevice } from '@proj-airi/stage-ui/stores/settings'
 import { ErrorBoundary } from '@proj-airi/ui'
-import { defineAsyncComponent, onMounted, onUnmounted } from 'vue'
+import { defineAsyncComponent, h, onMounted, onUnmounted } from 'vue'
 import { RouterView } from 'vue-router'
 
 import '../../../packages/stage-ui-live2d/src/cloud-csp'
 
 // Resident startup must not download the staff card/model editor modules.
-const CloudSettings = defineAsyncComponent(() => import('./modules/cloud-settings.vue'))
+const CloudSettings = defineAsyncComponent({ loader: () => import('./modules/cloud-settings.vue'),
+  loadingComponent: { render: () => h('p', { role: 'status' }, '正在載入 AIRI 設定…') }, delay: 0, timeout: 45000 })
 const display = useDisplayModelsStore()
 const settings = useSettings()
 const audio = useSettingsAudioDevice()

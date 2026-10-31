@@ -1,0 +1,1 @@
+import{t as e}from"./spine-preview-My39YVS9.js";export{e as loadSpineModelPreview};

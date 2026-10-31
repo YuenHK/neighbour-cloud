@@ -13,6 +13,32 @@ EVENT = test_cloud_photo_api.EVENT
 FOLLOW = f'/api/v1/patrol/events/{EVENT}/followup'
 
 
+def test_workbench_snapshot_is_staff_only_and_bulk_reads_links(photographs, monkeypatch):
+    api, _, _ = photographs
+    case = api.client.post(FOLLOW, headers=api.staff).json()
+    path = '/api/v1/patrol/workbench'
+    assert api.client.get(path).status_code == 401
+    assert api.client.get(path, headers=api.resident).status_code == 403
+    manager = api.services.cases.patrol_sync.__self__
+    statements = []
+    connection = api.services.cases.db
+    execute = type(connection).execute
+    def observe(self, statement, *args, **kwargs):
+        if self is connection:
+            statements.append(statement)
+        return execute(self, statement, *args, **kwargs)
+    monkeypatch.setattr(type(connection), 'execute', observe)
+    response = api.client.get(path, headers=api.staff)
+    assert response.status_code == 200, response.text
+    value = response.json()
+    assert any(item['id'] == EVENT for item in value['events'])
+    assert value['stats']['total'] >= 1
+    assert value['followups']['items'][0]['case_number'] == case['case_number']
+    assert sum('SELECT' in line.upper() and 'PATROL_CASE_LINKS' in line.upper() for line in statements) == 1
+    assert not any('INSERT' in line.upper() or 'UPDATE' in line.upper() for line in statements)
+    assert manager is not None and not api.calls
+
+
 def test_events_stats_and_followups_are_staff_only_without_any_robot_calls(api):
     for path in ('/api/v1/events?limit=100', '/api/v1/event-stats', '/api/v1/patrol/followups'):
         assert api.client.get(path).status_code == 401

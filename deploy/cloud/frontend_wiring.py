@@ -30,8 +30,10 @@ def cloud_main(source):
     """
     replacements = {
         'const routeRecords = setupLayouts(routes as RouteRecordRaw[])':
-            "const routeRecords = setupLayouts((routes as RouteRecordRaw[]).filter(route => route.path === '/'))",
-        'history: createWebHistory()': "history: createWebHistory('/cloud/resident')",
+            "const cloudSettingsMode = new URLSearchParams(location.search).get('settings') === '1'\n"
+            "  const routeRecords = cloudSettingsMode ? (routes as RouteRecordRaw[]).filter(route => route.path.startsWith('/settings')) : setupLayouts((routes as RouteRecordRaw[]).filter(route => route.path === '/'))",
+        'history: createWebHistory()': "history: cloudSettingsMode ? createMemoryHistory() : createWebHistory('/cloud/resident')",
+        'createRouter, createWebHashHistory, createWebHistory': 'createRouter, createMemoryHistory, createWebHashHistory, createWebHistory',
         "import '@proj-airi/font-cjkfonts-allseto/index.css'": '// Cloud uses the service desk system font.',
         "import '@proj-airi/font-xiaolai/index.css'": '// No 50 MB font preload in the cloud entry.',
         'void bootstrapLocalProfile()': """void bootstrapLocalProfile().catch(() => {

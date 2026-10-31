@@ -12,7 +12,7 @@ from edge_hub.patrol_followup import PatrolFollowup
 EVENT_ID = r'^[A-Za-z0-9_-]{1,120}$'
 PATCH_PATH = re.compile(r'/api/v1/events/[A-Za-z0-9_-]{1,120}')
 FOLLOWUP_PATH = re.compile(r'/api/v1/patrol/events/[a-f0-9]{32}/followup')
-STAFF_READ_PATHS = {'/api/v1/events', '/api/v1/event-stats', '/api/v1/patrol/followups'}
+STAFF_READ_PATHS = {'/api/v1/events', '/api/v1/event-stats', '/api/v1/patrol/followups', '/api/v1/patrol/workbench'}
 
 
 def staff_path(path):
@@ -31,6 +31,23 @@ class CloudFollowup(PatrolFollowup):
         self.services = services
         self.photos = StaffPhotos(services)
         self.ledger = services.ledger
+
+    def snapshot(self, event_ids=None):
+        # A remote SQL round trip per event (plus one per public short number)
+        # made a 100-row list miss the browser deadline. One read, no renumbering.
+        with self.cases.lock:
+            where = ' WHERE l.event_id IN (' + ','.join('?' for _ in event_ids) + ')' if event_ids else ''
+            rows = self.cases.db.execute(
+                'SELECT l.*,COALESCE(n.ordinal,c.case_number) AS case_number,c.revision,c.status,c.note,c.team '
+                'FROM patrol_case_links l JOIN service_cases c ON c.id=l.case_id '
+                'LEFT JOIN service_case_numbers n ON n.case_id=c.id' + where +
+                " ORDER BY CASE c.status WHEN 'resolved' THEN 1 ELSE 0 END,c.created_at_ms DESC LIMIT 100",
+                event_ids or []).fetchall()
+            result = [dict(row) for row in rows]
+            for row in result:
+                if len(row['note']) > 160:
+                    row['note'] = row['note'][:160] + '…'
+            return result
 
     def flush_case(self, case_id):
         # Event, photo-retention and case stores are separate databases. Keep
@@ -87,6 +104,15 @@ class CloudFollowup(PatrolFollowup):
 def staff_router(services, authorize):
     router = APIRouter()
     manager = CloudFollowup(services)
+
+    @router.get('/api/v1/patrol/workbench')
+    def workbench():
+        authorize()
+        events = services.events.query(limit=100, offset=0)
+        ids = [event.id for event in events if event.details.get('source') == 'ep_patrol_local'
+               and re.fullmatch('[a-f0-9]{32}', event.id)]
+        return {'events': events, 'stats': services.events.stats(),
+                'followups': {'items': manager.snapshot(ids) if ids else []}}
 
     @router.get('/api/v1/events')
     def events(limit: int = Query(default=100, ge=1, le=100),

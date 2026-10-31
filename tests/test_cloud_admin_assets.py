@@ -36,13 +36,13 @@ def test_cloud_workbench_reuses_required_controls_without_native_settings_or_bac
     parser.feed(html)
     assert not parser.stack
     for required in ('tab-work', 'tab-care', 'tab-reports', 'tab-knowledge', 'tab-usage',
-                     'tab-avatar', 'panel-avatar', 'cloudAiriSettings',
+                     'tab-avatar', 'panel-avatar', 'cloudAiriSettings', 'tab-robots', 'panel-robots',
                      'serviceCases', 'knowledgeForm', 'apiQuotaRows', 'caseAlert'):
         assert required in parser.ids
     assert parser.scripts == [{'type': 'module', 'src': '/cloud/admin-entry.js'}]
     assert 'microphone \'none\'; camera \'none\'; autoplay \'none\'' in html
     for native in ('airiSettingsFrame', 'localResourcesCard', '__LOCAL_OPERATOR_TOKEN__',
-                   'ep-background.js', '127.0.0.1', '__SERVICE_SHELL__', '<script>'):
+                   'ep-background.js', '__SERVICE_SHELL__', '<script>'):
         assert native not in html
     assert assets.get('/cloud/admin/governance.js') is None
     assert assets.get('/cloud/admin/estate-management.js')[0].find(b'loadResources') == -1
@@ -51,6 +51,10 @@ def test_cloud_workbench_reuses_required_controls_without_native_settings_or_bac
     assert b'grid-template-columns:repeat(6,minmax(0,1fr))' in assets.get('/assets/service-shell.css')[0]
     assert '官方免費額度</th>' not in html
     assert '免費配額與可用量' in html
+    # Explicit new-window link only, never an automatic cloud-to-LAN request.
+    assert 'href="http://127.0.0.1:8000/robots" target="_blank" rel="noopener noreferrer"' in html
+    assert b'/api/v1/patrol/workbench' in assets.get('/cloud/admin/runtime.js')[0]
+    assert b'timeoutMs = 12000' in assets.get('/cloud/admin/runtime.js')[0]
 
 
 def test_stage_cannot_load_staff_ui_and_production_staff_cannot_capture_mic():

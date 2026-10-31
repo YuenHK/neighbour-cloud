@@ -15,13 +15,15 @@ try {
     __NEIGHBOUR_CLOUD_TRANSPORT__: { value: transport },
   })
   const settings = document.getElementById('cloudAiriSettings')
-  const broker = createFrameBroker({ origin: location.origin, frameWindow: () => settings?.contentWindow,
+  const makeBroker = () => createFrameBroker({ origin: location.origin, frameWindow: () => settings?.contentWindow,
     tokenProvider: () => identity })
-  window.addEventListener('message', broker.receive)
+  let broker = makeBroker()
+  window.addEventListener('message', event => broker.receive(event))
+  window.addEventListener('cloud-settings-reset', () => { broker.close(); broker = makeBroker() })
   window.addEventListener('pagehide', () => broker.close(), { once: true })
   window.addEventListener('pagehide', () => transport.clearAuth(), { once: true })
   for (const name of ['photo-privacy', 'latest-photo', 'api-quota', 'work-sections', 'workspace-navigation',
-    'runtime', 'service-workbench', 'estate-management', 'presentation']) await import(`/cloud/admin/${name}.js`)
+    'runtime', 'service-workbench', 'estate-management', 'presentation', 'robots']) await import(`/cloud/admin/${name}.js`)
   if (data.governance_supported === true) await import('/cloud/admin/governance.js')
 }
 catch {

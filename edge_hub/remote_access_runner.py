@@ -36,6 +36,7 @@ def traffic_policy(email, proof):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--ngrok', type=Path, required=True)
+    parser.add_argument('--hardware-only', action='store_true')
     args = parser.parse_args()
     allowed = Path(os.environ['LOCALAPPDATA'])/'Microsoft/WindowsApps/ngrok.exe'
     if args.ngrok.absolute() != allowed.absolute():
@@ -77,7 +78,8 @@ def main():
     kernel = None
     try:
         hidden = {'creationflags': subprocess.CREATE_NO_WINDOW} if os.name == 'nt' else {}
-        gateway_env = {**os.environ, 'NEIGHBOUR_PROXY_TOKEN': proof, 'NEIGHBOUR_REMOTE_HOSTS': json.dumps([domain])}
+        gateway_env = {**os.environ, 'NEIGHBOUR_PROXY_TOKEN': proof, 'NEIGHBOUR_REMOTE_HOSTS': json.dumps([domain]),
+                       'NEIGHBOUR_HARDWARE_ONLY': '1' if args.hardware_only else '0'}
         gateway = subprocess.Popen([sys.executable, '-m', 'uvicorn', 'edge_hub.remote_gateway:from_environment', '--factory',
                                     '--host', '127.0.0.1', '--port', '8001', '--no-access-log', '--log-level', 'warning'],
                                    cwd=root, env=gateway_env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, **hidden)
@@ -127,7 +129,7 @@ def main():
             else:
                 raise RuntimeError('endpoint_not_ready')
             state['status'] = 'online'
-            if os.name == 'nt':
+            if os.name == 'nt' and not args.hardware_only:
                 kernel = ctypes.WinDLL('kernel32', use_last_error=True)
                 kernel.SetThreadExecutionState.argtypes = [ctypes.c_uint32]
                 kernel.SetThreadExecutionState.restype = ctypes.c_uint32

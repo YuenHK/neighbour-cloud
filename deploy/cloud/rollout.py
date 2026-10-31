@@ -17,7 +17,7 @@ from datetime import datetime
 from starlette.responses import JSONResponse
 
 SERVICE = 'srv-dbii3qijnfac73cgabd0'
-RELEASE = 'resident-repair-20261031-c05f3ff-barrier1'
+RELEASE = 'workbench-repair-20261031-native-settings-robots-barrier2'
 RECORD = hashlib.sha256(('rollout:' + RELEASE).encode()).hexdigest()
 DOMAIN = b'neighbour-stopped-writer-rollout-v1\0'
 FIELDS = {'format', 'release', 'service_id', 'stop_event_id', 'stopped_instance',

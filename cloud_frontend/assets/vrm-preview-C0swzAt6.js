@@ -1,0 +1,1 @@
+import{t as e}from"./vrm-preview-LRQ5_4jp.js";export{e as loadVrmModelPreview};

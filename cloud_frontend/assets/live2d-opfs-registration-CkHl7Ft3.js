@@ -1,0 +1,1 @@
+import"./live2d-opfs-registration-BTzy2GE5.js";

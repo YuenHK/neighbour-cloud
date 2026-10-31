@@ -1,12 +1,11 @@
 <script setup lang="ts">
 // AIRI's actual editors and stores. No credentials or resident records.
-import CardSettings from '@proj-airi/stage-pages/pages/settings/airi-card/index.vue'
-import ModelSettings from '@proj-airi/stage-pages/pages/settings/models/index.vue'
 
 import { useDisplayModelsStore } from '@proj-airi/stage-ui/stores/display-models'
 import { useAiriCardStore } from '@proj-airi/stage-ui/stores/modules/airi-card'
 import { useSettings } from '@proj-airi/stage-ui/stores/settings'
-import { nextTick, onMounted, onUnmounted, ref } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
+import { RouterView, useRoute, useRouter } from 'vue-router'
 
 const transport = Reflect.get(globalThis, '__NEIGHBOUR_CLOUD_TRANSPORT__')
 const saved = Reflect.get(globalThis, '__NEIGHBOUR_PRESENTATION__')
@@ -15,7 +14,10 @@ if (!saved?.revision || !transport)
 const card = useAiriCardStore()
 const display = useDisplayModelsStore()
 const settings = useSettings()
-const tab = ref('character')
+const router = useRouter()
+const route = useRoute()
+const tab = ref('airi')
+const deviceOnly = computed(() => !['/settings', '/settings/airi-card', '/settings/models', '/settings/scene'].includes(route.path))
 const status = ref('角色及模型編輯後，按「儲存至平台」套用到所有居民裝置。')
 const busy = ref(false)
 const ready = ref(false)
@@ -55,7 +57,9 @@ onMounted(async () => {
     card.activeCardId = 'neighbour-cloud-profile'
   }
   settings.disableTransitions = true
+  await router.replace('/settings')
   ready.value = true
+  parent.postMessage({ type: 'estate:settings-ready' }, location.origin)
   window.addEventListener('wheel', forwardWheel, { passive: false })
   await nextTick()
   const root = document.querySelector('.cloud-airi-settings')
@@ -83,7 +87,12 @@ async function save() {
     status.value = '匯入模型仍只保存在本瀏覽器；請選內建模型才可同步至雲端。原檔會保留。'
     return
   }
-  const payload = { expected_revision: revision, name: current.name, greeting: greeting.value, persona: persona.value, background: colour.value, airi: { stage_model: settings.stageModelSelected, scene_background: scene.value, card: { name: current.name, description: current.description ?? '', personality: current.personality ?? '', scenario: current.scenario ?? '', system_prompt: current.systemPrompt ?? '' } } }
+  const background = current.extensions?.airi?.modules?.activeBackgroundId ?? scene.value
+  if (!['none', 'builtin:cozy-tea-corner', 'builtin:cute-streaming-room'].includes(background)) {
+    status.value = '自訂背景仍只保存在此裝置；同步至平台請先選內建背景。原檔會保留。'
+    return
+  }
+  const payload = { expected_revision: revision, name: current.name, greeting: greeting.value, persona: persona.value, background: colour.value, airi: { stage_model: settings.stageModelSelected, scene_background: background, card: { name: current.name, description: current.description ?? '', personality: current.personality ?? '', scenario: current.scenario ?? '', system_prompt: current.systemPrompt ?? '' } } }
   busy.value = true
   status.value = '正在儲存…'
   try {
@@ -112,7 +121,7 @@ async function save() {
 <template>
   <div class="cloud-airi-settings estate-inline-settings">
     <nav class="cloud-airi-tabs" aria-label="AIRI 設定項目">
-      <button v-for="item in [['character', '角色及性格'], ['model', '角色模型'], ['opening', '開場及背景'], ['services', '服務來源']]" :key="item[0]" type="button" :aria-pressed="tab === item[0]" @click="tab = item[0]">
+      <button v-for="item in [['airi', '所有 AIRI 設定'], ['opening', '居民開場'], ['services', '雲端服務']]" :key="item[0]" type="button" :aria-pressed="tab === item[0]" @click="tab = item[0]">
         {{ item[1] }}
       </button>
     </nav>
@@ -128,18 +137,32 @@ async function save() {
       正在載入 AIRI 設定…
     </p>
     <template v-else>
-      <section v-if="tab === 'character'">
-        <p>使用 AIRI 角色卡編輯器；選取的角色文字會同步到平台。資料庫及供應商憑證由平台管理，匯入的模型檔仍只存本瀏覽器。</p>
-        <CardSettings />
-      </section>
-      <section v-else-if="tab === 'model'" class="cloud-model-editor">
-        <ModelSettings />
+      <section v-if="tab === 'airi'" class="cloud-model-editor">
+        <nav class="cloud-airi-shortcuts" aria-label="AIRI 設定導航">
+          <button type="button" @click="router.push('/settings')">
+            ← 所有設定
+          </button>
+          <button type="button" @click="router.push('/settings/system/general')">
+            一般設定
+          </button>
+          <button type="button" @click="router.push('/settings/system/color-scheme')">
+            外觀及色彩
+          </button>
+        </nav>
+        <p v-if="deviceOnly" class="cloud-device-notice">
+          以下為 AIRI 原版的此裝置設定；不會更換平台的 Gemma、曉曼、Whisper 或 Tavily，亦不會取得平台金鑰。資料匯出／重設只影響此瀏覽器，不會清除雲端居民個案。
+        </p>
+        <p v-else>
+          角色卡、內建模型及內建場景可按「儲存至平台」同步；匯入的自訂檔案及其餘原版設定保留在此裝置。
+        </p>
+        <RouterView v-slot="{ Component }">
+          <component :is="Component" />
+        </RouterView>
       </section>
       <section v-else-if="tab === 'opening'" class="cloud-opening">
         <label>開場白<textarea v-model="greeting" rows="2" maxlength="200" /></label>
         <label>補充聊天風格<textarea v-model="persona" rows="3" maxlength="1200" /></label>
         <label>畫面色調<select v-model="colour"><option value="mint">柔和薄荷綠</option><option value="sky">清新淺藍</option><option value="warm">溫暖米色</option></select></label>
-        <label>角色背景<select v-model="scene"><option value="none">平台背景</option><option value="builtin:cozy-tea-corner">溫暖茶座</option><option value="builtin:cute-streaming-room">柔和房間</option></select></label>
       </section>
       <section v-else>
         <h2>平台管理的免費服務</h2>
@@ -152,12 +175,13 @@ async function save() {
 
 <style>
 .cloud-airi-settings{padding:16px;width:100%;height:auto!important;min-height:600px;color:#194f49}
-.cloud-airi-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:16px}
+.cloud-airi-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:16px}
 .cloud-airi-tabs button,.cloud-airi-save button{border:1px solid #cadbd3;border-radius:12px;padding:12px;background:#fff}
 body.service-theme .cloud-airi-tabs button[aria-pressed=true],body.service-theme .cloud-airi-save button{background:#21695d;color:white}
 .cloud-airi-save{display:flex;align-items:center;gap:16px;margin-bottom:20px;flex-wrap:wrap}
 .cloud-airi-save p{flex:1;min-width:180px;font-size:14px}
 .cloud-opening label{display:grid;gap:8px;margin-block:20px}.cloud-opening textarea,.cloud-opening select{padding:12px;border:1px solid #cadbd3;border-radius:10px}
 .cloud-model-editor{position:relative;min-height:650px}
+.cloud-airi-shortcuts{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px}.cloud-airi-shortcuts button{padding:10px;border:1px solid #cadbd3;border-radius:10px}.cloud-device-notice{padding:12px;background:#fff4d9;border-radius:12px;margin-bottom:16px}
 @media(max-width:680px){.cloud-airi-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>

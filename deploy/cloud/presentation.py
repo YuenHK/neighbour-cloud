@@ -4,6 +4,7 @@ Installation is an explicit stopped-writer migration, never an HTTP operation
 or runtime bootstrap. Native AIRI preferences and provider keys are untouched.
 """
 import json
+import re
 from typing import Literal
 
 from fastapi import HTTPException
@@ -39,6 +40,14 @@ class PresentationEdit(BaseModel):
     persona: str = Field(max_length=1200)
     background: Literal['mint', 'sky', 'warm']
     airi: AiriPreferences = Field(default_factory=AiriPreferences)
+    robot_remote_url: str = Field(default='', max_length=180)
+
+    @field_validator('robot_remote_url')
+    @classmethod
+    def robot_url(cls, value):
+        if value and not re.fullmatch(r'https://[a-z0-9-]+\.ngrok-free\.(app|dev)', value):
+            raise ValueError('approved_free_robot_endpoint_required')
+        return value
 
     @field_validator('name', 'greeting', 'persona')
     @classmethod
@@ -86,7 +95,7 @@ class Presentation:
             return dict(self._cached)
 
     def public(self):
-        value = {key: value for key, value in self.current().items() if key != 'persona'}
+        value = {key: value for key, value in self.current().items() if key not in ('persona', 'robot_remote_url')}
         value['airi'] = {key: item for key, item in value['airi'].items() if key != 'card'}
         return value
 
@@ -108,6 +117,8 @@ class Presentation:
                     payload = edit.model_dump(exclude={'expected_revision'})
                     if 'airi' not in edit.model_fields_set:
                         payload['airi'] = existing['airi']
+                    if 'robot_remote_url' not in edit.model_fields_set:
+                        payload['robot_remote_url'] = existing['robot_remote_url']
                     self.estate.db.execute('UPDATE cloud_presentation SET revision=revision+1,payload=? WHERE id=1',
                                           (json.dumps(payload, ensure_ascii=True),))
                 self._cached = {**payload, 'revision': edit.expected_revision + 1}

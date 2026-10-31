@@ -30,15 +30,18 @@ def test_cloud_mic_enable_is_local_to_one_frame_not_shared_with_staff_or_next_ta
     assert cloud_audio_device(value) == value
 
 
-def test_cloud_main_has_one_resident_route_and_no_large_font_preloads():
+def test_cloud_main_keeps_settings_routes_in_staff_memory_history_only():
     source = """const routeRecords = setupLayouts(routes as RouteRecordRaw[])
     history: createWebHistory()
     import '@proj-airi/font-cjkfonts-allseto/index.css'
     import '@proj-airi/font-xiaolai/index.css'
     void bootstrapLocalProfile()
+    import { createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
     """
     result = cloud_main(source)
     assert "route.path === '/'" in result and "createWebHistory('/cloud/resident')" in result
-    assert 'import ' not in result and cloud_main(result) == result
+    assert 'cloudSettingsMode ? createMemoryHistory()' in result
+    assert "route.path.startsWith('/settings')" in result
+    assert 'font-xiaolai/index.css' not in result and cloud_main(result) == result
     with pytest.raises(ValueError):
         cloud_main('upstream changed')

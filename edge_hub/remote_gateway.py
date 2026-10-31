@@ -55,7 +55,14 @@ def headers_for_backend(headers, origin):
     return result
 
 
-def create_gateway(secret, hosts, *, transport=None):
+def hardware_path(path):
+    return (path in ('/', '/robots', '/health', '/assets/ep-fleet.js', '/assets/ep-fleet.css',
+                     '/assets/ep-console.js', '/assets/ep-console.css', '/assets/service-shell.css',
+                     '/assets/service/service-mark.svg', '/__remote/runtime.js')
+            or path.startswith('/api/v1/robot/ep/'))
+
+
+def create_gateway(secret, hosts, *, transport=None, hardware_only=False):
     if not isinstance(secret, str) or len(secret) < 32 or not secret.isascii():
         raise ValueError('A fresh edge hop secret is required')
     hosts = frozenset(hosts)
@@ -87,6 +94,8 @@ def create_gateway(secret, hosts, *, transport=None):
             return JSONResponse({'detail': '請透過已登入的鄰伴遠端入口使用。'}, status_code=403,
                                 headers={'Cache-Control': 'no-store'})
         path = '/'+path
+        if hardware_only and not hardware_path(path):
+            raise HTTPException(404)
         if path == '/__remote/runtime.js':
             return Response((Path(__file__).parent/'static/remote-runtime.js').read_bytes(), media_type='text/javascript',
                             headers={'Cache-Control': 'no-store'})
@@ -100,8 +109,14 @@ def create_gateway(secret, hosts, *, transport=None):
             if len(body) > BODY_LIMIT:
                 raise HTTPException(413)
         origin, target = upstream(path)
+        if hardware_only:
+            origin = 'http://127.0.0.1:8000'
         url = origin+target+('?' + request.url.query if request.url.query else '')
         forwarded = headers_for_backend(request.headers, origin)
+        if hardware_only:
+            # The authenticated OAuth edge is the sole remote caller. Preserve
+            # native loopback policy; client-supplied fetch metadata is not proof.
+            forwarded['sec-fetch-site'] = 'same-origin'
         try:
             outgoing = app.state.proxy.build_request(request.method, url, headers=forwarded, content=bytes(body))
             response = await app.state.proxy.send(outgoing, stream=True)
@@ -143,6 +158,9 @@ def create_gateway(secret, hosts, *, transport=None):
 
     @app.websocket('/{path:path}')
     async def socket(client: WebSocket, path: str):
+        if hardware_only:
+            await client.close(code=1008)
+            return
         if not trusted(client.headers, mutation=True):
             await client.close(code=1008)
             return
@@ -183,4 +201,5 @@ def create_gateway(secret, hosts, *, transport=None):
 
 
 def from_environment():
-    return create_gateway(os.environ['NEIGHBOUR_PROXY_TOKEN'], json.loads(os.environ['NEIGHBOUR_REMOTE_HOSTS']))
+    return create_gateway(os.environ['NEIGHBOUR_PROXY_TOKEN'], json.loads(os.environ['NEIGHBOUR_REMOTE_HOSTS']),
+                          hardware_only=os.environ.get('NEIGHBOUR_HARDWARE_ONLY') == '1')

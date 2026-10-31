@@ -42,7 +42,21 @@ class CloudAdminAssets:
         html = html.replace('只列目前居民服務使用的平台；進度條表示剩餘比例，官方餘額與系統保守限制分開顯示。', '只列目前使用的服務；進度條表示可用比例。')
         html = html.replace('<p id="quotaFunctions"', '<p hidden id="quotaFunctions"').replace('<p id="quotaLocalStatus"', '<p hidden id="quotaLocalStatus"')
         html = html.replace('</body>', '<script type="module" src="/cloud/admin-entry.js"></script></body>')
+        tab = '<a id="tab-robots" href="#robots" role="tab" aria-controls="panel-robots" aria-selected="false" tabindex="-1">機械人控制</a>'
+        anchor = '<a role="tab" id="tab-avatar"'
+        if html.count(anchor) != 1:
+            raise ValueError('cloud_robot_navigation_anchor_requires_review')
+        html = html.replace(anchor, tab + anchor, 1)
+        html = html.replace('<section id="panel-avatar"', (WEB / 'robots.html').read_text(encoding='utf-8') + '<section id="panel-avatar"', 1)
         runtime = "import { cloudFetch as fetch } from '/cloud/admin-request.js'\n" + inline[0]
+        runtime = runtime.replace('timeoutMs = 3000', 'timeoutMs = 12000')
+        start = '        const [events, stats] = await Promise.all(['
+        end = '        if (!Array.isArray(followupData.items)'
+        if runtime.count(start) != 1 or runtime.count(end) != 1:
+            raise ValueError('cloud_event_snapshot_anchor_requires_review')
+        before, rest = runtime.split(start, 1)
+        runtime = before + ("        const { events, stats, followups: followupData } = "
+            "await ZhiweiAdminRequest.json('/api/v1/patrol/workbench')\n") + end + rest.split(end, 1)[1]
         runtime = runtime.replace("link.href = '/admin#work'", "link.href = '/cloud/admin#work'")
         self.responses = {'/cloud/admin': (html.encode(), 'text/html'),
             '/cloud/admin/runtime.js': (runtime.encode(), 'text/javascript'),
@@ -53,6 +67,9 @@ class CloudAdminAssets:
         css += b'.service-quota-table td>strong,.service-quota-table td>span{display:block}.service-quota-table td>strong{margin-top:8px}@media(max-width:680px){.service-quota-scroll{overflow:visible}.service-quota-table{display:block;width:100%;min-width:0}.service-quota-table caption{display:block;text-align:left}.service-quota-table thead{display:none}.service-quota-table tbody{display:grid;gap:12px}.service-quota-table tr{display:grid;grid-template-columns:1fr;padding:10px;border:1px solid #d9e5df;border-radius:12px}.service-quota-table th,.service-quota-table td{display:block;border:0}}\n'
         self.responses['/assets/service-shell.css'] = (css, mime)
         self.responses['/cloud/admin/presentation.js'] = ((WEB / 'presentation.js').read_bytes(), 'text/javascript')
+        self.responses['/cloud/admin/robots.js'] = ((WEB / 'robots.js').read_bytes(), 'text/javascript')
+        self.responses['/assets/service-shell.css'] = (self.responses['/assets/service-shell.css'][0] +
+            b'\n.service-tabs{grid-template-columns:repeat(7,minmax(0,1fr))}@media(max-width:680px){.service-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}}\n', 'text/css')
         for name in SCRIPTS + (('governance.js',) if governance else ()):
             script = (static / name).read_text(encoding='utf-8')
             if name == 'estate-management.js':
@@ -63,6 +80,8 @@ class CloudAdminAssets:
                 script = script.replace("`quota${refresh ? '?refresh=true' : ''}`", "'quota'")
             if name == 'api-quota.js':
                 script = (WEB / 'quota-compact.js').read_text(encoding='utf-8')
+            if name == 'workspace-navigation.js':
+                script = script.replace('avatar: [] }', 'avatar: [], robots: [] }')
             if name == 'governance.js':
                 script = script.replace('已檢查資料庫及隔離復原；不包含相片原檔、金鑰、模型或機體控制設定，亦未取代正式資料。',
                     '包括已保存的巡查相片；金鑰、模型及機體控制設定分開保留。復原前須再核對現行清除紀錄及用量，不會自動替換正式資料。')
