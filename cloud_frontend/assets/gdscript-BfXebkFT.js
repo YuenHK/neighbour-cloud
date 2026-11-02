@@ -1,0 +1,1 @@
+import{t as e}from"./gdscript-BFlVRER3.js";export{e as default};

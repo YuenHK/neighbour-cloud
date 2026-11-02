@@ -6,15 +6,19 @@ export class ResidentIdle {
     now = () => Date.now(),
     setTimer = (callback, delay) => globalThis.setTimeout(callback, delay),
     clearTimer = timer => globalThis.clearTimeout(timer),
+    timeoutMs = 180000,
   } = {}) {
     this.expire = expire
     this.now = now
     this.setTimer = setTimer
     this.clearTimer = clearTimer
+    if (!Number.isSafeInteger(timeoutMs) || timeoutMs < 60000 || timeoutMs > 180000)
+      throw new Error('invalid_resident_idle_limit')
+    this.timeoutMs = timeoutMs
   }
 
   touch() {
-    this.deadline = this.now() + 180000
+    this.deadline = this.now() + this.timeoutMs
     this.arm()
   }
 

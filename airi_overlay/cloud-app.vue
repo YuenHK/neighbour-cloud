@@ -7,10 +7,12 @@ import { defineAsyncComponent, h, onMounted, onUnmounted } from 'vue'
 import { RouterView } from 'vue-router'
 
 import '../../../packages/stage-ui-live2d/src/cloud-csp'
+import { installCloudAiriRuntime, prepareCloudAiriRuntime, publishedRuntime } from './modules/cloud-airi-runtime'
 
 // Resident startup must not download the staff card/model editor modules.
 const CloudSettings = defineAsyncComponent({ loader: () => import('./modules/cloud-settings.vue'),
   loadingComponent: { render: () => h('p', { role: 'status' }, '正在載入 AIRI 設定…') }, delay: 0, timeout: 45000 })
+prepareCloudAiriRuntime()
 const display = useDisplayModelsStore()
 const settings = useSettings()
 const audio = useSettingsAudioDevice()
@@ -26,11 +28,14 @@ onMounted(async () => {
   if (card.activeCard && presentation?.airi) {
     // Keep other browser library cards intact, including unpublished edits.
     const base = card.activeCard
+    const runtime = publishedRuntime()
     card.cards.set('neighbour-cloud-profile', { ...base, extensions: { ...base.extensions,
       airi: { ...base.extensions.airi, modules: { ...base.extensions.airi.modules,
+        consciousness: runtime.consciousness, speech: runtime.speech,
         displayModelId: presentation.airi.stage_model, activeBackgroundId: presentation.airi.scene_background } } } })
     card.activeCardId = 'neighbour-cloud-profile'
   }
+  installCloudAiriRuntime()
   await audio.initialize()
 })
 onUnmounted(() => {

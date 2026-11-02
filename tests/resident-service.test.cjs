@@ -166,7 +166,7 @@ test('actual cloud panel without a native speech host keeps three-turn context, 
     defineProps() {}, defineEmits: () => () => {}, defineExpose() {},
     nextTick: async callback => callback?.(), watch() {}, onMounted: callback => mounted.push(callback), onUnmounted() {},
     storeToRefs: () => ({ nowSpeaking: { value: false } }), useSpeakingStore: () => ({}), useAudioContext: () => ({ audioContext: context }),
-    useLLM: () => ({ stream: () => assert.fail('cloud must not call the native provider selection') }),
+    useLLM: () => ({ stream: () => assert.fail('cloud must not call the native provider selection') }), residentGesture() {},
     useAiriCardStore: () => ({ systemPrompt: '已有角色設定' }), useConsciousnessStore: () => ({ activeProvider: '', activeModel: '' }),
     useSpeechStore: () => ({ activeSpeechProvider: 'unrelated-old-provider', activeSpeechVoiceId: 'old-local-voice' }),
     useProvidersStore: () => ({ getProviderConfig: () => ({}) }),
@@ -399,7 +399,7 @@ test('actual resident panel expires draft, profile and pending speech without re
     defineProps: () => {}, defineEmits: () => (...args) => events.push(args), defineExpose: () => {},
     nextTick: async callback => callback?.(), watch: () => {}, onMounted: callback => mounted.push(callback), onUnmounted: () => {},
     storeToRefs: () => ({ nowSpeaking: { value: false } }), useSpeakingStore: () => ({}), useAudioContext: () => ({audioContext:undefined}),
-    ResidentTiming: class { mark() {} report() { return Promise.resolve() } }, ResidentPcm: class {},
+    ResidentTiming: class { mark() {} report() { return Promise.resolve() } }, ResidentPcm: class {}, residentGesture() {},
     useLLM: () => ({ async stream(model, provider, messages, options) {
       nativeCalls.push({ model, provider, messages, options })
       await options.onStreamEvent({ type: 'text-delta', text: '<|AC' })
@@ -427,11 +427,11 @@ test('actual resident panel expires draft, profile and pending speech without re
   vm.runInContext(source.replace('export class ResidentSession', 'globalThis.ResidentSession = class ResidentSession'), sandbox)
   vm.runInContext(fs.readFileSync(path.join(__dirname, '../airi_overlay/resident-api.js'), 'utf8').replace('export function createResidentApi', 'function createResidentApi'), sandbox)
   vm.runInContext(fs.readFileSync(path.join(__dirname, '../airi_overlay/resident-idle.js'), 'utf8').replace('export class ResidentIdle', 'globalThis.ResidentIdle = class ResidentIdle'), sandbox)
-  vm.runInContext(ts.transpileModule(script + '\nglobalThis.panel = { sendMessage, draft, messages, busy, session, speak, checkIdle, status, cancelWaiting }', { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS } }).outputText, sandbox)
+  vm.runInContext(ts.transpileModule(script + '\nglobalThis.panel = { sendMessage, draft, messages, busy, session, beginSpeech, checkIdle, status, cancelWaiting }', { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS } }).outputText, sandbox)
   mounted.forEach(callback => callback())
   sandbox.panel.draft.value = '舊居民未送出資料'
   const pending = sandbox.panel.sendMessage('我叫測試街坊', false)
-  sandbox.panel.speak('公開示範句')
+  sandbox.panel.beginSpeech()
   assert.equal(sandbox.panel.busy.value, true)
   now.value += 180000
   sandbox.panel.checkIdle()
@@ -444,7 +444,7 @@ test('actual resident panel expires draft, profile and pending speech without re
   finish('舊居民的遲到回覆')
   await pending
   assert.equal(sandbox.panel.messages.value.length, 0)
-  sandbox.panel.speak('新居民公開句子')
+  sandbox.panel.beginSpeech()
   const healthCheck = [...timers.values()].find(timer => timer.due === now.value + 1000)
   await healthCheck.callback()
   assert.match(sandbox.panel.status.value, /Google.*額度限制/)

@@ -7,17 +7,25 @@ import { useSettings } from '@proj-airi/stage-ui/stores/settings'
 import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
 import { RouterView, useRoute, useRouter } from 'vue-router'
 
+import CloudAiriMemory from './cloud-airi-memory.vue'
+import CloudAiriProvider from './cloud-airi-provider.vue'
+
+import { cloudRuntime, collectRuntime, installCloudAiriRuntime, managedProviderIds, prepareCloudAiriRuntime, publishedRuntime } from './cloud-airi-runtime'
+
 const transport = Reflect.get(globalThis, '__NEIGHBOUR_CLOUD_TRANSPORT__')
 const saved = Reflect.get(globalThis, '__NEIGHBOUR_PRESENTATION__')
 if (!saved?.revision || !transport)
   throw new Error('verified_staff_profile_required')
+prepareCloudAiriRuntime()
 const card = useAiriCardStore()
 const display = useDisplayModelsStore()
 const settings = useSettings()
 const router = useRouter()
 const route = useRoute()
 const tab = ref('airi')
-const deviceOnly = computed(() => !['/settings', '/settings/airi-card', '/settings/models', '/settings/scene'].includes(route.path))
+const managedProvider = computed(() => route.path.startsWith('/settings/providers/') ? managedProviderIds.find(id => route.path.endsWith(`/${id}`)) : undefined)
+const memoryPage = computed(() => ['/settings/memory', '/settings/modules/memory-short-term', '/settings/modules/memory-long-term'].includes(route.path))
+const deviceOnly = computed(() => !managedProvider.value && !memoryPage.value && !['/settings', '/settings/airi-card', '/settings/models', '/settings/scene', '/settings/modules', '/settings/modules/speech', '/settings/modules/consciousness', '/settings/modules/hearing', '/settings/modules/web-search'].includes(route.path))
 const status = ref('角色及模型編輯後，按「儲存至平台」套用到所有居民裝置。')
 const busy = ref(false)
 const ready = ref(false)
@@ -49,11 +57,23 @@ onMounted(async () => {
   await display.loadDisplayModelsFromIndexedDB()
   await settings.initializeStageModel()
   card.initialize()
+  try {
+    const response = await transport.fetch('/api/v1/service-desk/airi-services', { signal: AbortSignal.timeout(12000) })
+    if (!response.ok)
+      throw new Error('services_not_verified')
+    const services = await response.json()
+    installCloudAiriRuntime(services.configured)
+  }
+  catch {
+    status.value = '未能核對已接入的服務，原有設定保留；請重新開啟此頁再試。'
+    return
+  }
   // Sync the active character only; never delete other browser library cards.
   const stored = saved.airi?.card
   const current = card.activeCard
   if (current) {
-    card.cards.set('neighbour-cloud-profile', { ...current, name: stored?.name ?? saved.name, description: stored?.description ?? '', personality: stored?.personality ?? '', scenario: stored?.scenario ?? '', systemPrompt: stored?.system_prompt ?? '', extensions: { ...current.extensions, airi: { ...current.extensions.airi, modules: { ...current.extensions.airi.modules, displayModelId: saved.airi?.stage_model ?? 'preset-live2d-2', activeBackgroundId: scene.value } } } })
+    const runtime = publishedRuntime()
+    card.cards.set('neighbour-cloud-profile', { ...current, name: stored?.name ?? saved.name, description: stored?.description ?? '', personality: stored?.personality ?? '', scenario: stored?.scenario ?? '', systemPrompt: stored?.system_prompt ?? '', extensions: { ...current.extensions, airi: { ...current.extensions.airi, modules: { ...current.extensions.airi.modules, consciousness: runtime.consciousness, speech: runtime.speech, displayModelId: saved.airi?.stage_model ?? 'preset-live2d-2', activeBackgroundId: scene.value } } } })
     card.activeCardId = 'neighbour-cloud-profile'
   }
   settings.disableTransitions = true
@@ -92,14 +112,14 @@ async function save() {
     status.value = '自訂背景仍只保存在此裝置；同步至平台請先選內建背景。原檔會保留。'
     return
   }
-  const payload = { expected_revision: revision, name: current.name, greeting: greeting.value, persona: persona.value, background: colour.value, airi: { stage_model: settings.stageModelSelected, scene_background: background, card: { name: current.name, description: current.description ?? '', personality: current.personality ?? '', scenario: current.scenario ?? '', system_prompt: current.systemPrompt ?? '' } } }
+  const payload = { expected_revision: revision, name: current.name, greeting: greeting.value, persona: persona.value, background: colour.value, airi: { stage_model: settings.stageModelSelected, scene_background: background, runtime: collectRuntime(), card: { name: current.name, description: current.description ?? '', personality: current.personality ?? '', scenario: current.scenario ?? '', system_prompt: current.systemPrompt ?? '' } } }
   busy.value = true
   status.value = '正在儲存…'
   try {
     const response = await transport.fetch('/api/v1/service-desk/presentation', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), signal: AbortSignal.timeout(15000) })
     if (!response.ok) {
       if (response.status === 422) {
-        status.value = '名稱最多 40 字；角色說明、性格及情境各最多 1,200 字，角色指示最多 4,000 字。請調整後儲存。'
+        status.value = '請核對設定：平台已接入免費 Gemma、曉曼及 Whisper；其他供應商尚未啟用。語速 0.5–2 倍、音調／音量 ±30%，交接 1–3 分鐘。角色指示最多 4,000 字。未覆蓋原設定。'
         return
       }
       throw new Error('save_unconfirmed')
@@ -108,7 +128,7 @@ async function save() {
     if (value.revision !== revision + 1)
       throw new Error('save_unconfirmed')
     revision = value.revision
-    status.value = '已儲存；重新進入居民服務台會使用這個角色、模型及背景。'
+    status.value = '已儲存至平台；重新進入居民服務台會使用這組 AIRI 角色、語音、搜尋及記憶設定。'
   }
   catch {
     uncertain = true
@@ -126,9 +146,6 @@ async function save() {
       </button>
       <button type="button" :aria-pressed="tab === 'opening'" @click="tab = 'opening'">
         居民開場
-      </button>
-      <button type="button" :aria-pressed="tab === 'services'" @click="tab = 'services'">
-        雲端服務
       </button>
       <button type="button" :aria-pressed="tab === 'airi' && route.path === '/settings/system/general'" @click="tab = 'airi'; router.push('/settings/system/general')">
         一般設定
@@ -149,12 +166,15 @@ async function save() {
     <template v-else>
       <section v-if="tab === 'airi'" class="cloud-model-editor">
         <p v-if="deviceOnly" class="cloud-device-notice">
-          以下為 AIRI 原版的此裝置設定；不會更換平台的 Gemma、曉曼、Whisper 或 Tavily，亦不會取得平台金鑰。資料匯出／重設只影響此瀏覽器，不會清除雲端居民個案。
+          此頁為裝置專用設定；匯入檔案、硬件裝置與瀏覽器資料管理保留在本裝置。居民角色、語音、搜尋及記憶則由 AIRI 儲存至平台統一套用。
         </p>
         <p v-else>
-          角色卡、內建模型及內建場景可按「儲存至平台」同步；匯入的自訂檔案及其餘原版設定保留在此裝置。
+          在 AIRI 編輯角色、語音、思維、聽覺、網上搜尋及記憶後，按「儲存至平台」套用到居民服務台。
         </p>
-        <RouterView v-slot="{ Component }">
+        <CloudAiriMemory v-if="memoryPage" />
+        <CloudAiriProvider v-else-if="managedProvider" :provider-id="managedProvider" />
+        <RouterView v-else v-slot="{ Component }">
+          <label v-if="route.path === '/settings/modules/hearing'" class="cloud-microphone-default"><input v-model="cloudRuntime.hearing.microphone_enabled" type="checkbox">居民服務台預設啟用語音輸入（此設定頁不會開咪）</label>
           <component :is="Component" />
         </RouterView>
       </section>
@@ -162,11 +182,6 @@ async function save() {
         <label>開場白<textarea v-model="greeting" rows="2" maxlength="200" /></label>
         <label>補充聊天風格<textarea v-model="persona" rows="3" maxlength="1200" /></label>
         <label>畫面色調<select v-model="colour"><option value="mint">柔和薄荷綠</option><option value="sky">清新淺藍</option><option value="warm">溫暖米色</option></select></label>
-      </section>
-      <section v-else>
-        <h2>平台管理的免費服務</h2>
-        <p>對話：Cloudflare Gemma；廣東話朗讀：Microsoft Azure 曉曼 F0；語音輸入：Cloudflare Whisper；網上搜尋：Tavily。</p>
-        <p>本頁不會更換這些供應商或啟用收費服務。角色卡內其他服務選擇不會套用到居民對話。用量可在「服務用量」查看。</p>
       </section>
     </template>
   </div>

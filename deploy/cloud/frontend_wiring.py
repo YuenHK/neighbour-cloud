@@ -232,7 +232,7 @@ def cloud_vad_store(source):
 def cloud_audio_device(source):
     """Each cloud frame owns its mic switch; staff/teardown cannot mute peers."""
     old = "const audioInputEnabled = useLocalStorageManualReset<boolean>('settings/audio/input/enabled', false)"
-    new = "const audioInputEnabled = refManualReset<boolean>(new URLSearchParams(location.search).get('settings') !== '1')"
+    new = "const audioInputEnabled = refManualReset<boolean>(new URLSearchParams(location.search).get('settings') !== '1' && Reflect.get(globalThis, '__NEIGHBOUR_PRESENTATION__')?.airi?.runtime?.hearing?.microphone_enabled !== false)"
     if new in source:
         return source
     if source.count(old) != 1:
@@ -242,3 +242,27 @@ def cloud_audio_device(source):
         source = source.replace("import { defineStore } from 'pinia'",
                                 "import { refManualReset } from '@vueuse/core'\nimport { defineStore } from 'pinia'")
     return source
+
+
+def cloud_web_search_tool(source):
+    old = "const response = await fetch(managed ? 'http://127.0.0.1:8000/api/v1/resident/search' : TAVILY_SEARCH_URL, {"
+    new = """const cloud = managed && Reflect.get(globalThis, '__NEIGHBOUR_CLOUD__') === true
+  const request = cloud ? Reflect.get(globalThis, '__NEIGHBOUR_CLOUD_TRANSPORT__').fetch : fetch
+  const response = await request(managed ? (cloud ? '/api/v1/resident/search' : 'http://127.0.0.1:8000/api/v1/resident/search') : TAVILY_SEARCH_URL, {"""
+    if new in source:
+        return source
+    if source.count(old) != 1:
+        raise ValueError('cloud_search_transport_anchor_requires_review')
+    return source.replace(old, new)
+
+
+def cloud_web_search_editor(source):
+    old = "const webSearchStore = useWebSearchStore()"
+    new = old + "\nconst cloud = Reflect.get(globalThis, '__NEIGHBOUR_CLOUD__') === true"
+    if new in source:
+        return source
+    if source.count(old) != 1:
+        raise ValueError('cloud_search_editor_anchor_requires_review')
+    return source.replace(old, new).replace('<p v-if="managed">', '<p v-if="managed || cloud">').replace(
+        '已連接本機 Tavily 金鑰，與居民服務台共用搜尋及快取；毋須重複輸入。',
+        "{{ cloud ? (managed ? 'Tavily 已由平台接通，與居民服務台共用搜尋及快取；毋須輸入金鑰。' : '平台暫時未能確認 Tavily 設定；原有資料保留。') : '已連接本機 Tavily 金鑰，與居民服務台共用搜尋及快取；毋須重複輸入。' }}")

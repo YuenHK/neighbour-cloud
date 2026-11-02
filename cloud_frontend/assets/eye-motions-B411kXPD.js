@@ -1,2 +1,0 @@
-var e=400,t=[[.075,800],[.11,0],[.125,0],[.14,0],[.125,0],[.05,0],[.04,0],[.03,0],[.02,0],[1,0]];for(let n=1;n<t.length;n++)t[n][0]+=t[n-1][0],t[n][1]=t[n-1][1]+e;function n(){let n=Math.random();for(let r=0;r<t.length;r++)if(n<=t[r][0])return t[r][1]+Math.random()*e;return t.at(-1)[1]+Math.random()*e}export{n as t};
-//# sourceMappingURL=eye-motions-B411kXPD.js.map

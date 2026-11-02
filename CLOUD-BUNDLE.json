@@ -145,9 +145,24 @@
       "sha256": "e618234f46655b2162bdeae93e9659dabec411ba7ec0d3aeb29153c0ecba28fe"
     },
     {
+      "path": "airi_overlay/cloud-airi-memory.vue",
+      "bytes": 5801,
+      "sha256": "79dbdc5d88857348d33e22e6f35b6038ede9ec79edbe3cd9d8782423abf8ef1a"
+    },
+    {
+      "path": "airi_overlay/cloud-airi-provider.vue",
+      "bytes": 3307,
+      "sha256": "520561e00a6d0129bac3739a2712a62c7007bd3d0e292ec49eb73ff235f52fbe"
+    },
+    {
+      "path": "airi_overlay/cloud-airi-runtime.ts",
+      "bytes": 8154,
+      "sha256": "8a9886c185ecff5c9562d2120897350180bd428868046e68fadea4b1144d7ee3"
+    },
+    {
       "path": "airi_overlay/cloud-app.vue",
-      "bytes": 2203,
-      "sha256": "8ddbc929346a9aa6b363da42d202c8196e541007db23a461762ea417cd41bc5d"
+      "bytes": 2533,
+      "sha256": "d32ced4039a63ef77176cf45aa2f920083ed3fe741c70109a16a3d90efae1969"
     },
     {
       "path": "airi_overlay/cloud-frame.js",
@@ -158,6 +173,11 @@
       "path": "airi_overlay/cloud-gestures.ts",
       "bytes": 1236,
       "sha256": "7f84d220db7315b9eae35f92adb491bd3bc03d1f177a4d11e3e26ef12bf5776b"
+    },
+    {
+      "path": "airi_overlay/cloud-native-fetch.js",
+      "bytes": 6016,
+      "sha256": "fc6c116a13d93819cb06f18070945feb8aaf59a2b2b6cf44f3c6fccfa54d445a"
     },
     {
       "path": "airi_overlay/cloud-pixi-csp.ts",
@@ -176,8 +196,8 @@
     },
     {
       "path": "airi_overlay/cloud-settings.vue",
-      "bytes": 10160,
-      "sha256": "89e7b85d8d54e6bad4adb604079d3ebf1c3705d882448ed6ed8673e03c1ae527"
+      "bytes": 11489,
+      "sha256": "0757117ee8909052b05855833d727f05e28c6e27b32e77809eb2c3d22ecce738"
     },
     {
       "path": "airi_overlay/cloud-transport.js",
@@ -256,8 +276,8 @@
     },
     {
       "path": "airi_overlay/resident-idle.js",
-      "bytes": 914,
-      "sha256": "3e8ee7ba11c48f97eed0d424dd05cf277957e03bcf253602555266786d655f27"
+      "bytes": 1115,
+      "sha256": "aab42b3d40ddb3ce5dfc58ce2548451b436d431e149cfe9ed7ff165d573d8dfb"
     },
     {
       "path": "airi_overlay/resident-pcm.js",
@@ -276,13 +296,13 @@
     },
     {
       "path": "airi_overlay/resident-service-panel.vue",
-      "bytes": 24566,
-      "sha256": "6e73dd66cb4a896f44fe3fc0438bd0845fec4c529676af8b77f353b0d01e6ac1"
+      "bytes": 25080,
+      "sha256": "6bda8c8694a6d51062c523e51ebbd1881b7d7701386f2108573314e1f5bf525c"
     },
     {
       "path": "airi_overlay/resident-session.js",
-      "bytes": 2862,
-      "sha256": "b23a870fd574c2c911db9fc875f88dc5bede576cfd92dad13dce8e8fb4c5c4ef"
+      "bytes": 3261,
+      "sha256": "69c1f2ff20807eb0c87bbafc1ffd74277193ace29a7069a3ad63336dd0e1229d"
     },
     {
       "path": "airi_overlay/resident-view-guard.js",
@@ -340,6 +360,11 @@
       "sha256": "6c5f0b829c5cf2f29aa82beab605dd0be708147ace9a9d290facc63885540377"
     },
     {
+      "path": "deploy/cloud/airi_runtime.py",
+      "bytes": 2996,
+      "sha256": "458cf6b57dd798f43df8412d09080dddedae0e1f131a322d98263dd5f1297b1f"
+    },
+    {
       "path": "deploy/cloud/backup_store.py",
       "bytes": 16974,
       "sha256": "37556d6418b5928de7ca4ed764a1822f2acba2815e8faef305aff8126151219e"
@@ -381,8 +406,8 @@
     },
     {
       "path": "deploy/cloud/frontend_wiring.py",
-      "bytes": 11648,
-      "sha256": "9ccb6f755a597336016d903237571cf8ea237d1fde64b68aec2766f38b84bc37"
+      "bytes": 13288,
+      "sha256": "963b1ef0f16373cbf94f10429e7247e33635b7990239b37aea239bdea546fce1"
     },
     {
       "path": "deploy/cloud/google_identity.py",
@@ -396,8 +421,8 @@
     },
     {
       "path": "deploy/cloud/http_app.py",
-      "bytes": 24294,
-      "sha256": "217716f19b4989b4f0a73949a077e4529e924864f4030448278bf3053a2b0506"
+      "bytes": 24886,
+      "sha256": "711b13ccfb1265ffc9fbc22ced14614120579a839851ef7309ae0b20da1de5a8"
     },
     {
       "path": "deploy/cloud/libsql_connection.py",
@@ -461,8 +486,8 @@
     },
     {
       "path": "deploy/cloud/presentation.py",
-      "bytes": 5920,
-      "sha256": "df1e457a6dac86cfaf06b87b21ccf7226225c6c5fdf8cafb101f4e3281129314"
+      "bytes": 6365,
+      "sha256": "0acce2d8ec837d2e5c25eb8be8bb9414932556bb6b769166b5fe7ca467794252"
     },
     {
       "path": "deploy/cloud/quota_api.py",
@@ -501,8 +526,8 @@
     },
     {
       "path": "deploy/cloud/rollout.py",
-      "bytes": 6975,
-      "sha256": "ecb2fc7617261fbfc3898ffbc7f162949313d069a027324a51520e3fe7c299bc"
+      "bytes": 6970,
+      "sha256": "4acf8fa0ba170766378a0d456646394a6cb69964ab4c8697f4caf63777c7a931"
     },
     {
       "path": "deploy/cloud/runtime_storage.py",
@@ -566,8 +591,8 @@
     },
     {
       "path": "deploy/cloud/voice_api.py",
-      "bytes": 1904,
-      "sha256": "ce55d1776858d633cda2e74c7493cdc75771143a37f19ba84080b0e7da70a0a0"
+      "bytes": 2945,
+      "sha256": "0cd56ffbe07cb2c2f8f5cc451067a62a49fe559220dae6d0b29c857b3e3363e0"
     },
     {
       "path": "deploy/cloud/web/admin-entry.js",
@@ -586,8 +611,8 @@
     },
     {
       "path": "deploy/cloud/web/index.html",
-      "bytes": 6220,
-      "sha256": "1980b1fb65f0b69aa1f737b25b8e8691b65b058f60d44373a1125aeaa582a44a"
+      "bytes": 6247,
+      "sha256": "901761a4708950fbeccb78462153a04cf8fb14145d7af3f50d61737772aa5ce5"
     },
     {
       "path": "deploy/cloud/web/launch-screen.css",
@@ -681,8 +706,8 @@
     },
     {
       "path": "edge_hub/azure_voice.py",
-      "bytes": 9092,
-      "sha256": "52172bf07fe5295a55ed08ef2c0cb090786b2b32d2ad80262c6a595350c40195"
+      "bytes": 10030,
+      "sha256": "36cf3f0bf18db446f508e10d9a6c5a91e44b46eb6a2f74fa9531db2e4f1407ca"
     },
     {
       "path": "edge_hub/browser_timing.py",
@@ -796,8 +821,8 @@
     },
     {
       "path": "edge_hub/estate_services.py",
-      "bytes": 24085,
-      "sha256": "4a1723c007020ca4f75d6d1e139901d89ac8346c376edb47cffcc1adaf6c7ef6"
+      "bytes": 25053,
+      "sha256": "85c50f3ad520c3fa443be9e959eebec46cc0c8ca193bee6508f5696baf91e708"
     },
     {
       "path": "edge_hub/event_ingest.py",
@@ -1056,8 +1081,8 @@
     },
     {
       "path": "edge_hub/service_desk.py",
-      "bytes": 48100,
-      "sha256": "eb235fa7f59e321ad275a2351eedb1f9fcd095f0976ccca4af7487a5769fd162"
+      "bytes": 48700,
+      "sha256": "6b2e780c28baccc16cafcbf208378501cc8450cb17d6ffb92ee6433c95721b45"
     },
     {
       "path": "edge_hub/service_identity.py",
@@ -1326,8 +1351,8 @@
     },
     {
       "path": "local_audio_gateway/resident_stream.py",
-      "bytes": 4437,
-      "sha256": "5faf81dfcc75c55c5806eacc3038426b997b5033f63844cffd5a4614a8b63621"
+      "bytes": 5070,
+      "sha256": "6158b8a079aec457776a3ae847d6478fae296b21ea8e8cee0ec630813822ccb8"
     },
     {
       "path": "local_audio_gateway/singleflight.py",

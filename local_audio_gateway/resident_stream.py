@@ -32,9 +32,11 @@ class OwnedStreamResponse(StreamingResponse):
                 await self.body_iterator.aclose()
 
 
-def stream_router(body_type, profile, spoken, *, chunks_factory=None):
+def stream_router(body_type, profile, spoken, *, chunks_factory=None, render_options=None, options_chunks_factory=None):
     if chunks_factory is not None and not callable(chunks_factory):
         raise TypeError('voice_chunks_factory_required')
+    if render_options is not None and (not callable(render_options) or not callable(options_chunks_factory)):
+        raise TypeError('voice_rendering_factory_required')
     router = APIRouter()
     slots = threading.BoundedSemaphore(2)
     lock = threading.Lock()
@@ -45,11 +47,15 @@ def stream_router(body_type, profile, spoken, *, chunks_factory=None):
         if (profile().get('tts_provider') != 'azure' or body.model != azure_voice.MODEL
                 or body.voice != azure_voice.VOICE or body.speed != 1):
             raise HTTPException(400, '居民串流只使用曉曼F0原速。')
+        # Capture published preferences once; mid-stream edits cannot mix styles.
+        options = render_options(body) if render_options is not None else None
         try:
             text = spoken(body.input)
             if not isinstance(text, str) or not text.strip() or len(text) > 1500:
                 raise ValueError('invalid_voice_text')
             identity = hashlib.sha256(azure_voice.spoken_private(text).encode()).hexdigest()
+            if options is not None:
+                identity = hashlib.sha256((identity + json.dumps(options, sort_keys=True)).encode()).hexdigest()
         except (UnicodeError, ValueError, TypeError):
             raise HTTPException(400, '語音文字不正確或太長。') from None
 
@@ -78,7 +84,8 @@ def stream_router(body_type, profile, spoken, *, chunks_factory=None):
                 chunks = []
                 size = 0
                 provider = azure_voice.pcm_chunks if chunks_factory is None else chunks_factory
-                source = iter(cached if cached is not None else provider(text))
+                source = iter(cached if cached is not None else options_chunks_factory(text, options)
+                              if render_options is not None else provider(text))
                 for chunk in source:
                     size += len(chunk)
                     if size <= 2_000_000:

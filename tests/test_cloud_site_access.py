@@ -85,6 +85,9 @@ def test_public_http_entry_keeps_staff_data_and_settings_behind_password(seeded)
         assert client.get('/api/v1/resident/session', headers=public).json()['role'] == 'resident'
         assert client.get('/api/v1/service-desk/requests', headers=public).status_code == 403
         assert client.get('/api/v1/service-desk/presentation', headers=public).status_code == 403
+        catalog = '/api/v1/service-desk/airi-services'
+        assert client.get(catalog).status_code == 401
+        assert client.get(catalog, headers=public).status_code == 403
         assert 'persona' not in client.get('/api/v1/resident/presentation', headers=public).json()
         assert client.post('/api/v1/resident/access', headers={'Origin': origin}, json={'password': 'wrong'}).status_code == 401
         accepted = client.post('/api/v1/resident/access', headers={'Origin': origin}, json={'password': 'synthetic-manager'})
@@ -92,3 +95,20 @@ def test_public_http_entry_keeps_staff_data_and_settings_behind_password(seeded)
         assert client.get('/api/v1/service-desk/requests', headers=staff).status_code == 200
         settings = client.get('/api/v1/service-desk/presentation', headers=staff)
         assert settings.status_code == 200 and settings.json()['revision'] == 1
+        services_reply = client.get(catalog, headers=staff)
+        assert services_reply.status_code == 200
+        assert services_reply.json()['free_only'] is True
+        assert set(services_reply.json()['configured']) == {'cloudflare-workers-ai', 'microsoft-speech',
+                    'openai-compatible-audio-transcription', 'tavily'}
+        assert 'api_key' not in services_reply.text and 'apiKey' not in services_reply.text
+        changed = settings.json()
+        changed['expected_revision'] = changed.pop('revision')
+        changed['airi']['runtime']['web_search']['enabled'] = False
+        changed['airi']['runtime']['speech']['rate'] = .9
+        changed['airi']['runtime']['memory']['long_term_enabled'] = False
+        saved = client.put('/api/v1/service-desk/presentation', headers=staff, json=changed)
+        assert saved.status_code == 200
+        assert services.residents.runtime()['web_search']['enabled'] is False
+        assert services.residents.runtime()['memory']['long_term_enabled'] is False
+        assert client.get('/api/v1/resident/presentation', headers=public).json()['airi']['runtime']['speech']['rate'] == .9
+        assert client.put('/api/v1/service-desk/presentation', headers=staff, json=changed).status_code == 409

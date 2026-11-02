@@ -556,6 +556,17 @@ def service_desk_router(store, authorize, static_root, chat, services=None, *, r
         if not accepted(request):
             raise HTTPException(403, '請使用本機屋苑服務台。')
         history = resident_history({'messages': [item.model_dump() for item in body.messages]})
+        if services is not None and getattr(services, 'runtime_settings', None) is not None:
+            memory = services.runtime()['memory']
+            remaining, kept = memory['context_characters'], []
+            for item in reversed(history):
+                if len(kept) >= memory['context_messages'] or len(item['content']) > remaining:
+                    break
+                kept.append(item)
+                remaining -= len(item['content'])
+            history = list(reversed(kept))
+            while history and history[0]['role'] != 'user':
+                history.pop(0)
         if not history or history[-1]['role'] != 'user':
             raise HTTPException(400, '請輸入問題。')
         search_status = 'not_used'

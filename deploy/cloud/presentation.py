@@ -3,12 +3,15 @@
 Installation is an explicit stopped-writer migration, never an HTTP operation
 or runtime bootstrap. Native AIRI preferences and provider keys are untouched.
 """
+import copy
 import json
 import re
 from typing import Literal
 
 from fastapi import HTTPException
 from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+from deploy.cloud.airi_runtime import AiriRuntime
 
 PUBLIC_PATH = '/api/v1/resident/presentation'
 STAFF_PATH = '/api/v1/service-desk/presentation'
@@ -30,6 +33,7 @@ class AiriPreferences(BaseModel):
     stage_model: Literal['preset-live2d-1', 'preset-live2d-2', 'preset-vrm-1', 'preset-vrm-2'] = 'preset-live2d-2'
     scene_background: Literal['none', 'builtin:cozy-tea-corner', 'builtin:cute-streaming-room'] = 'none'
     card: AiriCharacter | None = None
+    runtime: AiriRuntime = Field(default_factory=AiriRuntime)
 
 
 class PresentationEdit(BaseModel):
@@ -92,7 +96,7 @@ class Presentation:
         with self.estate.lock:
             if self._cached is None or refresh:
                 self._cached = self._read()
-            return dict(self._cached)
+            return copy.deepcopy(self._cached)
 
     def public(self):
         value = {key: value for key, value in self.current().items() if key not in ('persona', 'robot_remote_url')}
@@ -106,6 +110,9 @@ class Presentation:
         return ('你的稱呼是「' + value['name'] + '」。' + value['persona']
                 + ('\nAIRI 角色設定（語氣及背景，不代表已完成現實操作）：\n' + character if character else ''))
 
+    def runtime(self):
+        return self.current()['airi']['runtime']
+
     def save(self, edit):
         with self.estate.lock:
             try:
@@ -117,6 +124,9 @@ class Presentation:
                     payload = edit.model_dump(exclude={'expected_revision'})
                     if 'airi' not in edit.model_fields_set:
                         payload['airi'] = existing['airi']
+                    elif 'runtime' not in edit.airi.model_fields_set:
+                        # A previously open editor must not reset new module settings.
+                        payload['airi']['runtime'] = existing['airi']['runtime']
                     if 'robot_remote_url' not in edit.model_fields_set:
                         payload['robot_remote_url'] = existing['robot_remote_url']
                     self.estate.db.execute('UPDATE cloud_presentation SET revision=revision+1,payload=? WHERE id=1',

@@ -237,8 +237,15 @@ class ResidentServices:
         self.client = client
         self.search_cache = {}
         self.search_pending = {}
+        self.runtime_settings = None  # Optional cloud AIRI authority; native defaults unchanged.
+
+    def runtime(self):
+        return self.runtime_settings() if self.runtime_settings is not None else {
+            'web_search': {'enabled': True}, 'memory': {'long_term_enabled': True}}
 
     async def search(self, query):
+        if not self.runtime()['web_search']['enabled']:
+            return {'answer': '網上搜尋目前已在 AIRI 設定暫停；我仍可以查閱屋苑已確認資料。', 'search_status': 'disabled'}
         query = re.sub(r'\s+', ' ', unicodedata.normalize('NFKC', query)).strip()[:400]
         if redact(query) != query:
             return {'answer': '呢句包含聯絡資料或住戶資料，我未有傳出去搜尋。可以只講想查嘅公開資訊，唔使講電話或單位。',
@@ -280,17 +287,20 @@ class ResidentServices:
 
     async def resolve(self, body, history):
         text = history[-1]['content'].strip()
+        memory_enabled = self.runtime()['memory']['long_term_enabled']
         name = profile_name(text)
         if name:
-            facts = self.estate.memories(name)
+            facts = self.estate.memories(name) if memory_enabled else []
             prior = history[-3]['content'] if len(history) >= 3 and history[-3]['role'] == 'user' else ''
             pending = re.match(r'^(?:幫我|帮我)?(?:記住|记住)[：:\s]*(.+)', prior)
-            if pending and history[-2]['content'] == '可以，想我下次記得，請先講「我叫」加你希望使用的稱呼。':
+            if memory_enabled and pending and history[-2]['content'] == '可以，想我下次記得，請先講「我叫」加你希望使用的稱呼。':
                 self.estate.remember(name, pending[1])
                 return {'answer': f'好，{name}，已經幫你記住。下次講返同一稱呼就可以。'}
             return {'answer': f'你好，{name}。'+('我記得你之前叫我記住的事，可以繼續同我講。' if facts else '好開心識你，可以隨意同我傾。')}
         remember = re.match(r'^(?:幫我|帮我)?(?:記住|记住)[：:\s]*(.+)', text)
         if remember:
+            if not memory_enabled:
+                return {'answer': '跨次記憶目前已暫停；我會在今次對話留意，未有新增長期記憶。'}
             if not body.profile:
                 return {'answer': '可以，想我下次記得，請先講「我叫」加你希望使用的稱呼。'}
             self.estate.remember(body.profile, remember[1])
@@ -303,6 +313,8 @@ class ResidentServices:
                 return {'answer': '好，呢項記憶唔會再用作回覆。'}
             return {'answer': '請講返要忘記的完整內容，我唔會估錯項目。'}
         if body.profile and re.search(r'(?:記得我|记得我|記住咗|记住了|之前記住|我的記憶|我的记忆)', text):
+            if not memory_enabled:
+                return {'answer': '跨次記憶目前已暫停；原有記憶仍保留，你亦可以要求忘記指定內容。'}
             facts = self.estate.memories(body.profile)
             return {'answer': '我記得：'+'；'.join(row['text'] for row in facts[:3]) if facts else '暫時未有你明確叫我記住的事。'}
         answer = self.estate.answer(text)
@@ -314,7 +326,7 @@ class ResidentServices:
                 return await self.search(query[1] if query else text)
             except (httpx.HTTPError, ValueError, KeyError):
                 return {'answer': '網上搜尋暫時未能完成；我唔會當作已經查到資料，你可以稍後再試。', 'search_status': 'unavailable'}
-        if body.profile:
+        if body.profile and memory_enabled:
             facts = self.estate.memories(body.profile)
             terms = {text[i:i+2] for i in range(len(text)-1)}
             relevant = [row['text'] for row in facts if sum(term in row['text'] for term in terms) >= 2][:4]

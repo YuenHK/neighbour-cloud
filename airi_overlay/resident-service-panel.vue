@@ -21,6 +21,7 @@ defineProps<{ listening: boolean, voiceUnavailable?: boolean, voiceRecovering?: 
 const emit = defineEmits<{ microphone: [], endSession: [], speaking: [boolean] }>()
 const cloudResident = Reflect.get(globalThis, '__NEIGHBOUR_CLOUD__') === true
 const presentation = Reflect.get(globalThis, '__NEIGHBOUR_PRESENTATION__') || {}
+const runtimePreferences = cloudResident ? presentation.airi?.runtime : undefined
 const hubOrigin = cloudResident || Reflect.get(globalThis, '__NEIGHBOUR_REMOTE__') === true ? location.origin : 'http://127.0.0.1:8000'
 const residentApi = createResidentApi({
   cloud: cloudResident,
@@ -58,7 +59,7 @@ let speechDidStart = false
 let speechFailed = false
 let pcmPlayer: ResidentPcm | undefined
 let turnTiming: ResidentTiming | undefined
-const inactivity = new ResidentIdle(reset)
+const inactivity = new ResidentIdle(reset, { timeoutMs: (runtimePreferences?.memory?.idle_seconds ?? 180) * 1000 })
 const session = new ResidentSession(async (body: unknown, signal: AbortSignal, onDelta: (text: string) => void) => {
   const deadline = AbortSignal.any([signal, AbortSignal.timeout(150000)])
   const selected = { provider: consciousness.activeProvider, model: consciousness.activeModel || consciousness.customModelName }
@@ -119,7 +120,7 @@ const session = new ResidentSession(async (body: unknown, signal: AbortSignal, o
     }
   }
   return readResidentReply(response, onDelta, deadline)
-})
+}, { maxMessages: runtimePreferences?.memory?.context_messages ?? 60, maxCharacters: runtimePreferences?.memory?.context_characters ?? 16000 })
 function clearAudio() {
   if (pcmPlayer)
     nowSpeaking.value = false
@@ -394,6 +395,12 @@ async function transcribeAudio(audio: Blob) {
       throw new Error('resident_transcription_cancelled')
     if (!text.trim())
       status.value = '未辨識到清楚內容；等朗讀完再講，或者先打字同我傾。'
+    if (text.trim() && runtimePreferences?.hearing?.auto_send === false) {
+      touch()
+      draft.value = text
+      status.value = '已放入輸入框；你可以核對後按傳送。'
+      return ''
+    }
     return text
   }
   catch {

@@ -1,6 +1,7 @@
 """Verified F0 HiuMaan only. No billing/upgrade APIs, retries or paid fallback."""
 import io
 import json
+import math
 import sqlite3
 import time
 import unicodedata
@@ -21,6 +22,23 @@ from edge_hub.usage_snapshot import usage_snapshot
 
 MODEL = 'azure-hiumaan-f0'
 VOICE = 'zh-HK-HiuMaanNeural'
+
+
+def speech_xml(text, options=None):
+    """Only bounded AIRI prosody, never arbitrary SSML or another voice."""
+    options = options or {}
+    if set(options) - {'rate', 'pitch', 'volume'}:
+        raise ValueError('unsupported_voice_option')
+    style = {'rate': 1., 'pitch': 0., 'volume': 0., **options}
+    for key, value in style.items():
+        low, high = (.5, 2.) if key == 'rate' else (-30., 30.)
+        if type(value) not in (int, float) or not math.isfinite(value) or not low <= value <= high:
+            raise ValueError('invalid_voice_option')
+    content = escape(text)
+    if style != {'rate': 1., 'pitch': 0., 'volume': 0.}:
+        content = (f'<prosody rate="{style["rate"]:g}" pitch="{style["pitch"]:+g}%" '
+                   f'volume="{style["volume"]:+g}%">{content}</prosody>')
+    return f'<speak version="1.0" xml:lang="zh-HK"><voice name="{VOICE}">{content}</voice></speak>'.encode()
 
 
 def configured():
@@ -83,7 +101,7 @@ def spoken_private(text):
     return text
 
 
-def _audio_chunks(text, *, output_format, client=None):
+def _audio_chunks(text, *, output_format, client=None, options=None):
     """One F0 reservation/request. Consumer must close the generator on cancel."""
     raw = output_format == 'raw-24khz-16bit-mono-pcm'
     if output_format not in ('raw-24khz-16bit-mono-pcm', 'audio-24khz-48kbitrate-mono-mp3'):
@@ -91,6 +109,7 @@ def _audio_chunks(text, *, output_format, client=None):
     if not isinstance(text, str) or not 0 < len(text) <= 1500:
         raise ValueError('invalid_voice_input')
     text = spoken_private(text)
+    document = speech_xml(text, options)
     require_available()
     root = settings_root()
     key = _crypt((root/'azure-speech-f0-key.dpapi').read_bytes(), decrypt=True).decode()
@@ -102,7 +121,7 @@ def _audio_chunks(text, *, output_format, client=None):
         with client.stream('POST', 'https://eastasia.tts.speech.microsoft.com/cognitiveservices/v1',
             headers={'Ocp-Apim-Subscription-Key': key, 'Content-Type': 'application/ssml+xml',
                      'X-Microsoft-OutputFormat': output_format},
-            content=f'<speak version="1.0" xml:lang="zh-HK"><voice name="{VOICE}">{escape(text)}</voice></speak>'.encode(),
+            content=document,
             timeout=15) as response:
             response.raise_for_status()
             checked_mp3 = False
@@ -134,9 +153,9 @@ def _audio_chunks(text, *, output_format, client=None):
             client.close()
 
 
-def pcm_chunks(text, *, client=None):
+def pcm_chunks(text, *, client=None, options=None):
     """Existing resident PCM path. No change of voice, reservation or playback."""
-    yield from _audio_chunks(text, output_format='raw-24khz-16bit-mono-pcm', client=client)
+    yield from _audio_chunks(text, output_format='raw-24khz-16bit-mono-pcm', client=client, options=options)
 
 
 def mp3_chunks(text, *, client=None):

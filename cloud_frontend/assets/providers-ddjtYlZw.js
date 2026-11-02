@@ -1,2 +1,0 @@
-import{C as e,Nt as t,X as n,j as r}from"./vue.runtime.esm-bundler-BpXz90Lz.js";import{n as i}from"./vue-router-DX3BgGK2.js";var a=r({__name:`index`,setup(r){return(r,a)=>(n(),e(t(i)))}});export{a as default};
-//# sourceMappingURL=providers-ddjtYlZw.js.map

@@ -306,6 +306,14 @@ def create_app(services, verifier, *, origin, model_client=None, voice_client=No
     app.state.browser_timings = BrowserTimings()
     app.state.resident_transcription = Transcription(lambda: app.state.resident_cloud_client)
     if presentation is not None:
+        services.residents.runtime_settings = presentation.runtime
+
+        @app.get('/api/v1/service-desk/airi-services')
+        def airi_services():
+            require_staff()
+            from deploy.cloud.airi_runtime import catalog
+            return catalog()
+
         @app.get(PRESENTATION_PUBLIC_PATH)
         def resident_presentation():
             return presentation.public()
@@ -412,7 +420,10 @@ def create_app(services, verifier, *, origin, model_client=None, voice_client=No
     include_selected(app, estate_router(services.estate, require_staff),
         ('/api/v1/service-desk/knowledge', '/api/v1/service-desk/resident-memories'))
     app.include_router(voice_router(lambda text: azure_voice.pcm_chunks(
-        text, client=app.state.resident_voice_client)))
+        text, client=app.state.resident_voice_client), runtime=presentation.runtime if presentation is not None else None,
+        options_chunks_factory=lambda text, options: azure_voice.pcm_chunks(
+            text, client=app.state.resident_voice_client, options=options),
+        staff_preview=lambda: current_principal() is not None and current_principal().role == 'staff'))
     app.include_router(photo_router(services, require_staff))
     app.include_router(staff_router(services, require_staff))
     app.include_router(robot_router(presentation, require_staff, lambda: app.state.robot_client))

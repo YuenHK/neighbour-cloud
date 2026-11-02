@@ -8,13 +8,21 @@ export class ResidentSession {
   profile = ''
   sessionId = crypto.randomUUID().replaceAll('-', '')
 
-  constructor(request) { this.request = request }
+  constructor(request, { maxMessages = 60, maxCharacters = 16000 } = {}) {
+    if (!Number.isSafeInteger(maxMessages) || maxMessages < 4 || maxMessages > 60
+      || !Number.isSafeInteger(maxCharacters) || maxCharacters < 2000 || maxCharacters > 16000) {
+      throw new Error('invalid_resident_context_limit')
+    }
+    this.request = request
+    this.maxMessages = maxMessages
+    this.maxCharacters = maxCharacters
+  }
 
   bounded(messages) {
-    let remaining = 16000
+    let remaining = this.maxCharacters
     const kept = []
     for (const item of [...messages].reverse()) {
-      if (kept.length >= 60 || item.content.length > remaining)
+      if (kept.length >= this.maxMessages || item.content.length > remaining)
         break
       kept.push({ role: item.role, content: item.content })
       remaining -= item.content.length
