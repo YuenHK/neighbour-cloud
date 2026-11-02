@@ -14,6 +14,11 @@ try {
     __NEIGHBOUR_CLOUD__: { value: true }, __NEIGHBOUR_REMOTE__: { value: true },
     __NEIGHBOUR_CLOUD_TRANSPORT__: { value: transport },
   })
+  // Each authenticated workbench entry checks public indexes in the background.
+  // Never delay access to cases/settings or turn polling into repeated crawls.
+  transport.fetch('/api/v1/service-desk/model-gallery/catalogue/check', {
+    method: 'POST', signal: AbortSignal.timeout(10000),
+  }).catch(() => {})
   const settings = document.getElementById('cloudAiriSettings')
   const makeBroker = () => createFrameBroker({ origin: location.origin, frameWindow: () => settings?.contentWindow,
     tokenProvider: () => identity })

@@ -1,0 +1,2 @@
+import{C as e,M as t,Pt as n,Z as r}from"./vue.runtime.esm-bundler-BalvS9Cy.js";import{L as i}from"./components-DXNe85S2.js";import{t as a}from"./route-block-DBhJxsjT.js";var o=t({__name:`gaming-factorio`,setup(t){return(t,a)=>(r(),e(n(i)))}});typeof a==`function`&&a(o);var s=o;export{s as default};
+//# sourceMappingURL=gaming-factorio-Cx0YOTib.js.map

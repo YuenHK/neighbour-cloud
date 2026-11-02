@@ -100,3 +100,30 @@ async def test_unbounded_pagination_or_login_preserves_cache(store):
         await c.refresh()
     row = next(row for row in store.rows() if row['source'] == 'vtubernook')
     assert row['items'] == [{'title': 'retained'}] and row['stale']
+
+
+@async_test
+async def test_every_staff_entry_checks_again_but_polling_and_fast_reload_coalesce(store):
+    stamp = [1000]
+    calls = []
+    class Catalogue(SourceCatalogue):
+        async def collect(self, name):
+            calls.append((name, stamp[0]))
+            return [{'title': 'public metadata', 'url': 'https://www.live2d.com/en/learn/sample/kei'}]
+    c = Catalogue(store, None, now=lambda: stamp[0])
+    c.schedule(staff_entry=True)
+    await asyncio.gather(*list(c.tasks))
+    assert len(calls) == 3
+    stamp[0] += 59999
+    c.schedule(staff_entry=True)
+    assert not c.tasks
+    stamp[0] += 1
+    c.schedule()  # Ordinary GET polling still respects its six-hour cache.
+    assert not c.tasks
+    c.schedule(staff_entry=True)
+    await asyncio.gather(*list(c.tasks))
+    assert len(calls) == 6
+    restarted = Catalogue(store, None, now=lambda: stamp[0] + 1)
+    await restarted.refresh(minimum_age=60000)
+    assert len(calls) == 6  # Persistent guard also works after a process restart.
+    assert (await c.snapshot())['check_on_staff_entry']

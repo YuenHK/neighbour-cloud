@@ -85,3 +85,20 @@ def test_source_catalogue_is_staff_only_and_missing_cache_keeps_conversation_con
     result = client.get(path, headers=staff)
     assert result.status_code == 200 and result.json()['cache_unavailable']
     assert client.get('/api/v1/service-desk/presentation', headers=staff).json() == before
+    assert client.post(path + '/check', headers={'Origin': ORIGIN}).status_code == 401
+    assert client.post(path + '/check', headers=resident).status_code == 403
+    assert client.post(path + '/check', headers=staff).json()['check_on_staff_entry']
+
+
+def test_prepare_is_staff_only_never_publishes_or_stores_a_model(models_api):
+    client, staff, resident = models_api
+    path = '/api/v1/service-desk/airi-models'
+    settings = client.get('/api/v1/service-desk/presentation', headers=staff).json()
+    body = model_zip()
+    for headers, status in (({'Origin': ORIGIN}, 401), (resident, 403)):
+        assert client.post(path + '/prepare', headers={**headers, 'Content-Type': 'application/zip'}, content=body).status_code == status
+    result = client.post(path + '/prepare', headers={**staff, 'Content-Type': 'application/zip'}, content=body)
+    assert result.status_code == 200 and result.headers['content-type'] == 'application/zip'
+    assert result.headers['cache-control'] == 'no-store'
+    assert client.get(path, headers=staff).json()['items'] == []
+    assert client.get('/api/v1/service-desk/presentation', headers=staff).json() == settings

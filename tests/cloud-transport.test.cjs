@@ -26,6 +26,19 @@ test('bounded model ZIP bodies are allowed only on the exact staff upload path',
   assert.equal(calls.length, 1)
 })
 
+test('preparation allows bounded ZIP on its single POST path without widening other binary routes', async () => {
+  const {createCloudTransport} = await transportModule()
+  let count=0
+  const api=createCloudTransport({origin,now:()=>1000,tokenProvider:()=>token('staff'),fetcher:async()=>{count++;return new Response('{}')}})
+  const body=new Blob(['public archive'],{type:'application/zip'})
+  const path='/api/v1/service-desk/airi-models/prepare'
+  await api.fetch(path+'?entrypoint=runtime%2Fa.model3.json',{method:'POST',body,headers:{'Content-Type':'application/zip'}})
+  for(const bad of [path+'x','/api/v1/resident/chat','/api/v1/service-desk/model-gallery/catalogue/check'])
+    await assert.rejects(api.fetch(bad,{method:'POST',body}))
+  await assert.rejects(api.fetch(path,{method:'POST',body:new Blob([new Uint8Array(32*1024*1024+1)])}))
+  assert.equal(count,1)
+})
+
 test('onsite robot relay supports original keepalive release and record delete without key or replay', async () => {
   const {createCloudTransport} = await transportModule()
   const sent=[]

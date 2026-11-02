@@ -50,14 +50,14 @@ class SourceStore:
                            'last_attempt_ms': attempt, 'error': error, 'stale': bool(error)})
         return result
 
-    def claim(self, name, now):
+    def claim(self, name, now, minimum_age=TTL):
         assert name in NAMES
         with closing(self.connect(False)) as db, db:
             db.execute('BEGIN IMMEDIATE')
             row = db.execute('SELECT last_attempt_ms FROM cloud_gallery_sources WHERE name=?', (name,)).fetchone()
             if row is None:
                 raise ValueError('gallery_source_cache_requires_explicit_installation')
-            if row[0] and now - row[0] < TTL:
+            if row[0] and now - row[0] < minimum_age:
                 return False
             db.execute('UPDATE cloud_gallery_sources SET last_attempt_ms=? WHERE name=?', (now, name))
         return True
@@ -138,13 +138,17 @@ class SourceCatalogue:
         self.tasks = set()
         self.closed = False
         self.next_check_ms = 0
+        self.next_staff_check_ms = 0
 
-    def schedule(self):
+    def schedule(self, *, staff_entry=False):
         stamp = self.now()
-        if self.closed or self.tasks or stamp < self.next_check_ms:
+        next_check = self.next_staff_check_ms if staff_entry else self.next_check_ms
+        if self.closed or self.tasks or stamp < next_check:
             return
         self.next_check_ms = stamp + 60000
-        task = asyncio.create_task(self.refresh())
+        if staff_entry:
+            self.next_staff_check_ms = stamp + 60000
+        task = asyncio.create_task(self.refresh(minimum_age=60000 if staff_entry else TTL))
         self.tasks.add(task)
         def finished(done):
             self.tasks.discard(done)
@@ -160,6 +164,7 @@ class SourceCatalogue:
         try:
             rows = await run_in_threadpool(self.store.rows)
             return {'sources': rows, 'refreshing': bool(self.tasks), 'refresh_interval_ms': TTL,
+                    'check_on_staff_entry': True, 'entry_coalesce_ms': 60000,
                     'automatic_avatar_switch': False, 'provider_credits_used': 0,
                     'licence_required': True}
         except (OSError, ValueError, sqlite3.Error):
@@ -236,11 +241,11 @@ class SourceCatalogue:
                 pass
         return list(items.values())
 
-    async def refresh(self):
+    async def refresh(self, *, minimum_age=TTL):
         semaphore = asyncio.Semaphore(2)
         async def one(name):
             try:
-                claimed = await run_in_threadpool(self.store.claim, name, self.now())
+                claimed = await run_in_threadpool(self.store.claim, name, self.now(), minimum_age)
             except (OSError, ValueError, sqlite3.Error):
                 return False
             if not claimed:
@@ -265,4 +270,10 @@ def sources_router(authorize, catalogue):
         snapshot = await catalogue.snapshot()
         catalogue.schedule()
         return {**snapshot, 'refreshing': bool(catalogue.tasks)}
+    @router.post(PATH + '/check')
+    async def check_sources():
+        authorize()
+        catalogue.schedule(staff_entry=True)
+        return {'refreshing': bool(catalogue.tasks), 'background': True,
+                'check_on_staff_entry': True, 'entry_coalesce_ms': 60000}
     return router

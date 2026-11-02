@@ -8,10 +8,12 @@ from fastapi import APIRouter, HTTPException, Request
 from starlette.concurrency import run_in_threadpool
 
 from deploy.cloud.avatar_assets import MAX_ARCHIVE, MAX_TOTAL, MODEL_ID
+from deploy.cloud.avatar_prepare import prepare_archive
 from local_audio_gateway.resident_stream import OwnedStreamResponse
 
 STAFF = '/api/v1/service-desk/airi-models'
 RESIDENT = '/api/v1/resident/airi-models'
+PREPARE = STAFF + '/prepare'
 UPLOAD = re.compile(r'^' + STAFF + r'/cloud-live2d-[a-f0-9]{64}$')
 
 
@@ -20,7 +22,10 @@ class AvatarWork:
         self.pending = set()
 
     async def save(self, assets, *args):
-        task = asyncio.create_task(run_in_threadpool(assets.put, *args))
+        return await self.run(assets.put, *args)
+
+    async def run(self, function, *args):
+        task = asyncio.create_task(run_in_threadpool(function, *args))
         self.pending.add(task)
         def finished(done):
             self.pending.discard(done)
@@ -60,6 +65,35 @@ def avatar_router(assets, presentation, require_staff, principal, work):
     router = APIRouter()
     upload_lock = asyncio.Lock()
     downloads = threading.BoundedSemaphore(2)
+    preparation = asyncio.Lock()
+
+    @router.post(PREPARE)
+    async def prepare(request: Request, entrypoint: str | None = None):
+        require_staff()
+        if request.headers.get('content-type') != 'application/zip':
+            raise HTTPException(415, '請使用 Live2D ZIP。')
+        if preparation.locked() or upload_lock.locked() or work.pending:
+            raise HTTPException(429, '另一個模型正在處理；原有角色保留。')
+        async with preparation:
+            content = bytearray()
+            try:
+                async with asyncio.timeout(90):
+                    async for chunk in request.stream():
+                        content.extend(chunk)
+                        if len(content) > MAX_ARCHIVE:
+                            raise HTTPException(413, '模型 ZIP 不可大於 32 MB。')
+                result = await work.run(prepare_archive, bytes(content), entrypoint)
+            except TimeoutError:
+                raise HTTPException(408, '整理逾時；沒有發佈或更換平台角色。') from None
+            except ValueError as error:
+                raise HTTPException(422, str(error)) from None
+            if 'models' in result:
+                return result
+            from starlette.responses import Response
+            return Response(result['content'], media_type='application/zip', headers={
+                'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff',
+                'X-Original-Bytes': str(result['original_bytes']),
+                'X-Prepared-Bytes': str(result['prepared_bytes'])})
 
     @router.get(STAFF)
     def models():
@@ -79,7 +113,7 @@ def avatar_router(assets, presentation, require_staff, principal, work):
             raise HTTPException(400, '模型名稱或摘要不正確。')
         if request.headers.get('content-type') != 'application/zip':
             raise HTTPException(415, '請使用 Live2D ZIP 模型。')
-        if upload_lock.locked() or work.pending:
+        if upload_lock.locked() or preparation.locked() or work.pending:
             raise HTTPException(429, '另一個模型正在上載，請等候完成；沒有自動重送。')
         async with upload_lock:
             content = bytearray()

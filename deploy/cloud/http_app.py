@@ -19,6 +19,7 @@ from starlette.background import BackgroundTask
 from starlette.concurrency import run_in_threadpool
 from starlette.responses import HTMLResponse, JSONResponse, Response, StreamingResponse
 
+from deploy.cloud.avatar_api import PREPARE as AVATAR_PREPARE
 from deploy.cloud.avatar_api import UPLOAD as AVATAR_UPLOAD
 from deploy.cloud.avatar_api import AvatarWork, avatar_router
 from deploy.cloud.avatar_assets import AvatarAssets
@@ -223,7 +224,7 @@ def include_selected(app, router, prefixes):
 
 class CloudServiceBodyLimit(ServiceBodyLimitMiddleware):
     def matches(self, scope):
-        return (scope.get('path') != TRANSCRIPTION_PATH and not AVATAR_UPLOAD.fullmatch(scope.get('path', ''))
+        return (scope.get('path') not in (TRANSCRIPTION_PATH, AVATAR_PREPARE) and not AVATAR_UPLOAD.fullmatch(scope.get('path', ''))
                 and super().matches(scope))
 
 

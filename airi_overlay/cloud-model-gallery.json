@@ -347,14 +347,23 @@
       "individual_terms": "遵守官方原創角色條款，保留來源及版權。",
       "removed_voice_links": 0,
       "official_sample": "rice-glassfield"
+    },
+    {
+      "id": "zundamon-education",
+      "name": "ずんだもん · 非商業學習版",
+      "description": "官方半身角色 · 自動取景 · 原設計保留",
+      "source": "https://www.live2d.com/en/learn/sample/zundamon/",
+      "archive": "/assets/gallery/zundamon-education.zip",
+      "image": "/assets/gallery/zundamon-education.webp",
+      "bytes": 2929003,
+      "sha256": "d76b8dea6c5e4f692990082c72fb3632b3160ada027e17bf28258be8b66064fb",
+      "copyright": "東北ずん子・ずんだもんプロジェクト / Live2D Inc.",
+      "license": "https://www.live2d.com/eula/live2d-free-material-license-agreement_en.html",
+      "terms": "https://zunko.jp/guideline.html",
+      "individual_terms": "按本平台已確認的非商業學習用途使用，保留角色形象及原 ReadMe；同時遵守 Live2D 樣本條款。改作商業／宣傳用途前須另核對。"
     }
   ],
   "official_catalogue": [
-    {
-      "name": "ずんだもん",
-      "source": "https://www.live2d.com/en/learn/sample/zundamon/",
-      "reason": "第三方角色另有地域／商業用途規則，不能當成無條件免費轉存。"
-    },
     {
       "name": "Ren Foster",
       "source": "https://www.live2d.com/en/learn/sample/ren-foster/",

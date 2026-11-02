@@ -13,6 +13,53 @@ const display = useDisplayModelsStore()
 const settings = useSettings()
 const accepted = ref(false)
 const busy = ref('')
+const ownFile = ref<File>()
+const ownModels = ref<string[]>([])
+const ownEntry = ref('')
+const ownRights = ref(false)
+const ownStatus = ref('可整理多層 ZIP、引用路徑及取景，保留模型與圖片原樣；原檔不會更改。')
+
+function chooseArchive(event: Event) {
+  ownFile.value = (event.target as HTMLInputElement).files?.[0]
+  ownModels.value = []
+  ownEntry.value = ''
+}
+async function prepareOwnArchive() {
+  if (!ownFile.value || !ownRights.value || busy.value)
+    return
+  if (ownFile.value.size > 32 * 1024 * 1024) {
+    ownStatus.value = 'ZIP 最大 32 MB；請先由作者提供較小的執行檔版本。'
+    return
+  }
+  busy.value = 'own-archive'
+  ownStatus.value = '正在整理執行檔；不會更換平台角色…'
+  try {
+    const transport = Reflect.get(globalThis, '__NEIGHBOUR_CLOUD_TRANSPORT__')
+    const response = await transport.fetch(`/api/v1/service-desk/airi-models/prepare${ownEntry.value ? `?entrypoint=${encodeURIComponent(ownEntry.value)}` : ''}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/zip' },
+      body: ownFile.value,
+      signal: AbortSignal.timeout(90000),
+    })
+    if (!response.ok) {
+      const value = await response.json()
+      throw new Error(typeof value.detail === 'string' ? value.detail : '未能完成整理。')
+    }
+    if (response.headers.get('content-type')?.includes('application/json')) {
+      ownModels.value = (await response.json()).models
+      ownStatus.value = 'ZIP 有多個模型，請選擇一款再按整理。'
+      return
+    }
+    const content = await response.blob()
+    const model = await display.addDisplayModel(DisplayModelFormat.Live2dZip, new File([content], `${ownFile.value.name.replace(/\.zip$/i, '')}-prepared.zip`, { type: 'application/zip' }))
+    settings.stageModelSelected = model.id
+    await settings.updateStageModel()
+    ownStatus.value = `已整理及載入預覽（${(content.size / 1024 / 1024).toFixed(1)} MB）。確認畫面正常後，按「儲存至平台」才發佈；不支援的核心版本仍需作者重新匯出。`
+    emit('status', ownStatus.value)
+  }
+  catch (error) { ownStatus.value = errorMessageFrom(error) ?? '整理未完成，原檔及平台角色保留。' }
+  finally { busy.value = '' }
+}
 const source = ref('all')
 const query = ref('')
 const searching = ref(false)
@@ -46,7 +93,7 @@ async function readSources() {
       ? '外站目錄暫未準備好；上方已核對模型仍可使用。'
       : value.refreshing
         ? '先顯示已保存目錄，正在背景檢查新模型；不影響對話或消耗 AI 額度。'
-        : '啟動時自動檢查，外站讀取最多每六小時一次；失敗時保留上次目錄。'
+        : '每次進入管理工作台會背景檢查新模型；一分鐘內重複進入會合併，失敗時保留上次目錄。'
     if (value.refreshing && discoveryPolls++ < 8)
       discoveryTimer = setTimeout(readSources, 6000)
   }
@@ -117,6 +164,26 @@ async function importModel(item: typeof gallery.models[number]) {
       </article>
     </div>
     <label class="gallery-agreement"><input v-model="accepted" type="checkbox">我已閱讀所選模型的來源、授權及使用條款，並確認本次用途適用。</label>
+    <details class="discovered-models">
+      <summary>整理自己的 Live2D ZIP</summary>
+      <p>自動整理執行檔、保留原比例及接駁可辨認的口型參數。不轉換 PSD／cmo3、加密模型或新版 SDK，也不壓縮圖片畫質。</p>
+      <input type="file" accept=".zip,application/zip" aria-label="選擇要整理的模型 ZIP" @change="chooseArchive">
+      <select v-if="ownModels.length" v-model="ownEntry" aria-label="選擇 ZIP 內的模型">
+        <option disabled value="">
+          請選擇模型
+        </option>
+        <option v-for="name in ownModels" :key="name" :value="name">
+          {{ name }}
+        </option>
+      </select>
+      <label class="gallery-agreement"><input v-model="ownRights" type="checkbox">我有權將此模型放到本平台供非商業學習使用，並會保留作者要求的標示。</label>
+      <button type="button" :disabled="!ownFile || !ownRights || !!busy || (!!ownModels.length && !ownEntry)" @click="prepareOwnArchive">
+        {{ busy === 'own-archive' ? '正在整理…' : '自動整理並預覽' }}
+      </button>
+      <p role="status">
+        {{ ownStatus }}
+      </p>
+    </details>
     <details class="discovered-models">
       <summary>自動更新的外站圖庫 · {{ sourceIndexes.reduce((sum, index) => sum + index.items.length, 0) }} 個條目</summary>
       <p role="status">

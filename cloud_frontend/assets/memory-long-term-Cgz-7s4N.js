@@ -1,0 +1,2 @@
+import{C as e,M as t,Pt as n,Z as r}from"./vue.runtime.esm-bundler-BalvS9Cy.js";import{R as i}from"./components-DXNe85S2.js";import{t as a}from"./route-block-DBhJxsjT.js";var o=t({__name:`memory-long-term`,setup(t){return(t,a)=>(r(),e(n(i)))}});typeof a==`function`&&a(o);var s=o;export{s as default};
+//# sourceMappingURL=memory-long-term-Cgz-7s4N.js.map

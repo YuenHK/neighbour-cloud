@@ -111,7 +111,8 @@ export function createCloudTransport({ origin, tokenProvider, fetcher = (...args
         throw new Error('cloud_request_invalid')
       }
       const method = (init.method || 'GET').toUpperCase()
-      const modelUpload = method === 'PUT' && modelUploadPath.test(url.pathname)
+      const modelUpload = ((method === 'PUT' && modelUploadPath.test(url.pathname))
+        || (method === 'POST' && url.pathname === '/api/v1/service-desk/airi-models/prepare'))
         && init.body instanceof Blob && init.body.size > 0 && init.body.size <= 32 * 1024 * 1024
       if (init.keepalive !== undefined && (typeof init.keepalive !== 'boolean' || !robotPath.test(url.pathname)))
         throw new Error('cloud_request_invalid')

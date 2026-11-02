@@ -176,13 +176,13 @@
     },
     {
       "path": "airi_overlay/cloud-model-gallery.json",
-      "bytes": 21043,
-      "sha256": "d6818bf1b6ca31ac46835d48cb4c11558b41a867b6da7d9ec7f03f4fdd79eb6e"
+      "bytes": 21735,
+      "sha256": "06b332467b209e782658dda8ef5c6ca12447fd7d3e803f1511bc52327534a56d"
     },
     {
       "path": "airi_overlay/cloud-model-gallery.vue",
-      "bytes": 15122,
-      "sha256": "cf787097166645a2857cdf8cdecca37250d7e5b95644a17562efc8d57238e8fc"
+      "bytes": 18600,
+      "sha256": "6a1bd4c8a5cd930e1e1c933d068795b6323a367ee56fd3fbe4fae753bcab5e04"
     },
     {
       "path": "airi_overlay/cloud-model-library.vue",
@@ -231,8 +231,8 @@
     },
     {
       "path": "airi_overlay/cloud-transport.js",
-      "bytes": 9566,
-      "sha256": "4d583fcbd84453bc3c859d3e903d5f25fa8034d8555904731f599b5d7c398a1f"
+      "bytes": 9665,
+      "sha256": "c7ef8d203e7b6a8b65cbc1e9430c423d81d90c559110213d05514cf4341fb965"
     },
     {
       "path": "airi_overlay/embedded-settings.ts",
@@ -401,13 +401,18 @@
     },
     {
       "path": "deploy/cloud/avatar_api.py",
-      "bytes": 5363,
-      "sha256": "02a31a00987706c3ab1b1ea9dcfaf48262aa165ab01c57ea343a588f14cdcb86"
+      "bytes": 7143,
+      "sha256": "4add6ec7a0d8950aaea24f14c288582dbb585f3f8ed8d64ecf0efeb82764cac9"
     },
     {
       "path": "deploy/cloud/avatar_assets.py",
       "bytes": 11345,
       "sha256": "6f1c641440f4ff27107e4d492ce7be5d027808ee9523c4df2080ae6df59826d0"
+    },
+    {
+      "path": "deploy/cloud/avatar_prepare.py",
+      "bytes": 7998,
+      "sha256": "82bfe4c6e2703d33e0220b0c26f4554a9f44be5c35a6e2dcba701b6a331d475d"
     },
     {
       "path": "deploy/cloud/backup_store.py",
@@ -456,8 +461,8 @@
     },
     {
       "path": "deploy/cloud/gallery_sources.py",
-      "bytes": 12229,
-      "sha256": "fc21942bb92e2431e7078b30a4082900b8917d1f7d23f9a5c686fd32f092183d"
+      "bytes": 12896,
+      "sha256": "547a631f5e672011aaf5964f339992b3f7e93e10d6f8173eab8dfe30f2c40851"
     },
     {
       "path": "deploy/cloud/google_identity.py",
@@ -471,8 +476,8 @@
     },
     {
       "path": "deploy/cloud/http_app.py",
-      "bytes": 27397,
-      "sha256": "1759a49d0a461818dfc0fa9075bb6278a319691078a202869e7a882946900c4c"
+      "bytes": 27481,
+      "sha256": "6591c306e0b90c8e3acc34c5ad08e980c3b354257d5e7c9e6897892c52378526"
     },
     {
       "path": "deploy/cloud/libsql_connection.py",
@@ -581,8 +586,8 @@
     },
     {
       "path": "deploy/cloud/rollout.py",
-      "bytes": 7123,
-      "sha256": "e2d1cbcfc80d5c30faf28e6429508fb51c3273e41bf07ade6fad1a03cea32047"
+      "bytes": 7120,
+      "sha256": "e5d6fb9f2993caf4358679e4c65ac9ea6cee5a2ef51689422221524691a84ef4"
     },
     {
       "path": "deploy/cloud/runtime_storage.py",
@@ -651,8 +656,8 @@
     },
     {
       "path": "deploy/cloud/web/admin-entry.js",
-      "bytes": 2926,
-      "sha256": "4e03b5960bf4c743794883106475829094503da0b46ddbf526087888b8412b62"
+      "bytes": 3238,
+      "sha256": "5adfcf171d3e9d49bb76d57473e52988a1f2204f7ed6da080fc7b10d7c71448a"
     },
     {
       "path": "deploy/cloud/web/admin-request.js",
