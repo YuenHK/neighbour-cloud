@@ -18,7 +18,7 @@ async function main(){
   }
   if(u.pathname==='/api/v1/resident/session')return route.fulfill({json:{authenticated:true,role:req.headers().authorization.includes(token('staff'))?'staff':'resident',storage_acceptance:false}})
   if(u.pathname==='/cloud/resident'||u.pathname==='/cloud/admin')return route.fulfill({contentType:'text/html',body:(u.pathname==='/cloud/admin'?'<h1>管理工作台測試</h1>':'<h1>居民服務台測試</h1>')+'<script>setTimeout(()=>parent.postMessage({type:"neighbour-service-ready",area:'+JSON.stringify(u.pathname==='/cloud/admin'?'staff':'resident')+'},location.origin),300)</script>'})
-  const files={'/':'deploy/cloud/web/index.html','/cloud/launch-screen.js':'deploy/cloud/web/launch-screen.js','/cloud/shell.js':'deploy/cloud/web/shell.js','/cloud/shell.css':'deploy/cloud/web/shell.css','/cloud/cloud-session.js':'airi_overlay/cloud-session.js','/cloud/cloud-frame.js':'airi_overlay/cloud-frame.js'}
+  const files={'/':'deploy/cloud/web/index.html','/cloud/launch-screen.js':'deploy/cloud/web/launch-screen.js','/cloud/launch-screen.css':'deploy/cloud/web/launch-screen.css','/cloud/shell.js':'deploy/cloud/web/shell.js','/cloud/shell.css':'deploy/cloud/web/shell.css','/cloud/cloud-session.js':'airi_overlay/cloud-session.js','/cloud/cloud-frame.js':'airi_overlay/cloud-frame.js'}
   if(files[u.pathname])return route.fulfill({contentType:u.pathname.endsWith('.js')?'text/javascript':u.pathname.endsWith('.css')?'text/css':'text/html',body:fs.readFileSync(files[u.pathname])})
   return route.fulfill({status:404,body:''})
  })

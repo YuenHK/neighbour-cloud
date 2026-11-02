@@ -501,8 +501,8 @@
     },
     {
       "path": "deploy/cloud/rollout.py",
-      "bytes": 6979,
-      "sha256": "84819fd70561b0a6bbd75a6c5a8d55699ec643635c5409a33aa7e45058fe4464"
+      "bytes": 6975,
+      "sha256": "ecb2fc7617261fbfc3898ffbc7f162949313d069a027324a51520e3fe7c299bc"
     },
     {
       "path": "deploy/cloud/runtime_storage.py",
@@ -586,13 +586,18 @@
     },
     {
       "path": "deploy/cloud/web/index.html",
-      "bytes": 3585,
-      "sha256": "8152e60e64219557fad1e11ecb0cce861e4dc9c66db33eeef48a5581c751373d"
+      "bytes": 6220,
+      "sha256": "1980b1fb65f0b69aa1f737b25b8e8691b65b058f60d44373a1125aeaa582a44a"
+    },
+    {
+      "path": "deploy/cloud/web/launch-screen.css",
+      "bytes": 7202,
+      "sha256": "2b9fb1c57726e0ec3a820bc81ccb1d19b70bea35b01a270ab6bb62e1009adc6c"
     },
     {
       "path": "deploy/cloud/web/launch-screen.js",
-      "bytes": 2336,
-      "sha256": "aad229ede60eb5b068d881790d3df2791498431c04beae67e62f1a39568f2eea"
+      "bytes": 4614,
+      "sha256": "551182b68c0b0728da17e60cae1280636bff6d9e1bd20846c0d91ecb8cdcd380"
     },
     {
       "path": "deploy/cloud/web/presentation.html",
@@ -631,8 +636,8 @@
     },
     {
       "path": "deploy/cloud/web/shell.css",
-      "bytes": 5515,
-      "sha256": "823de96bfb4f0806fa2aa87f8155ce35d34ab50c45aee5ab1fdf635b4568d172"
+      "bytes": 3454,
+      "sha256": "f490edcebfe5d2179fdb102e58b6db9b95938341ab395a705ad9e913f8795a79"
     },
     {
       "path": "deploy/cloud/web/shell.js",
@@ -641,8 +646,8 @@
     },
     {
       "path": "deploy/cloud/web_assets.py",
-      "bytes": 9048,
-      "sha256": "30551e2a7d985db6c2b6371e163d9fc924c949398dac28b37b01220274537e3c"
+      "bytes": 9121,
+      "sha256": "49a6b99a4cb46f8230e8ac122b5b0465c7b1a7be726176261835601d676987a2"
     },
     {
       "path": "edge_hub/__init__.py",

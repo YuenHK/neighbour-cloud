@@ -21,6 +21,7 @@ SHELL = {
     '/cloud/shell.js': (WEB / 'shell.js', 'text/javascript'),
     '/cloud/shell.css': (WEB / 'shell.css', 'text/css'),
     '/cloud/launch-screen.js': (WEB / 'launch-screen.js', 'text/javascript'),
+    '/cloud/launch-screen.css': (WEB / 'launch-screen.css', 'text/css'),
     '/cloud/frame-entry.js': (WEB / 'frame-entry.js', 'text/javascript'),
     '/cloud/admin-entry.js': (WEB / 'admin-entry.js', 'text/javascript'),
     '/cloud/robot-entry.js': (WEB / 'robot-entry.js', 'text/javascript'),

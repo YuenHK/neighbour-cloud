@@ -1,48 +1,83 @@
-// UI phases are driven by the actual service frame, never by a fake percent.
+// Progress follows real service milestones. Animation never invents a percentage.
 export function createLaunchScreen(document, { onRetry, onContinue }) {
-  const root = document.getElementById('launchScreen')
-  const text = document.getElementById('launchStatus')
-  const retry = document.getElementById('launchRetry')
-  const skip = document.getElementById('launchContinue')
+  const node = id => document.getElementById(id)
+  const root = node('launchScreen')
+  const text = node('launchStatus')
+  const retry = node('launchRetry')
+  const skip = node('launchContinue')
   const steps = [...document.querySelectorAll('[data-launch-step]')]
-  let timer, active = false, area = 'resident', textAvailable = false
+  const phases = ['connect', 'interface', 'avatar']
+  const titles = ['連接服務', '載入畫面', '準備角色']
+  const descriptions = ['同鄰伴服務台接通，準備開始。', '正在載入對話介面同必要資料。', '準備數字人、表情同對話畫面。']
+  let timer, ticker, active = false, area = 'resident', textAvailable = false, index = 0, startedAt = 0
+  function stopTimers() { clearTimeout(timer); clearInterval(ticker) }
+  function elapsed() {
+    const seconds = Math.max(0, Math.floor((performance.now() - startedAt) / 1000))
+    node('launchElapsed').textContent = seconds < 60 ? `已等候 ${seconds} 秒` : `已等候 ${Math.floor(seconds / 60)} 分 ${seconds % 60} 秒`
+  }
   function phase(value) {
     if (!active) return
-    const index = ['connect', 'interface', 'avatar'].indexOf(value)
-    if (index < 0) return
+    const next = phases.indexOf(value)
+    if (next < 0 || (area === 'staff' && next === 2)) return
+    index = Math.max(index, next)
+    const total = area === 'staff' ? 2 : 3
+    root.dataset.phase = phases[index]
+    node('launchStep').textContent = `第 ${index + 1} / ${total} 步`
+    node('launchComplete').textContent = `已完成 ${index} / ${total} 個階段`
+    const progress = node('launchProgress')
+    progress.setAttribute('aria-valuemax', String(total))
+    progress.setAttribute('aria-valuenow', String(index))
+    progress.setAttribute('aria-valuetext', `第 ${index + 1} 步，共 ${total} 步：${titles[index]}`)
     for (const [position, step] of steps.entries()) {
-      step.dataset.state = position < index ? 'done' : position === index ? 'current' : 'waiting'
-      step.hidden = area === 'staff' && position === 2
+      const state = position < index ? 'done' : position === index ? 'current' : 'waiting'
+      step.dataset.state = state
+      step.hidden = position >= total
+      step.querySelector('.launch-step-number').textContent = state === 'done' ? '✓' : String(position + 1).padStart(2, '0')
+      step.querySelector('.launch-step-state').textContent = state === 'done' ? '已完成' : state === 'current' ? '進行中' : '稍後開始'
+      if (state === 'current') step.setAttribute('aria-current', 'step')
+      else step.removeAttribute('aria-current')
     }
-    text.textContent = value === 'connect' ? '正在連接鄰伴…' : value === 'interface' ? '正在載入服務畫面…' : '正在準備數字人，等我一陣呀。'
+    text.textContent = titles[index]
+    node('launchDetail').textContent = area === 'staff' && index === 1 ? '正在為你準備管理工作台。' : descriptions[index]
   }
   function start(nextArea, value = 'connect') {
-    clearTimeout(timer)
+    const continuing = active && area === nextArea && value !== 'connect'
+    stopTimers()
     area = nextArea
     active = true
+    if (!continuing) { index = 0; startedAt = performance.now() }
     textAvailable = false
     root.hidden = false
     root.dataset.state = 'loading'
+    root.dataset.area = area
     root.setAttribute('aria-busy', 'true')
-    document.getElementById('launchTitle').textContent = area === 'staff' ? '為你準備管理工作台' : '鄰伴，就喺你身邊'
+    node('launchTitle').textContent = area === 'staff' ? '一齊照顧我哋嘅社區' : '今日，一齊開心傾吓！'
+    node('launchNote').textContent = '畫面準備好，就會自動帶你入去。'
     retry.hidden = true
     skip.hidden = true
     phase(value)
+    elapsed()
+    ticker = setInterval(elapsed, 1000)
     timer = setTimeout(() => {
       if (!active) return
-      text.textContent = '首次載入可能需要耐少少，資源仍在準備中。'
+      root.dataset.state = 'slow'
+      node('launchNote').textContent = '首次載入可能耐少少；你可以繼續等候，或重新連接。'
       retry.hidden = false
       skip.hidden = !textAvailable
-    }, 30000)
+    }, Math.max(0, 30000 - (performance.now() - startedAt)))
   }
-  function hide() { clearTimeout(timer); active = false; root.hidden = true; root.setAttribute('aria-busy', 'false') }
+  function hide() { stopTimers(); active = false; root.hidden = true; root.setAttribute('aria-busy', 'false') }
   function fail(message) {
-    clearTimeout(timer)
+    stopTimers()
     active = true
     root.hidden = false
     root.dataset.state = 'failed'
     root.setAttribute('aria-busy', 'false')
-    text.textContent = message
+    text.textContent = '連接遇到阻礙'
+    node('launchDetail').textContent = message
+    node('launchNote').textContent = '原有資料會保留，可以重新連接。'
+    node('launchProgress').setAttribute('aria-valuetext', `停留在${titles[index]}；連接未完成`)
+    steps[index].querySelector('.launch-step-state').textContent = '未能完成'
     retry.hidden = false
     skip.hidden = !textAvailable
   }
