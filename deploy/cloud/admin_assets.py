@@ -68,6 +68,7 @@ class CloudAdminAssets:
         self.responses['/assets/service-shell.css'] = (css, mime)
         self.responses['/cloud/admin/presentation.js'] = ((WEB / 'presentation.js').read_bytes(), 'text/javascript')
         self.responses['/cloud/admin/robots.js'] = ((WEB / 'robots.js').read_bytes(), 'text/javascript')
+        self.responses['/cloud/admin/staff-notifications.js'] = ((WEB / 'staff-notifications.js').read_bytes(), 'text/javascript')
         self.responses['/assets/service-shell.css'] = (self.responses['/assets/service-shell.css'][0] +
             b'\n.service-tabs{grid-template-columns:repeat(7,minmax(0,1fr))}@media(max-width:680px){.service-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}}\n' +
             (WEB / 'robots.css').read_bytes() + (WEB / 'module-loading.css').read_bytes(), 'text/css')

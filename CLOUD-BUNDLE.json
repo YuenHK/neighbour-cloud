@@ -391,8 +391,8 @@
     },
     {
       "path": "deploy/cloud/admin_assets.py",
-      "bytes": 7787,
-      "sha256": "9c4bb485aef10da1492d5eb2916ff213f7a27c4c6713265442ec0210c012034c"
+      "bytes": 7918,
+      "sha256": "47d88513270e949aa6fc84cf35da464cb63cde939224dfaa836349b76415a6d1"
     },
     {
       "path": "deploy/cloud/airi_runtime.py",
@@ -471,13 +471,13 @@
     },
     {
       "path": "deploy/cloud/host.py",
-      "bytes": 15468,
-      "sha256": "aee76a7d60d1c289b69b74e039d7c35b8baacca3bc0caee2ea54a0b5f95d2482"
+      "bytes": 15942,
+      "sha256": "1e814812478bc3fa879853bce4e2f876fe057d625f7247ec5e71f69e044346a1"
     },
     {
       "path": "deploy/cloud/http_app.py",
-      "bytes": 27481,
-      "sha256": "6591c306e0b90c8e3acc34c5ad08e980c3b354257d5e7c9e6897892c52378526"
+      "bytes": 30230,
+      "sha256": "41b349294e8f0c5e0467841535b94259e6e79bad1694b80a5cb31da7f33f714a"
     },
     {
       "path": "deploy/cloud/libsql_connection.py",
@@ -535,6 +535,16 @@
       "sha256": "3f0337ddb2974f8b2af73a967c73d6bb702c2bcb41bc2c7067486d0616ec3c92"
     },
     {
+      "path": "deploy/cloud/operations.py",
+      "bytes": 3181,
+      "sha256": "817906b50bc8067d2f88c3e46f1efcc935c6e26a830e678e094c2f65402df8c5"
+    },
+    {
+      "path": "deploy/cloud/patrol_ingest.py",
+      "bytes": 8184,
+      "sha256": "ef6ee9980694ffc7c7c68d19cfe3203aac336f23cc13707e9ff85b3db332fae5"
+    },
+    {
       "path": "deploy/cloud/photo_api.py",
       "bytes": 6433,
       "sha256": "de280b6d79e64e642e0ff6261307fbbd3d1675b257eabdceeee739e1e0f5adbd"
@@ -566,8 +576,8 @@
     },
     {
       "path": "deploy/cloud/requirements.txt",
-      "bytes": 301,
-      "sha256": "b2c271f58dd58fa5797c494aa4decf8c54678f1235a8274736596c754056396c"
+      "bytes": 318,
+      "sha256": "8b988cf4486c278e3dbe1c09db3e55392a1f41dee67de78eb02ffb991eaa780f"
     },
     {
       "path": "deploy/cloud/retention_restore.py",
@@ -581,13 +591,13 @@
     },
     {
       "path": "deploy/cloud/robot_proxy.py",
-      "bytes": 4173,
-      "sha256": "e70ef93dc9fe2cf91d563841c9f39dbe6215cfe9b232cc2e0d50b66d04d9a7f7"
+      "bytes": 4182,
+      "sha256": "413e0e5541533f27a8a118ce2f8df93d3acd4c9cb790ab3c4e8c87d3e4037856"
     },
     {
       "path": "deploy/cloud/rollout.py",
-      "bytes": 8539,
-      "sha256": "af7050f27a0827fcd17909b9272291018497720e60cb4fe74dcf14852cf4d707"
+      "bytes": 8548,
+      "sha256": "13c5d09ddbbdbe0783e4ba50fc34eb9a4d9d703cabe6d6e0117a6eb9d45ab92a"
     },
     {
       "path": "deploy/cloud/runtime_storage.py",
@@ -613,6 +623,11 @@
       "path": "deploy/cloud/staff_api.py",
       "bytes": 8081,
       "sha256": "6b134f62395ae6f991cec0c6d2ad86c36c34cba60982fb984a5d478074b9c565"
+    },
+    {
+      "path": "deploy/cloud/staff_push.py",
+      "bytes": 7436,
+      "sha256": "a07c30061eba0838901721acd1468985b17a5bc0d6c7d988d1a7acbdc2139fe4"
     },
     {
       "path": "deploy/cloud/stage-login/index.html",
@@ -656,8 +671,8 @@
     },
     {
       "path": "deploy/cloud/web/admin-entry.js",
-      "bytes": 3603,
-      "sha256": "4706a24d0e7a129b6265d7fc92a2bef34a5afb2895ce23bd5ce6e83fd568d29e"
+      "bytes": 3626,
+      "sha256": "3bd431271e1ebc317acc7f7af904396d523010d2adb312959b935bd2d20c44ac"
     },
     {
       "path": "deploy/cloud/web/admin-request.js",
@@ -751,13 +766,28 @@
     },
     {
       "path": "deploy/cloud/web/shell.js",
-      "bytes": 10018,
-      "sha256": "96ef87a8d426a108af2e9bae04fbc2635139a4e6eda4b6a3d23165a141c4d31a"
+      "bytes": 10179,
+      "sha256": "6a1dd13103b90edce085e067ed7fac9cb9dcce75c53efd4a805bd5d5c776b290"
+    },
+    {
+      "path": "deploy/cloud/web/staff-notifications.js",
+      "bytes": 3011,
+      "sha256": "5e06991135365f2b271dab2d8437417ec9cd7fe1a0435ea04510bf9ea356301d"
+    },
+    {
+      "path": "deploy/cloud/web/staff-sw.js",
+      "bytes": 689,
+      "sha256": "2ed190ba55f5ff550c529ba9228de170b7dbd7fd3ef3df3898c9648349c5903d"
+    },
+    {
+      "path": "deploy/cloud/web/staff.webmanifest",
+      "bytes": 295,
+      "sha256": "fbae6e5d959d5328aec84eaace67aeaef81a210332f8fdcd3d60619954c251b1"
     },
     {
       "path": "deploy/cloud/web_assets.py",
-      "bytes": 10338,
-      "sha256": "e9c85121dedfa5da125f51fc1d4e6c7e6dc0aeb35db1e8fc132c618cbcecc2f5"
+      "bytes": 10638,
+      "sha256": "72a45fdfadc1baa34cf404413fd6038c243f65fce0351dcde31f791f35f2880f"
     },
     {
       "path": "edge_hub/__init__.py",
@@ -791,8 +821,8 @@
     },
     {
       "path": "edge_hub/azure_voice.py",
-      "bytes": 10030,
-      "sha256": "36cf3f0bf18db446f508e10d9a6c5a91e44b46eb6a2f74fa9531db2e4f1407ca"
+      "bytes": 10353,
+      "sha256": "db372481eecc756e49cba9a6a70a776c7fb36dc6b4abf0406d4a35c0c4ddf2e2"
     },
     {
       "path": "edge_hub/browser_timing.py",
@@ -891,8 +921,8 @@
     },
     {
       "path": "edge_hub/ep_patrol.py",
-      "bytes": 22041,
-      "sha256": "e34d09b5358231dac2d9a1aedddee27c22095c0114ff1938cc29fc85803ea0ac"
+      "bytes": 22465,
+      "sha256": "f382e504c13d6a9393cdceb68bb2322613e456c4090e61f9ab26ad85a1d13c23"
     },
     {
       "path": "edge_hub/ep_preparation.py",
@@ -956,8 +986,8 @@
     },
     {
       "path": "edge_hub/hardware_agent.py",
-      "bytes": 3897,
-      "sha256": "7d6e79201d947ed06ca0d96cc29ab7dc89faff90995eb0fb16a848e7132c98ac"
+      "bytes": 5657,
+      "sha256": "8a3dd61cd1850efb2246a895e1d77f50103369a8a5057590eac773d62b2e8995"
     },
     {
       "path": "edge_hub/knowledge_relevance.py",
@@ -1023,6 +1053,11 @@
       "path": "edge_hub/patrol_cloud.py",
       "bytes": 4482,
       "sha256": "f3a34865a66baaf3370762bd8e5a8dac99c756aed9f7049fb474d46d179417f1"
+    },
+    {
+      "path": "edge_hub/patrol_delivery.py",
+      "bytes": 7247,
+      "sha256": "506f4cd1d3d867cd9d689d87c2b45e624414d2790b1cb26455e6a277a6d7b533"
     },
     {
       "path": "edge_hub/patrol_followup.py",
@@ -1246,8 +1281,8 @@
     },
     {
       "path": "edge_hub/static/ep-fleet.js",
-      "bytes": 35030,
-      "sha256": "f155daadddcb176ea5f82117d4f139aa1073234bf7a478957b7ff1a09718ecd3"
+      "bytes": 35746,
+      "sha256": "836bdb7812a11826dab7543bf404177de5f2f37b6eecc940ce752f14b893f744"
     },
     {
       "path": "edge_hub/static/ep-idle-acceptance.html",
@@ -1480,9 +1515,19 @@
       "sha256": "780ad76001641f357eabab19cdb98c2a003a4c4437a764f0e91287df493c0b11"
     },
     {
+      "path": "tools/acceptance_gate.py",
+      "bytes": 4274,
+      "sha256": "a84d412c496153053033a8aac7a81c0063b18198b46452a50568b5c6b6dbb297"
+    },
+    {
+      "path": "tools/check_release_gate.py",
+      "bytes": 1264,
+      "sha256": "fefad14cfbd733315e55605f2feb0262239836f098549ba43cd2f4dcae6e1ecd"
+    },
+    {
       "path": "tools/cloud_bundle.py",
-      "bytes": 5373,
-      "sha256": "86780ac21b28ae6083f31e49691b03570bff41a6fb4f5864784083ccab11dbb7"
+      "bytes": 5568,
+      "sha256": "fcb8ac154f3bef090d78cc797b4d795ff1839669045df418b60edb3a755b5694"
     },
     {
       "path": "tools/cloud_frontend_assets.py",
@@ -1493,6 +1538,31 @@
       "path": "tools/cloud_preflight.py",
       "bytes": 3827,
       "sha256": "c944e55aa2c8d507795de91ce4056672a097bcf2989858638ba544ced4950135"
+    },
+    {
+      "path": "tools/evaluation/build_corpus.py",
+      "bytes": 4374,
+      "sha256": "d1f8302e385775097d310b1cc202c33894d7e275665b7037569549c89adecbfd"
+    },
+    {
+      "path": "tools/evaluation/cantonese_provider.py",
+      "bytes": 2699,
+      "sha256": "f3e8a2f7e96879440a23a7e9beb6cbf76845a1ffd11764ed032884af6b11d5cd"
+    },
+    {
+      "path": "tools/evaluation/promptfooconfig.json",
+      "bytes": 18908,
+      "sha256": "a91a70ea8de55e8b108c6542115695e93dba852629f42e5b63ea7434179382fa"
+    },
+    {
+      "path": "tools/toxiproxy_acceptance.py",
+      "bytes": 5776,
+      "sha256": "161394ae605c5906ef2c0e7821bb96d328c100101187f4beea8b6ddc9a0a02b1"
+    },
+    {
+      "path": "tools/vision_anomaly_lab.py",
+      "bytes": 4746,
+      "sha256": "8bf3ecc3f05d619df53c09d93bbc9abfe76a0356f1a7487a4b20cdfdf94d1bce"
     }
   ]
 }

@@ -15,10 +15,12 @@ TREES = {'edge_hub': {'.py', '.html', '.js', '.css', '.svg'},
          'local_audio_gateway': {'.py', '.txt'},
          'airi_overlay': {'.py', '.ts', '.js', '.vue', '.css', '.json'},
          'airi_bridge': {'.ts', '.json'},
+         'tools/evaluation': {'.py', '.json'},
          'contracts': {'.json'},
-         'deploy/cloud': {'.py', '.md', '.json', '.txt', '.service', '.html', '.js', '.css', '.svg'}}
+         'deploy/cloud': {'.py', '.md', '.json', '.txt', '.service', '.html', '.js', '.css', '.svg', '.webmanifest'}}
 ROOT_FILES = ('pyproject.toml', 'package.json', 'pnpm-lock.yaml', 'pnpm-workspace.yaml')
-TOOLS = ('tools/cloud_bundle.py', 'tools/cloud_preflight.py', 'tools/cloud_frontend_assets.py')
+TOOLS = ('tools/cloud_bundle.py', 'tools/cloud_preflight.py', 'tools/cloud_frontend_assets.py',
+         'tools/acceptance_gate.py', 'tools/check_release_gate.py', 'tools/toxiproxy_acceptance.py', 'tools/vision_anomaly_lab.py')
 FORBIDDEN = {'.git', '.runtime', '.experiments', '.venv', '.venv-audio', 'node_modules',
              '__pycache__', '.env', 'data', 'output'}
 PRIVATE_SUFFIXES = {'.dpapi', '.sqlite3', '.sqlite', '.db', '.wav', '.mp3', '.log', '.pem', '.key'}

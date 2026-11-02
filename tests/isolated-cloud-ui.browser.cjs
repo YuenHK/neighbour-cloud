@@ -50,6 +50,7 @@ async function main(){
    assert.equal(req.headers()['x-operator-key'],undefined)
    if(url.pathname==='/api/v1/resident/session')return route.fulfill({json:{authenticated:true,role:'staff',storage_acceptance:stage}})
    if(url.pathname==='/api/v1/resident/timing')return route.fulfill({json:{accepted:true}})
+   if(url.pathname==='/api/v1/resident/presentation')return route.fulfill({json:{name:'鄰伴',greeting:'你好，慢慢傾。',background:'mint',revision:1}})
    if(url.pathname==='/api/v1/resident/chat'){
     const value=body();turns.push(value)
     return route.fulfill({json:{object:'resident.plan',system_prompt:'公開隔離對話',messages:value.messages}})

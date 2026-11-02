@@ -260,6 +260,11 @@ class EpPatrol:
                 'photos': [{k: v for k, v in {**photo, 'sha256': hashlib.sha256(photo['jpeg']).hexdigest()}.items() if k != 'jpeg'} for photo in photos],
                 'location_source': 'operator_label_not_position_tracking', 'capture_time_scope': 'SDK_read_return_not_hardware_timestamp'})
         # Persist the exact analyzed JPEG first; never publish a photo-less candidate.
+        if any(len(photo['jpeg']) > 350000 for photo in photos):
+            raise ValueError('patrol_photo_too_large')
+        capacity = getattr(self.store, 'capture_allowed', None)
+        if callable(capacity):
+            capacity(sum(len(photo['jpeg']) for photo in photos))
         for photo in photos:
             target = self.data_root/photo['path']
             with target.open('xb') as output:
@@ -304,6 +309,9 @@ class EpPatrol:
     def deliver_loop(self):
         while not self.stopping.is_set():
             self.deliver_pending()
+            maintenance = getattr(self.store, 'maintenance', None)
+            if callable(maintenance):
+                maintenance()
             if self.followup:
                 self.followup.flush_pending()
             self.stopping.wait(5)

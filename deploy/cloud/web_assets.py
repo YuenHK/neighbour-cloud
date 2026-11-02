@@ -17,6 +17,8 @@ from deploy.cloud.robot_assets import robot_assets
 WEB = Path(__file__).with_name('web')
 OVERLAY = Path(__file__).resolve().parents[2] / 'airi_overlay'
 SHELL = {
+    '/staff-sw.js': (WEB / 'staff-sw.js', 'text/javascript'),
+    '/staff.webmanifest': (WEB / 'staff.webmanifest', 'application/manifest+json'),
     '/': (WEB / 'index.html', 'text/html'),
     '/cloud/shell.js': (WEB / 'shell.js', 'text/javascript'),
     '/cloud/shell.css': (WEB / 'shell.css', 'text/css'),
@@ -99,7 +101,7 @@ class CloudWebAssets:
             'Content-Security-Policy': "default-src 'none'; script-src 'self' https://accounts.google.com/gsi/client; "
                 "style-src 'self' https://accounts.google.com/gsi/style; frame-src 'self' https://accounts.google.com/gsi/; "
                 "connect-src 'self' https://accounts.google.com/gsi/; img-src 'self' data: https://*.googleusercontent.com; "
-                "frame-ancestors 'none'; base-uri 'none'"}
+                    "manifest-src 'self'; frame-ancestors 'none'; base-uri 'none'"}
         if not storage_acceptance and self.resident is not None:
             # An ancestor policy cannot be widened by its resident iframe.
             headers['Permissions-Policy'] = 'microphone=(self), camera=(), autoplay=(self)'
@@ -112,6 +114,7 @@ class CloudWebAssets:
             source, media_type = SHELL[path]
             data = source.read_bytes()
             if path == '/' and self.resident is not None and not storage_acceptance:
+                data = data.replace(b'</head>', b'<link rel="manifest" href="/staff.webmanifest"></head>', 1)
                 resident = self.resident.read_text(encoding='utf-8')
                 entry = re.search(r'name="neighbour-cloud-entry" content="(/assets/[\w-]+\.js)"', resident)
                 preloads = []
@@ -135,7 +138,7 @@ class CloudWebAssets:
                 return JSONResponse({'detail': '正式資料仍在準備，未開放管理操作。'}, status_code=423, headers=headers)
             headers['Content-Security-Policy'] = (
                 "default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; "
-                "img-src 'self' data: blob:; frame-src 'self'; frame-ancestors 'self'; base-uri 'none'")
+                "img-src 'self' data: blob:; frame-src 'self'; worker-src 'self'; frame-ancestors 'self'; base-uri 'none'")
             headers['Permissions-Policy'] = 'microphone=(), camera=(), autoplay=(self)'
             if re.fullmatch(r'/cloud/robot-assets/ep-(?:console|fleet)-[a-f0-9]{12}\.js', path):
                 headers['Cache-Control'] = 'public, max-age=3600, immutable'

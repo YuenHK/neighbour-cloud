@@ -81,3 +81,16 @@ def test_cloud_copies_have_no_native_background_or_provider_bootstrap():
         assert native not in bootstrap
     assert "settingsMode ? '/api/v1/service-desk/presentation' : '/api/v1/resident/presentation'" in bootstrap
     assert "wasm.wasmPaths = '/assets/onnx-3.8.1/'" in bootstrap
+
+
+def test_public_shell_preloads_only_verified_code_and_robot_frame_stays_same_origin(tmp_path):
+    bundle(tmp_path)
+    assets = CloudWebAssets(tmp_path)
+    value = response(assets, '/').body.decode()
+    assert '<link rel="modulepreload" data-neighbour-warm="services" href="/assets/resident-123.js">' in value
+    assert 'launchScreen' in value
+    console = response(assets, '/cloud/robots')
+    assert console.status_code == 200 and b'/cloud/robot-entry.js' in console.body
+    assert b'__LOCAL_OPERATOR_TOKEN__' not in console.body
+    assert b'cloud-managed-control-session' in console.body
+    assert "frame-src 'self';" in console.headers['content-security-policy']

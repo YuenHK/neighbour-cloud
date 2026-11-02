@@ -6,7 +6,7 @@ import { preloadModules } from '/cloud/module-warmup.js'
 const node = id => document.getElementById(id)
 let frame, broker, expire, provider, role
 let publicMode = false
-let requestedArea = 'resident'
+let requestedArea = new URLSearchParams(location.search).get('workspace') === 'staff' ? 'staff' : 'resident'
 let opening = false
 let navigationEpoch = 0
 let navigationAbort = new AbortController()
@@ -210,7 +210,8 @@ try {
     node('navigation').hidden = false
     node('staff').hidden = false
     node('signOut').hidden = true
-    await startResident()
+    if (requestedArea === 'staff') { launch.hide(); node('staff').onclick() }
+    else await startResident()
   }
   else {
   launch.hide()

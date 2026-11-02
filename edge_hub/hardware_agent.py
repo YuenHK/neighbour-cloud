@@ -8,7 +8,7 @@ import hmac
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, Header, HTTPException, Request
 from fastapi.responses import HTMLResponse, JSONResponse, Response
 
 from edge_hub.cloud_primary import cloud_primary
@@ -19,16 +19,33 @@ from edge_hub.local_operator import LOCAL_OPERATOR_TOKEN, local_console_request,
 STATIC = Path(__file__).with_name('static')
 
 
-def create_agent(root=None, *, broker=None):
+def create_agent(root=None, *, broker=None, delivery=None):
     root = Path(root) if root is not None else Path(__file__).resolve().parents[1]
     profile = cloud_primary(root)
     if profile is None or profile['phase'] != 'cloud':
         raise RuntimeError('hardware_agent_requires_cloud_primary')
     broker = broker if broker is not None else EpFleetBroker(root)
+    credential = root / '.runtime/patrol-delivery.dpapi'
+    if delivery is None and credential.is_file():
+        from edge_hub.patrol_delivery import PatrolDelivery
+        delivery = PatrolDelivery.load(root / '.runtime/patrol-outbox', profile['origin'], credential)
+    patrol = None
+    if delivery is not None:
+        from edge_hub.ep_patrol import EpPatrol
+        patrol = EpPatrol(broker.patrol_frame, delivery, root / '.runtime/patrol-outbox',
+                          context_source=broker.patrol_context, arm_context=broker.arm_patrol_context)
+        broker.patrol = patrol
+        original_snapshot = broker.fleet_snapshot
+        def delivery_snapshot():
+            return {**original_snapshot(), 'delivery': delivery.status()}
+        broker.fleet_snapshot = delivery_snapshot
 
     @asynccontextmanager
     async def lifespan(app):
         yield
+        if patrol is not None:
+            patrol.close()
+            delivery.close()
         # close() only closes already running workers; never starts a worker.
         broker.close()
 
@@ -56,6 +73,8 @@ def create_agent(root=None, *, broker=None):
     @app.get('/robots')
     def console(request: Request):
         page = operator_page((STATIC / 'ep-fleet.html').read_text(encoding='utf-8'), request)
+        # Hardware-only stays manual for connection; delivery readiness is a
+        # separate capability, never a reason to auto-connect a discovered EP.
         page = page.replace('data-ep-ui="fleet"', 'data-ep-ui="fleet" data-hardware-only="true"')
         # No global auto-connection script, resident API or duplicate data writer.
         page = page.replace('<script src="/assets/service/ep-background.js" defer></script>', '')
@@ -74,10 +93,22 @@ def create_agent(root=None, *, broker=None):
         return Response((STATIC / 'service-mark.svg').read_bytes(), media_type='image/svg+xml')
 
     @app.post('/api/v1/robot/ep/devices/{device_id}/patrol')
-    def patrol(request: Request):
-        # Do not silently fork event/case data back into the retired local DB.
-        raise HTTPException(409, '自動巡查回報尚未接通雲端；現可手動查看鏡頭及控制機體。')
+    async def configure_patrol(device_id: str, request: Request, x_operator_key: str | None = Header(default=None)):
+        authorize(x_operator_key)
+        if patrol is None:
+            raise HTTPException(409, '現場回報尚未配對；現可手動查看鏡頭及控制機體。')
+        from edge_hub.ep_patrol import PatrolSettings
+        settings = PatrolSettings.model_validate(await request.json())
+        if settings.cloud_review:
+            raise HTTPException(422, '此回報通道只用本機初步辨識，再由職員核實；未啟用額外雲端視覺。')
+        return patrol.configure(device_id, settings)
+
+    @app.get('/api/v1/robot/ep/delivery')
+    def delivery_status(x_operator_key: str | None = Header(default=None)):
+        authorize(x_operator_key)
+        return delivery.status() if delivery is not None else {'state': 'not_paired', 'resident_writer': False}
 
     app.include_router(ep_console_router(broker, authorize, STATIC))
     app.state.broker = broker
+    app.state.patrol = patrol
     return app

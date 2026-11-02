@@ -36,7 +36,7 @@ try {
   window.addEventListener('pagehide', () => robotBroker.close(), { once: true })
   window.addEventListener('pagehide', () => transport.clearAuth(), { once: true })
   const modules = ['photo-privacy', 'latest-photo', 'api-quota', 'work-sections', 'workspace-navigation',
-    'runtime', 'service-workbench', 'estate-management', 'presentation', 'robots',
+    'runtime', 'service-workbench', 'estate-management', 'presentation', 'robots', 'staff-notifications',
     ...(data.governance_supported === true ? ['governance'] : [])]
   void preloadModules(document, modules.map(name => ({ key: name, path: `/cloud/admin/${name}.js` })))
   const { prepareSettings } = await import('/cloud/admin/presentation.js')

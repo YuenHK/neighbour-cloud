@@ -26,6 +26,8 @@ if (typeof document !== 'undefined' && document.body?.dataset.epUi === 'fleet') 
   let configBusy = false
   let patrolBusy = false
   let patrolSelected = null
+  let patrolReady = !hardwareOnly
+  let deliveryState = null
   const patrolDrafts = new Map()
   let cursor = null
   const directionButtons = [...document.querySelectorAll('[data-ep-direction]')]
@@ -94,13 +96,21 @@ if (typeof document !== 'undefined' && document.body?.dataset.epUi === 'fleet') 
     const patrol = model?.patrol || {}
     if (irHold && (irHold.id !== selected || model?.connection !== 'connected')) stopInfrared()
     node('infraredWarning').disabled = !model || model.connection !== 'connected'
-    node('patrolToggle').disabled = hardwareOnly || patrolBusy || !model || (!patrol.enabled && (model.connection !== 'connected' || !model.video_enabled))
+    node('patrolToggle').disabled = !patrolReady || patrolBusy || !model || (!patrol.enabled && (model.connection !== 'connected' || !model.video_enabled))
     node('patrolToggle').textContent = patrol.enabled ? '巡邏回報：開' : '巡邏回報：關'
     node('patrolToggle').setAttribute('aria-pressed', String(!!patrol.enabled))
     node('patrolStatus').textContent = patrol.last_error || ({ off: '開啟鏡頭後可啟用，回報附相片供職員核實。', waiting: '等待本機辨識…', queued: '多機輪流辨識 · 等候處理最新畫面…', analysing: '正在辨識最新畫面…', collecting_photos: '發現候選 · 正在收集現場相片…', waiting_stationary: '等候機體停穩，再拍攝環境相片。', waiting_camera: '鏡頭已停止或未有新影像，暫停辨識。', observing: '巡邏觀察中 · 候選附相片，等候職員核實。', unavailable: '本機辨識暫未完成，請人工查看鏡頭。' }[patrol.state || 'off'])
-    if (hardwareOnly) {
+    if (hardwareOnly && !patrolReady) {
       node('patrolStatus').textContent = '自動巡查回報尚未接通雲端；目前可人手遙控及查看鏡頭。'
       for (const id of ['patrolZone', 'patrolRestricted', 'patrolCloud']) node(id).disabled = true
+    }
+    else if (hardwareOnly) {
+      node('patrolZone').disabled = patrolBusy
+      node('patrolRestricted').disabled = patrolBusy
+      node('patrolCloud').disabled = true
+      node('patrolCloud').checked = false
+      if (deliveryState?.pending > 0) node('patrolStatus').textContent += ` 雲端待送達 ${deliveryState.pending} 份；現場相片已保留。`
+      else if (deliveryState?.case_number) node('patrolStatus').textContent += ` 最近回報已送達，個案 ${deliveryState.case_number}。`
     }
     node('warningStatus').textContent = ({ starting: '已要求綠色彈道燈及提示音，請現場核實。', completed: '機體已回覆完成，實際效果請現場核實。', unconfirmed: '彈道燈、提示音或關燈未完全確認，請現場查看，沒有自動重試。' }[model?.warning?.state] || '')
     if (patrolSelected !== selected) {
@@ -265,6 +275,8 @@ if (typeof document !== 'undefined' && document.body?.dataset.epUi === 'fleet') 
     polling = true
     try {
       const result = await api('fleet', undefined, 'GET')
+      deliveryState = result.delivery || null
+      patrolReady = !hardwareOnly || deliveryState?.paired === true
       controlFault = result.safety_hold === true
       manualOperation = hardwareOnly || result.manual_only === true
       node('fleetLayout').classList.toggle('has-control-fault', controlFault)

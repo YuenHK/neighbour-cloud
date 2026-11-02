@@ -177,6 +177,12 @@ class CloudHost:
                     from deploy.cloud.site_access import SiteSessions
                     options['site_access'] = SiteSessions(os.environ.get('NEIGHBOUR_STAFF_PASSWORD_HASH'))
                     options['presentation'] = Presentation(self._services.estate)
+                    from deploy.cloud.operations import Operations
+                    # Schema is added only during the stopped-writer migration.
+                    # No constructor DDL or local fallback on a missing table.
+                    db = self._services.storage.connect(str(self._services.estate.path), check_same_thread=False)
+                    self._services._stack.callback(db.close)
+                    options['operations'] = Operations(db, ledger_key())
                 options['web_assets'] = CloudWebAssets(assets_root, governance=self.release is not None,
                                                        public_resident=public)
             return create_app(self._services, verifier, origin=config.origin, **options)

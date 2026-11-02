@@ -7,7 +7,7 @@ from fastapi import APIRouter, HTTPException, Request
 from starlette.responses import JSONResponse, Response
 
 PREFIX = '/api/v1/robot/ep/'
-ROOT_ACTIONS = 'fleet|qr|connection|connect|disconnect|cancel-pairing|lease|stop|prepare-control|command|reset-stop|discovery'
+ROOT_ACTIONS = 'fleet|qr|connection|connect|disconnect|cancel-pairing|lease|stop|prepare-control|command|reset-stop|discovery|delivery'
 DEVICE_ACTIONS = (r'frame\.jpg|connection|video-frame|connect|disconnect|prepare-control|lease|stop|command|'
                   'video-start|video-stop|gimbal-start|gimbal-follow|gimbal-target|gimbal-stop|speed|'
                   'manual-warning|infrared-warning|check-stop|reset-stop|patrol')

@@ -29,9 +29,11 @@ from deploy.cloud.google_identity import (
     GoogleIdentityVerifier,
     IdentityUnavailable,
     InvalidIdentity,
+    Principal,
 )
 from deploy.cloud.maintenance import CloudMaintenance
 from deploy.cloud.model_discovery import ModelDiscovery, discovery_router
+from deploy.cloud.patrol_ingest import INGEST, RECEIPT, PatrolIngest, patrol_router
 from deploy.cloud.photo_api import PHOTO_PATH, photo_router
 from deploy.cloud.presentation import PUBLIC_PATH as PRESENTATION_PUBLIC_PATH
 from deploy.cloud.presentation import STAFF_PATH as PRESENTATION_STAFF_PATH
@@ -41,6 +43,7 @@ from deploy.cloud.robot_proxy import robot_path, robot_router
 from deploy.cloud.site_access import PATH as ACCESS_PATH
 from deploy.cloud.site_access import AccessInput, SiteSessions
 from deploy.cloud.staff_api import staff_path, staff_router
+from deploy.cloud.staff_push import StaffPush, push_router
 from deploy.cloud.transcription_api import PATH as TRANSCRIPTION_PATH
 from deploy.cloud.transcription_api import (
     CloudTranscriptionBodyLimit,
@@ -113,7 +116,7 @@ def validate_origin(origin):
 
 
 class CloudBoundary:
-    def __init__(self, app, services, verifier, origin, *, storage_acceptance=False, web_assets=None, maintenance=None, site_access=None):
+    def __init__(self, app, services, verifier, origin, *, storage_acceptance=False, web_assets=None, maintenance=None, site_access=None, patrol_ingest=None):
         host = validate_origin(origin)
         self.app, self.services, self.verifier = app, services, verifier
         self.origin, self.host = origin, host
@@ -121,6 +124,7 @@ class CloudBoundary:
         self.web_assets = web_assets or CloudWebAssets(governance=maintenance is not None)
         self.maintenance = maintenance
         self.site_access = site_access
+        self.patrol_ingest = patrol_ingest
 
     async def __call__(self, scope, receive, send):
         if scope['type'] == 'lifespan':
@@ -171,7 +175,7 @@ class CloudBoundary:
                     "img-src 'self' data: https://*.googleusercontent.com; frame-ancestors 'none'; base-uri 'none'"})
             return await response(scope, receive, send)
         if not (path.startswith(('/api/v1/resident/', '/api/v1/service-desk/'))
-                or path == '/api/v1/events.csv' or path in STREAM_PATHS or PHOTO_PATH.fullmatch(path) or staff_path(path) or robot_path(path)
+                or path == INGEST or RECEIPT.fullmatch(path) or path == '/api/v1/events.csv' or path in STREAM_PATHS or PHOTO_PATH.fullmatch(path) or staff_path(path) or robot_path(path)
                 or (self.maintenance is not None and path in ('/api/v1/governance/retention', '/api/v1/governance/audit'))):
             return await reject(404, '此雲端入口未提供這項功能。')
         if self.services.closed or not self.app.state.started:
@@ -184,8 +188,11 @@ class CloudBoundary:
             return await reject(401, '請先使用已核准的 Google 帳戶登入。')
         try:
             token = credentials[0][7:].decode('ascii')
-            principal = await (self.site_access.verify(token)
-                if self.site_access is not None and self.site_access.owns(token) else self.verifier.verify(token))
+            site = (await run_in_threadpool(self.patrol_ingest.identity, token)
+                    if ((path == INGEST and method == 'POST') or (RECEIPT.fullmatch(path) and method == 'GET'))
+                    and self.patrol_ingest is not None else None)
+            principal = (Principal(site, '', 'patrol-site') if site else await (self.site_access.verify(token)
+                if self.site_access is not None and self.site_access.owns(token) else self.verifier.verify(token)))
         except (InvalidIdentity, UnicodeError):
             return await reject(401, '登入憑證未獲接納，請重新登入。')
         except IdentityUnavailable:
@@ -224,12 +231,12 @@ def include_selected(app, router, prefixes):
 
 class CloudServiceBodyLimit(ServiceBodyLimitMiddleware):
     def matches(self, scope):
-        return (scope.get('path') not in (TRANSCRIPTION_PATH, AVATAR_PREPARE) and not AVATAR_UPLOAD.fullmatch(scope.get('path', ''))
+        return (scope.get('path') not in (TRANSCRIPTION_PATH, AVATAR_PREPARE, INGEST) and not AVATAR_UPLOAD.fullmatch(scope.get('path', ''))
                 and super().matches(scope))
 
 
 def create_app(services, verifier, *, origin, model_client=None, voice_client=None, quota_client=None,
-               storage_acceptance=False, web_assets=None, maintenance=None, release_probe=None, site_access=None, presentation=None):
+               storage_acceptance=False, web_assets=None, maintenance=None, release_probe=None, site_access=None, presentation=None, operations=None):
     if (not isinstance(services, CloudServices) or services.closed
             or not isinstance(verifier, GoogleIdentityVerifier) or type(storage_acceptance) is not bool):
         raise ValueError('explicit_open_cloud_services_and_google_verifier_required')
@@ -306,6 +313,36 @@ def create_app(services, verifier, *, origin, model_client=None, voice_client=No
 
                 cleanup.push_async_callback(stop_maintenance)
             app.state.started = True
+            if operations is not None:
+                async def push_loop():
+                    # Same writer gate as requests/backup; no timer network probes.
+                    while True:
+                        await asyncio.sleep(30)
+                        if maintenance is not None and not await maintenance.gate.enter():
+                            continue
+                        try:
+                            with services.scope():
+                                # Shield the bounded sender until it releases the
+                                # writer gate, including process cancellation.
+                                def resume_delivery():
+                                    patrol_ingest.followup.flush_pending()
+                                    app.state.staff_push.tick()
+                                operation = asyncio.create_task(asyncio.to_thread(resume_delivery))
+                                try:
+                                    await asyncio.shield(operation)
+                                except asyncio.CancelledError:
+                                    await operation
+                                    raise
+                        except (OSError, ValueError, RuntimeError, sqlite3.Error):
+                            pass  # Durable cursor remains; no subscription text logged.
+                        finally:
+                            if maintenance is not None:
+                                await maintenance.gate.leave()
+                push_task = asyncio.create_task(push_loop())
+                async def stop_push():
+                    push_task.cancel()
+                    await asyncio.gather(push_task, return_exceptions=True)
+                cleanup.push_async_callback(stop_push)
             try:
                 yield
             finally:
@@ -317,6 +354,12 @@ def create_app(services, verifier, *, origin, model_client=None, voice_client=No
 
     app = FastAPI(lifespan=lifespan, docs_url=None, redoc_url=None, openapi_url=None)
     app.state.started = False
+    patrol_ingest = None
+    if operations is not None:
+        patrol_ingest = PatrolIngest(services, operations)
+        app.state.staff_push = StaffPush(operations, services.cases, origin)
+        app.include_router(patrol_router(patrol_ingest, require_staff, current_principal))
+        app.include_router(push_router(app.state.staff_push, require_staff))
     app.state.browser_timings = BrowserTimings()
     app.state.resident_transcription = Transcription(lambda: app.state.resident_cloud_client)
     app.state.avatar_work = AvatarWork()
@@ -485,4 +528,4 @@ def create_app(services, verifier, *, origin, model_client=None, voice_client=No
             headers={'Content-Disposition': 'attachment; filename="events.csv"'}, background=BackgroundTask(prepared.close))
 
     return CloudBoundary(app, services, verifier, origin, storage_acceptance=storage_acceptance,
-                         web_assets=web_assets, maintenance=maintenance, site_access=site_access)
+                         web_assets=web_assets, maintenance=maintenance, site_access=site_access, patrol_ingest=patrol_ingest)

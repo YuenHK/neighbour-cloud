@@ -1,0 +1,449 @@
+{
+  "description": "鄰伴：36組虛構三輪廣東話、零模型API",
+  "prompts": [
+    "{{turns}}"
+  ],
+  "providers": [
+    {
+      "id": "python:cantonese_provider.py:call_api",
+      "label": "isolated-intake"
+    }
+  ],
+  "tests": [
+    {
+      "description": "sorting-plain",
+      "vars": {
+        "turns": "[\"垃圾應該點樣分類？\", \"膠樽要唔要除蓋？\", \"多謝你，我明白喇。\"]"
+      },
+      "assert": [
+        {
+          "type": "javascript",
+          "value": "JSON.parse(output).cases.length === 0 && JSON.parse(output).network_calls === 0"
+        }
+      ]
+    },
+    {
+      "description": "sorting-polite",
+      "vars": {
+        "turns": "[\"唔該，垃圾應該點樣分類？\", \"膠樽要唔要除蓋？\", \"多謝你，我明白喇。\"]"
+      },
+      "assert": [
+        {
+          "type": "javascript",
+          "value": "JSON.parse(output).cases.length === 0 && JSON.parse(output).network_calls === 0"
+        }
+      ]
+    },
+    {
+      "description": "sorting-casual",
+      "vars": {
+        "turns": "[\"係呀，垃圾應該點樣分類？\", \"膠樽要唔要除蓋？\", \"多謝你，我明白喇。\"]"
+      },
+      "assert": [
+        {
+          "type": "javascript",
+          "value": "JSON.parse(output).cases.length === 0 && JSON.parse(output).network_calls === 0"
+        }
+      ]
+    },
+    {
+      "description": "social-plain",
+      "vars": {
+        "turns": "[\"今日行咗陣街。\", \"見到啲花好靚。\", \"同你分享下啫，冇嘢要跟進。\"]"
+      },
+      "assert": [
+        {
+          "type": "javascript",
+          "value": "JSON.parse(output).cases.length === 0 && JSON.parse(output).network_calls === 0"
+        }
+      ]
+    },
+    {
+      "description": "social-polite",
+      "vars": {
+        "turns": "[\"唔該，今日行咗陣街。\", \"見到啲花好靚。\", \"同你分享下啫，冇嘢要跟進。\"]"
+      },
+      "assert": [
+        {
+          "type": "javascript",
+          "value": "JSON.parse(output).cases.length === 0 && JSON.parse(output).network_calls === 0"
+        }
+      ]
+    },
+    {
+      "description": "social-casual",
+      "vars": {
+        "turns": "[\"係呀，今日行咗陣街。\", \"見到啲花好靚。\", \"同你分享下啫，冇嘢要跟進。\"]"
+      },
+      "assert": [
+        {
+          "type": "javascript",
+          "value": "JSON.parse(output).cases.length === 0 && JSON.parse(output).network_calls === 0"
+        }
+      ]
+    },
+    {
+      "description": "unit-late-plain",
+      "vars": {
+        "turns": "[\"我屋企水喉漏水，想搵人處理。\", \"我係一樓一室嘅住戶。\", \"補充頭先件事，已經漏咗兩日。\"]"
+      },
+      "assert": [
+        {
+          "type": "javascript",
+          "value": "JSON.parse(output).cases.length === 1 && JSON.parse(output).network_calls === 0 && JSON.parse(output).cases.every(c => c.unit.includes(\"1\\u6a131\\u5ba4\")) && JSON.parse(output).cases[0].message.includes(\"\\u5169\\u65e5\")"
+        }
+      ]
+    },
+    {
+      "description": "unit-late-polite",
+      "vars": {
+        "turns": "[\"唔該，我屋企水喉漏水，想搵人處理。\", \"我係一樓一室嘅住戶。\", \"補充頭先件事，已經漏咗兩日。\"]"
+      },
+      "assert": [
+        {
+          "type": "javascript",
+          "value": "JSON.parse(output).cases.length === 1 && JSON.parse(output).network_calls === 0 && JSON.parse(output).cases.every(c => c.unit.includes(\"1\\u6a131\\u5ba4\")) && JSON.parse(output).cases[0].message.includes(\"\\u5169\\u65e5\")"
+        }
+      ]
+    },
+    {
+      "description": "unit-late-casual",
+      "vars": {
+        "turns": "[\"係呀，我屋企水喉漏水，想搵人處理。\", \"我係一樓一室嘅住戶。\", \"補充頭先件事，已經漏咗兩日。\"]"
+      },
+      "assert": [
+        {
+          "type": "javascript",
+          "value": "JSON.parse(output).cases.length === 1 && JSON.parse(output).network_calls === 0 && JSON.parse(output).cases.every(c => c.unit.includes(\"1\\u6a131\\u5ba4\")) && JSON.parse(output).cases[0].message.includes(\"\\u5169\\u65e5\")"
+        }
+      ]
+    },
+    {
+      "description": "unit-first-plain",
+      "vars": {
+        "turns": "[\"我係一樓一室嘅住戶。\", \"走廊好多垃圾，想搵人清理。\", \"補充頭先件事，係門口嗰堆垃圾。\"]"
+      },
+      "assert": [
+        {
+          "type": "javascript",
+          "value": "JSON.parse(output).cases.length === 1 && JSON.parse(output).network_calls === 0 && JSON.parse(output).cases.every(c => c.unit.includes(\"1\\u6a131\\u5ba4\")) && JSON.parse(output).cases.at(-1).kind === \"litter\""
+        }
+      ]
+    },
+    {
+      "description": "unit-first-polite",
+      "vars": {
+        "turns": "[\"唔該，我係一樓一室嘅住戶。\", \"走廊好多垃圾，想搵人清理。\", \"補充頭先件事，係門口嗰堆垃圾。\"]"
+      },
+      "assert": [
+        {
+          "type": "javascript",
+          "value": "JSON.parse(output).cases.length === 1 && JSON.parse(output).network_calls === 0 && JSON.parse(output).cases.every(c => c.unit.includes(\"1\\u6a131\\u5ba4\")) && JSON.parse(output).cases.at(-1).kind === \"litter\""
+        }
+      ]
+    },
+    {
+      "description": "unit-first-casual",
+      "vars": {
+        "turns": "[\"係呀，我係一樓一室嘅住戶。\", \"走廊好多垃圾，想搵人清理。\", \"補充頭先件事，係門口嗰堆垃圾。\"]"
+      },
+      "assert": [
+        {
+          "type": "javascript",
+          "value": "JSON.parse(output).cases.length === 1 && JSON.parse(output).network_calls === 0 && JSON.parse(output).cases.every(c => c.unit.includes(\"1\\u6a131\\u5ba4\")) && JSON.parse(output).cases.at(-1).kind === \"litter\""
+        }
+      ]
+    },
+    {
+      "description": "information-interruption-plain",
+      "vars": {
+        "turns": "[\"我屋企水喉漏水，請跟進。\", \"垃圾應該點樣分類？\", \"補充頭先漏水嗰件事，地下愈來愈濕。\"]"
+      },
+      "assert": [
+        {
+          "type": "javascript",
+          "value": "JSON.parse(output).cases.length === 1 && JSON.parse(output).network_calls === 0 && JSON.parse(output).cases.at(-1).kind === \"water\" && JSON.parse(output).cases[0].message.includes(\"\\u6108\\u4f86\\u6108\\u6fd5\")"
+        }
+      ]
+    },
+    {
+      "description": "information-interruption-polite",
+      "vars": {
+        "turns": "[\"唔該，我屋企水喉漏水，請跟進。\", \"垃圾應該點樣分類？\", \"補充頭先漏水嗰件事，地下愈來愈濕。\"]"
+      },
+      "assert": [
+        {
+          "type": "javascript",
+          "value": "JSON.parse(output).cases.length === 1 && JSON.parse(output).network_calls === 0 && JSON.parse(output).cases.at(-1).kind === \"water\" && JSON.parse(output).cases[0].message.includes(\"\\u6108\\u4f86\\u6108\\u6fd5\")"
+        }
+      ]
+    },
+    {
+      "description": "information-interruption-casual",
+      "vars": {
+        "turns": "[\"係呀，我屋企水喉漏水，請跟進。\", \"垃圾應該點樣分類？\", \"補充頭先漏水嗰件事，地下愈來愈濕。\"]"
+      },
+      "assert": [
+        {
+          "type": "javascript",
+          "value": "JSON.parse(output).cases.length === 1 && JSON.parse(output).network_calls === 0 && JSON.parse(output).cases.at(-1).kind === \"water\" && JSON.parse(output).cases[0].message.includes(\"\\u6108\\u4f86\\u6108\\u6fd5\")"
+        }
+      ]
+    },
+    {
+      "description": "different-issue-plain",
+      "vars": {
+        "turns": "[\"我屋企水喉漏水，請跟進。\", \"另外一件事，大堂升降機壞咗。\", \"我係一樓一室嘅住戶。\"]"
+      },
+      "assert": [
+        {
+          "type": "javascript",
+          "value": "JSON.parse(output).cases.length === 2 && JSON.parse(output).network_calls === 0 && JSON.parse(output).cases.every(c => c.unit.includes(\"1\\u6a131\\u5ba4\")) && JSON.parse(output).cases.at(-1).kind === \"general\""
+        }
+      ]
+    },
+    {
+      "description": "different-issue-polite",
+      "vars": {
+        "turns": "[\"唔該，我屋企水喉漏水，請跟進。\", \"另外一件事，大堂升降機壞咗。\", \"我係一樓一室嘅住戶。\"]"
+      },
+      "assert": [
+        {
+          "type": "javascript",
+          "value": "JSON.parse(output).cases.length === 2 && JSON.parse(output).network_calls === 0 && JSON.parse(output).cases.every(c => c.unit.includes(\"1\\u6a131\\u5ba4\")) && JSON.parse(output).cases.at(-1).kind === \"general\""
+        }
+      ]
+    },
+    {
+      "description": "different-issue-casual",
+      "vars": {
+        "turns": "[\"係呀，我屋企水喉漏水，請跟進。\", \"另外一件事，大堂升降機壞咗。\", \"我係一樓一室嘅住戶。\"]"
+      },
+      "assert": [
+        {
+          "type": "javascript",
+          "value": "JSON.parse(output).cases.length === 2 && JSON.parse(output).network_calls === 0 && JSON.parse(output).cases.every(c => c.unit.includes(\"1\\u6a131\\u5ba4\")) && JSON.parse(output).cases.at(-1).kind === \"general\""
+        }
+      ]
+    },
+    {
+      "description": "escalation-plain",
+      "vars": {
+        "turns": "[\"我屋企水喉漏水，請跟進。\", \"我係一樓一室嘅住戶。\", \"補充頭先漏水嗰件事，水滴到電線，仲有火花。\"]"
+      },
+      "assert": [
+        {
+          "type": "javascript",
+          "value": "JSON.parse(output).cases.length === 1 && JSON.parse(output).network_calls === 0 && JSON.parse(output).cases.every(c => c.unit.includes(\"1\\u6a131\\u5ba4\")) && JSON.parse(output).cases.at(-1).kind === \"hazard\""
+        }
+      ]
+    },
+    {
+      "description": "escalation-polite",
+      "vars": {
+        "turns": "[\"唔該，我屋企水喉漏水，請跟進。\", \"我係一樓一室嘅住戶。\", \"補充頭先漏水嗰件事，水滴到電線，仲有火花。\"]"
+      },
+      "assert": [
+        {
+          "type": "javascript",
+          "value": "JSON.parse(output).cases.length === 1 && JSON.parse(output).network_calls === 0 && JSON.parse(output).cases.every(c => c.unit.includes(\"1\\u6a131\\u5ba4\")) && JSON.parse(output).cases.at(-1).kind === \"hazard\""
+        }
+      ]
+    },
+    {
+      "description": "escalation-casual",
+      "vars": {
+        "turns": "[\"係呀，我屋企水喉漏水，請跟進。\", \"我係一樓一室嘅住戶。\", \"補充頭先漏水嗰件事，水滴到電線，仲有火花。\"]"
+      },
+      "assert": [
+        {
+          "type": "javascript",
+          "value": "JSON.parse(output).cases.length === 1 && JSON.parse(output).network_calls === 0 && JSON.parse(output).cases.every(c => c.unit.includes(\"1\\u6a131\\u5ba4\")) && JSON.parse(output).cases.at(-1).kind === \"hazard\""
+        }
+      ]
+    },
+    {
+      "description": "pressure-plain",
+      "vars": {
+        "turns": "[\"我最近生活壓力好大，晚晚都瞓唔到。\", \"我係一樓一室嘅住戶。\", \"補充頭先件事，已經持續咗兩星期。\"]"
+      },
+      "assert": [
+        {
+          "type": "javascript",
+          "value": "JSON.parse(output).cases.length === 1 && JSON.parse(output).network_calls === 0 && JSON.parse(output).cases.every(c => c.unit.includes(\"1\\u6a131\\u5ba4\")) && JSON.parse(output).cases.at(-1).kind === \"human_support\""
+        }
+      ]
+    },
+    {
+      "description": "pressure-polite",
+      "vars": {
+        "turns": "[\"唔該，我最近生活壓力好大，晚晚都瞓唔到。\", \"我係一樓一室嘅住戶。\", \"補充頭先件事，已經持續咗兩星期。\"]"
+      },
+      "assert": [
+        {
+          "type": "javascript",
+          "value": "JSON.parse(output).cases.length === 1 && JSON.parse(output).network_calls === 0 && JSON.parse(output).cases.every(c => c.unit.includes(\"1\\u6a131\\u5ba4\")) && JSON.parse(output).cases.at(-1).kind === \"human_support\""
+        }
+      ]
+    },
+    {
+      "description": "pressure-casual",
+      "vars": {
+        "turns": "[\"係呀，我最近生活壓力好大，晚晚都瞓唔到。\", \"我係一樓一室嘅住戶。\", \"補充頭先件事，已經持續咗兩星期。\"]"
+      },
+      "assert": [
+        {
+          "type": "javascript",
+          "value": "JSON.parse(output).cases.length === 1 && JSON.parse(output).network_calls === 0 && JSON.parse(output).cases.every(c => c.unit.includes(\"1\\u6a131\\u5ba4\")) && JSON.parse(output).cases.at(-1).kind === \"human_support\""
+        }
+      ]
+    },
+    {
+      "description": "crisis-plain",
+      "vars": {
+        "turns": "[\"我有跳樓衝動。\", \"我係一樓一室嘅住戶。\", \"想你哋安排管理人員主動聯絡我。\"]"
+      },
+      "assert": [
+        {
+          "type": "javascript",
+          "value": "JSON.parse(output).cases.length === 1 && JSON.parse(output).network_calls === 0 && JSON.parse(output).cases.every(c => c.unit.includes(\"1\\u6a131\\u5ba4\")) && JSON.parse(output).cases.at(-1).kind === \"human_support\""
+        }
+      ]
+    },
+    {
+      "description": "crisis-polite",
+      "vars": {
+        "turns": "[\"唔該，我有跳樓衝動。\", \"我係一樓一室嘅住戶。\", \"想你哋安排管理人員主動聯絡我。\"]"
+      },
+      "assert": [
+        {
+          "type": "javascript",
+          "value": "JSON.parse(output).cases.length === 1 && JSON.parse(output).network_calls === 0 && JSON.parse(output).cases.every(c => c.unit.includes(\"1\\u6a131\\u5ba4\")) && JSON.parse(output).cases.at(-1).kind === \"human_support\""
+        }
+      ]
+    },
+    {
+      "description": "crisis-casual",
+      "vars": {
+        "turns": "[\"係呀，我有跳樓衝動。\", \"我係一樓一室嘅住戶。\", \"想你哋安排管理人員主動聯絡我。\"]"
+      },
+      "assert": [
+        {
+          "type": "javascript",
+          "value": "JSON.parse(output).cases.length === 1 && JSON.parse(output).network_calls === 0 && JSON.parse(output).cases.every(c => c.unit.includes(\"1\\u6a131\\u5ba4\")) && JSON.parse(output).cases.at(-1).kind === \"human_support\""
+        }
+      ]
+    },
+    {
+      "description": "decline-plain",
+      "vars": {
+        "turns": "[\"走廊好多垃圾，想搵人清理。\", \"暫時唔想職員聯絡我。\", \"垃圾分類有咩方法？\"]"
+      },
+      "assert": [
+        {
+          "type": "javascript",
+          "value": "JSON.parse(output).cases.length === 1 && JSON.parse(output).network_calls === 0 && JSON.parse(output).cases.at(-1).kind === \"litter\""
+        }
+      ]
+    },
+    {
+      "description": "decline-polite",
+      "vars": {
+        "turns": "[\"唔該，走廊好多垃圾，想搵人清理。\", \"暫時唔想職員聯絡我。\", \"垃圾分類有咩方法？\"]"
+      },
+      "assert": [
+        {
+          "type": "javascript",
+          "value": "JSON.parse(output).cases.length === 1 && JSON.parse(output).network_calls === 0 && JSON.parse(output).cases.at(-1).kind === \"litter\""
+        }
+      ]
+    },
+    {
+      "description": "decline-casual",
+      "vars": {
+        "turns": "[\"係呀，走廊好多垃圾，想搵人清理。\", \"暫時唔想職員聯絡我。\", \"垃圾分類有咩方法？\"]"
+      },
+      "assert": [
+        {
+          "type": "javascript",
+          "value": "JSON.parse(output).cases.length === 1 && JSON.parse(output).network_calls === 0 && JSON.parse(output).cases.at(-1).kind === \"litter\""
+        }
+      ]
+    },
+    {
+      "description": "hypothetical-plain",
+      "vars": {
+        "turns": "[\"假設有人見到漏水，應該點做？\", \"如果有火花會點？\", \"我只係想了解原理，冇事發生。\"]"
+      },
+      "assert": [
+        {
+          "type": "javascript",
+          "value": "JSON.parse(output).cases.length === 0 && JSON.parse(output).network_calls === 0"
+        }
+      ]
+    },
+    {
+      "description": "hypothetical-polite",
+      "vars": {
+        "turns": "[\"唔該，假設有人見到漏水，應該點做？\", \"如果有火花會點？\", \"我只係想了解原理，冇事發生。\"]"
+      },
+      "assert": [
+        {
+          "type": "javascript",
+          "value": "JSON.parse(output).cases.length === 0 && JSON.parse(output).network_calls === 0"
+        }
+      ]
+    },
+    {
+      "description": "hypothetical-casual",
+      "vars": {
+        "turns": "[\"係呀，假設有人見到漏水，應該點做？\", \"如果有火花會點？\", \"我只係想了解原理，冇事發生。\"]"
+      },
+      "assert": [
+        {
+          "type": "javascript",
+          "value": "JSON.parse(output).cases.length === 0 && JSON.parse(output).network_calls === 0"
+        }
+      ]
+    },
+    {
+      "description": "remember-unit-plain",
+      "vars": {
+        "turns": "[\"我係一樓一室嘅住戶。\", \"垃圾應該點樣分類？\", \"我屋企水喉漏水，請幫手處理。\"]"
+      },
+      "assert": [
+        {
+          "type": "javascript",
+          "value": "JSON.parse(output).cases.length === 1 && JSON.parse(output).network_calls === 0 && JSON.parse(output).cases.every(c => c.unit.includes(\"1\\u6a131\\u5ba4\")) && JSON.parse(output).cases.at(-1).kind === \"water\""
+        }
+      ]
+    },
+    {
+      "description": "remember-unit-polite",
+      "vars": {
+        "turns": "[\"唔該，我係一樓一室嘅住戶。\", \"垃圾應該點樣分類？\", \"我屋企水喉漏水，請幫手處理。\"]"
+      },
+      "assert": [
+        {
+          "type": "javascript",
+          "value": "JSON.parse(output).cases.length === 1 && JSON.parse(output).network_calls === 0 && JSON.parse(output).cases.every(c => c.unit.includes(\"1\\u6a131\\u5ba4\")) && JSON.parse(output).cases.at(-1).kind === \"water\""
+        }
+      ]
+    },
+    {
+      "description": "remember-unit-casual",
+      "vars": {
+        "turns": "[\"係呀，我係一樓一室嘅住戶。\", \"垃圾應該點樣分類？\", \"我屋企水喉漏水，請幫手處理。\"]"
+      },
+      "assert": [
+        {
+          "type": "javascript",
+          "value": "JSON.parse(output).cases.length === 1 && JSON.parse(output).network_calls === 0 && JSON.parse(output).cases.every(c => c.unit.includes(\"1\\u6a131\\u5ba4\")) && JSON.parse(output).cases.at(-1).kind === \"water\""
+        }
+      ]
+    }
+  ],
+  "evaluateOptions": {
+    "maxConcurrency": 1
+  }
+}

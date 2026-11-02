@@ -1,0 +1,382 @@
+{
+  "version": 1,
+  "fictional_only": true,
+  "scope": "multi-turn routing and data handling, not clinical or Gemma empathy evaluation",
+  "scenarios": [
+    {
+      "id": "sorting-plain",
+      "turns": [
+        "垃圾應該點樣分類？",
+        "膠樽要唔要除蓋？",
+        "多謝你，我明白喇。"
+      ],
+      "case_count": 0
+    },
+    {
+      "id": "sorting-polite",
+      "turns": [
+        "唔該，垃圾應該點樣分類？",
+        "膠樽要唔要除蓋？",
+        "多謝你，我明白喇。"
+      ],
+      "case_count": 0
+    },
+    {
+      "id": "sorting-casual",
+      "turns": [
+        "係呀，垃圾應該點樣分類？",
+        "膠樽要唔要除蓋？",
+        "多謝你，我明白喇。"
+      ],
+      "case_count": 0
+    },
+    {
+      "id": "social-plain",
+      "turns": [
+        "今日行咗陣街。",
+        "見到啲花好靚。",
+        "同你分享下啫，冇嘢要跟進。"
+      ],
+      "case_count": 0
+    },
+    {
+      "id": "social-polite",
+      "turns": [
+        "唔該，今日行咗陣街。",
+        "見到啲花好靚。",
+        "同你分享下啫，冇嘢要跟進。"
+      ],
+      "case_count": 0
+    },
+    {
+      "id": "social-casual",
+      "turns": [
+        "係呀，今日行咗陣街。",
+        "見到啲花好靚。",
+        "同你分享下啫，冇嘢要跟進。"
+      ],
+      "case_count": 0
+    },
+    {
+      "id": "unit-late-plain",
+      "turns": [
+        "我屋企水喉漏水，想搵人處理。",
+        "我係一樓一室嘅住戶。",
+        "補充頭先件事，已經漏咗兩日。"
+      ],
+      "case_count": 1,
+      "unit": "1樓1室",
+      "contains": "兩日"
+    },
+    {
+      "id": "unit-late-polite",
+      "turns": [
+        "唔該，我屋企水喉漏水，想搵人處理。",
+        "我係一樓一室嘅住戶。",
+        "補充頭先件事，已經漏咗兩日。"
+      ],
+      "case_count": 1,
+      "unit": "1樓1室",
+      "contains": "兩日"
+    },
+    {
+      "id": "unit-late-casual",
+      "turns": [
+        "係呀，我屋企水喉漏水，想搵人處理。",
+        "我係一樓一室嘅住戶。",
+        "補充頭先件事，已經漏咗兩日。"
+      ],
+      "case_count": 1,
+      "unit": "1樓1室",
+      "contains": "兩日"
+    },
+    {
+      "id": "unit-first-plain",
+      "turns": [
+        "我係一樓一室嘅住戶。",
+        "走廊好多垃圾，想搵人清理。",
+        "補充頭先件事，係門口嗰堆垃圾。"
+      ],
+      "case_count": 1,
+      "unit": "1樓1室",
+      "last_kind": "litter"
+    },
+    {
+      "id": "unit-first-polite",
+      "turns": [
+        "唔該，我係一樓一室嘅住戶。",
+        "走廊好多垃圾，想搵人清理。",
+        "補充頭先件事，係門口嗰堆垃圾。"
+      ],
+      "case_count": 1,
+      "unit": "1樓1室",
+      "last_kind": "litter"
+    },
+    {
+      "id": "unit-first-casual",
+      "turns": [
+        "係呀，我係一樓一室嘅住戶。",
+        "走廊好多垃圾，想搵人清理。",
+        "補充頭先件事，係門口嗰堆垃圾。"
+      ],
+      "case_count": 1,
+      "unit": "1樓1室",
+      "last_kind": "litter"
+    },
+    {
+      "id": "information-interruption-plain",
+      "turns": [
+        "我屋企水喉漏水，請跟進。",
+        "垃圾應該點樣分類？",
+        "補充頭先漏水嗰件事，地下愈來愈濕。"
+      ],
+      "case_count": 1,
+      "last_kind": "water",
+      "contains": "愈來愈濕"
+    },
+    {
+      "id": "information-interruption-polite",
+      "turns": [
+        "唔該，我屋企水喉漏水，請跟進。",
+        "垃圾應該點樣分類？",
+        "補充頭先漏水嗰件事，地下愈來愈濕。"
+      ],
+      "case_count": 1,
+      "last_kind": "water",
+      "contains": "愈來愈濕"
+    },
+    {
+      "id": "information-interruption-casual",
+      "turns": [
+        "係呀，我屋企水喉漏水，請跟進。",
+        "垃圾應該點樣分類？",
+        "補充頭先漏水嗰件事，地下愈來愈濕。"
+      ],
+      "case_count": 1,
+      "last_kind": "water",
+      "contains": "愈來愈濕"
+    },
+    {
+      "id": "different-issue-plain",
+      "turns": [
+        "我屋企水喉漏水，請跟進。",
+        "另外一件事，大堂升降機壞咗。",
+        "我係一樓一室嘅住戶。"
+      ],
+      "case_count": 2,
+      "unit": "1樓1室",
+      "last_kind": "general"
+    },
+    {
+      "id": "different-issue-polite",
+      "turns": [
+        "唔該，我屋企水喉漏水，請跟進。",
+        "另外一件事，大堂升降機壞咗。",
+        "我係一樓一室嘅住戶。"
+      ],
+      "case_count": 2,
+      "unit": "1樓1室",
+      "last_kind": "general"
+    },
+    {
+      "id": "different-issue-casual",
+      "turns": [
+        "係呀，我屋企水喉漏水，請跟進。",
+        "另外一件事，大堂升降機壞咗。",
+        "我係一樓一室嘅住戶。"
+      ],
+      "case_count": 2,
+      "unit": "1樓1室",
+      "last_kind": "general"
+    },
+    {
+      "id": "escalation-plain",
+      "turns": [
+        "我屋企水喉漏水，請跟進。",
+        "我係一樓一室嘅住戶。",
+        "補充頭先漏水嗰件事，水滴到電線，仲有火花。"
+      ],
+      "case_count": 1,
+      "unit": "1樓1室",
+      "last_kind": "hazard"
+    },
+    {
+      "id": "escalation-polite",
+      "turns": [
+        "唔該，我屋企水喉漏水，請跟進。",
+        "我係一樓一室嘅住戶。",
+        "補充頭先漏水嗰件事，水滴到電線，仲有火花。"
+      ],
+      "case_count": 1,
+      "unit": "1樓1室",
+      "last_kind": "hazard"
+    },
+    {
+      "id": "escalation-casual",
+      "turns": [
+        "係呀，我屋企水喉漏水，請跟進。",
+        "我係一樓一室嘅住戶。",
+        "補充頭先漏水嗰件事，水滴到電線，仲有火花。"
+      ],
+      "case_count": 1,
+      "unit": "1樓1室",
+      "last_kind": "hazard"
+    },
+    {
+      "id": "pressure-plain",
+      "turns": [
+        "我最近生活壓力好大，晚晚都瞓唔到。",
+        "我係一樓一室嘅住戶。",
+        "補充頭先件事，已經持續咗兩星期。"
+      ],
+      "case_count": 1,
+      "unit": "1樓1室",
+      "last_kind": "human_support"
+    },
+    {
+      "id": "pressure-polite",
+      "turns": [
+        "唔該，我最近生活壓力好大，晚晚都瞓唔到。",
+        "我係一樓一室嘅住戶。",
+        "補充頭先件事，已經持續咗兩星期。"
+      ],
+      "case_count": 1,
+      "unit": "1樓1室",
+      "last_kind": "human_support"
+    },
+    {
+      "id": "pressure-casual",
+      "turns": [
+        "係呀，我最近生活壓力好大，晚晚都瞓唔到。",
+        "我係一樓一室嘅住戶。",
+        "補充頭先件事，已經持續咗兩星期。"
+      ],
+      "case_count": 1,
+      "unit": "1樓1室",
+      "last_kind": "human_support"
+    },
+    {
+      "id": "crisis-plain",
+      "turns": [
+        "我有跳樓衝動。",
+        "我係一樓一室嘅住戶。",
+        "想你哋安排管理人員主動聯絡我。"
+      ],
+      "case_count": 1,
+      "unit": "1樓1室",
+      "last_kind": "human_support"
+    },
+    {
+      "id": "crisis-polite",
+      "turns": [
+        "唔該，我有跳樓衝動。",
+        "我係一樓一室嘅住戶。",
+        "想你哋安排管理人員主動聯絡我。"
+      ],
+      "case_count": 1,
+      "unit": "1樓1室",
+      "last_kind": "human_support"
+    },
+    {
+      "id": "crisis-casual",
+      "turns": [
+        "係呀，我有跳樓衝動。",
+        "我係一樓一室嘅住戶。",
+        "想你哋安排管理人員主動聯絡我。"
+      ],
+      "case_count": 1,
+      "unit": "1樓1室",
+      "last_kind": "human_support"
+    },
+    {
+      "id": "decline-plain",
+      "turns": [
+        "走廊好多垃圾，想搵人清理。",
+        "暫時唔想職員聯絡我。",
+        "垃圾分類有咩方法？"
+      ],
+      "case_count": 1,
+      "last_kind": "litter"
+    },
+    {
+      "id": "decline-polite",
+      "turns": [
+        "唔該，走廊好多垃圾，想搵人清理。",
+        "暫時唔想職員聯絡我。",
+        "垃圾分類有咩方法？"
+      ],
+      "case_count": 1,
+      "last_kind": "litter"
+    },
+    {
+      "id": "decline-casual",
+      "turns": [
+        "係呀，走廊好多垃圾，想搵人清理。",
+        "暫時唔想職員聯絡我。",
+        "垃圾分類有咩方法？"
+      ],
+      "case_count": 1,
+      "last_kind": "litter"
+    },
+    {
+      "id": "hypothetical-plain",
+      "turns": [
+        "假設有人見到漏水，應該點做？",
+        "如果有火花會點？",
+        "我只係想了解原理，冇事發生。"
+      ],
+      "case_count": 0
+    },
+    {
+      "id": "hypothetical-polite",
+      "turns": [
+        "唔該，假設有人見到漏水，應該點做？",
+        "如果有火花會點？",
+        "我只係想了解原理，冇事發生。"
+      ],
+      "case_count": 0
+    },
+    {
+      "id": "hypothetical-casual",
+      "turns": [
+        "係呀，假設有人見到漏水，應該點做？",
+        "如果有火花會點？",
+        "我只係想了解原理，冇事發生。"
+      ],
+      "case_count": 0
+    },
+    {
+      "id": "remember-unit-plain",
+      "turns": [
+        "我係一樓一室嘅住戶。",
+        "垃圾應該點樣分類？",
+        "我屋企水喉漏水，請幫手處理。"
+      ],
+      "case_count": 1,
+      "unit": "1樓1室",
+      "last_kind": "water"
+    },
+    {
+      "id": "remember-unit-polite",
+      "turns": [
+        "唔該，我係一樓一室嘅住戶。",
+        "垃圾應該點樣分類？",
+        "我屋企水喉漏水，請幫手處理。"
+      ],
+      "case_count": 1,
+      "unit": "1樓1室",
+      "last_kind": "water"
+    },
+    {
+      "id": "remember-unit-casual",
+      "turns": [
+        "係呀，我係一樓一室嘅住戶。",
+        "垃圾應該點樣分類？",
+        "我屋企水喉漏水，請幫手處理。"
+      ],
+      "case_count": 1,
+      "unit": "1樓1室",
+      "last_kind": "water"
+    }
+  ]
+}

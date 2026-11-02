@@ -125,7 +125,10 @@ def _audio_chunks(text, *, output_format, client=None, options=None):
             timeout=15) as response:
             response.raise_for_status()
             checked_mp3 = False
-            for chunk in response.iter_bytes(chunk_size=4096):
+            # Yield received transport chunks immediately. A fixed iter_bytes
+            # size waits for 4096 bytes (~85ms PCM) even when speech has arrived.
+            # Keep the existing <=4096-byte SSE frame bound without that fill wait.
+            for chunk in response.iter_bytes():
                 if time.monotonic()-started > 30:
                     raise ValueError('voice_stream_deadline')
                 pending += chunk
@@ -135,7 +138,8 @@ def _audio_chunks(text, *, output_format, client=None, options=None):
                 if raw:
                     even = len(pending)//2*2
                     if even:
-                        yield pending[:even]
+                        for offset in range(0, even, 4096):
+                            yield pending[offset:min(offset + 4096, even)]
                         pending = pending[even:]
                 else:
                     if not checked_mp3:
