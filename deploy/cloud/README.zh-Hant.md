@@ -1,3 +1,7 @@
+# 2026-11-02 闊屏／就緒狀態／七款圖庫已部署
+
+先讀 `.runtime/wide-readiness-gallery-20261102/HANDOFF.json` 及 `docs/wide-readiness-gallery-2026-11-02.md`。runtime `0e9714671394f64523799c381454d81584f55beb`／deploy `dep-dbk2fletlv9c73el7fk0`，原網址及Free單實例不變。官方28入口＝5一鍵＋23原站原因；2款CC0共7真預覽。柔和背景、實際啟動檢查及原版設定預載已部署。barrier7獨立交接後放行，不可重用批准。原資料／計數／旗標／模型保留。文件不再部署。
+
 # 2026-11-02 共享模型／官方免費圖庫已部署
 
 最新交接 `.runtime/cloud-model-publish-20261102/HANDOFF.json`。原網址、Free Singapore 單實例保持；runtime `c7b03a9797dce9b57e0f6c1118b2379bce94a640`／deploy `dep-dbk1fkmc6qcc73d8g5e0`，唯一 npdz2/PID59，04:59:45Z ready。原版 AIRI 模型匯入→預覽→同一儲存至平台可發佈 Live2D ZIP，其他居民裝置新進入／可見閒置／下一位交接更新，不中斷現有對話。已加入 Mark／Wanko／Haru 官方圖庫，附來源與使用條款；非所有第三方網站或其他格式均一鍵匯入。32 MiB/檔及64 MiB總預留不是官方餘額；新屋苑兩表存原檔不可覆寫、舊版保留；原四表及所有個案／短號／設定／用量與控制旗標保留。新 barrier6 確認舊 writer 實際退出及唯一新 inert instance，關閉一致私人副本及新增空表核對後才獨立簽放行；不能重用本次批准。詳見 ../../docs/shared-live2d-models-2026-11-02.md 。本條覆蓋下面「自訂模型只本機」的舊說明，僅限本次支援格式。Gemma＋曉曼不改，沒有正式測試模型／假單／provider呼叫／真人咪播放／EP操作。GitHub Pages https://yuenhk.github.io/neighbour/ 已直接跳轉；舊根頁與遊戲保留。文件更新不再部署。
