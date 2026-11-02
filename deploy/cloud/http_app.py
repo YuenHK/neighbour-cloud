@@ -31,6 +31,7 @@ from deploy.cloud.presentation import PUBLIC_PATH as PRESENTATION_PUBLIC_PATH
 from deploy.cloud.presentation import STAFF_PATH as PRESENTATION_STAFF_PATH
 from deploy.cloud.presentation import Presentation, PresentationEdit
 from deploy.cloud.quota_api import QUOTA_PATH, CloudQuotas, quota_router
+from deploy.cloud.robot_proxy import robot_path, robot_router
 from deploy.cloud.site_access import PATH as ACCESS_PATH
 from deploy.cloud.site_access import AccessInput, SiteSessions
 from deploy.cloud.staff_api import staff_path, staff_router
@@ -164,7 +165,7 @@ class CloudBoundary:
                     "img-src 'self' data: https://*.googleusercontent.com; frame-ancestors 'none'; base-uri 'none'"})
             return await response(scope, receive, send)
         if not (path.startswith(('/api/v1/resident/', '/api/v1/service-desk/'))
-                or path == '/api/v1/events.csv' or path in STREAM_PATHS or PHOTO_PATH.fullmatch(path) or staff_path(path)
+                or path == '/api/v1/events.csv' or path in STREAM_PATHS or PHOTO_PATH.fullmatch(path) or staff_path(path) or robot_path(path)
                 or (self.maintenance is not None and path in ('/api/v1/governance/retention', '/api/v1/governance/audit'))):
             return await reject(404, '此雲端入口未提供這項功能。')
         if self.services.closed or not self.app.state.started:
@@ -258,6 +259,9 @@ def create_app(services, verifier, *, origin, model_client=None, voice_client=No
             app.state.resident_cloud_client = client
             app.state.resident_voice_client = voice
             app.state.quota_client = quota
+            app.state.robot_client = httpx.AsyncClient(trust_env=False, follow_redirects=False,
+                limits=httpx.Limits(max_connections=16, max_keepalive_connections=8, keepalive_expiry=30))
+            cleanup.push_async_callback(app.state.robot_client.aclose)
             cleanup.push_async_callback(app.state.resident_transcription.close)
             if maintenance is not None:
                 maintenance.scheduled = True
@@ -411,6 +415,7 @@ def create_app(services, verifier, *, origin, model_client=None, voice_client=No
         text, client=app.state.resident_voice_client)))
     app.include_router(photo_router(services, require_staff))
     app.include_router(staff_router(services, require_staff))
+    app.include_router(robot_router(presentation, require_staff, lambda: app.state.robot_client))
     app.state.quotas = CloudQuotas(lambda: app.state.quota_client)
     app.include_router(quota_router(require_staff, app.state.quotas))
 

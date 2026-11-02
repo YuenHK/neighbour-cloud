@@ -1,25 +1,45 @@
-import { cloudFetch } from '/cloud/admin-request.js'
-const link = document.getElementById('remoteRobotConsole')
+const frame = document.getElementById('robotConsoleFrame')
 const status = document.getElementById('robotConsoleStatus')
-let busy = false
-let loaded = false
-async function read() {
-  if (location.hash !== '#robots' || busy || loaded) return
-  busy = true
-  try {
-    const response = await cloudFetch('/api/v1/service-desk/presentation', { signal: AbortSignal.timeout(12000) })
-    if (!response.ok) throw new Error('unavailable')
-    const data = await response.json()
-    if (typeof data.robot_remote_url === 'string' && /^https:\/\/[a-z0-9-]+\.ngrok-free\.(app|dev)$/.test(data.robot_remote_url)) {
-      link.href = data.robot_remote_url + '/robots'
-      link.hidden = false
-      status.textContent = '街外入口已設定；是否在線以控制台實際回應為準。首次開啟需用已核准的 Google 帳戶登入。'
-    }
-    else status.textContent = '街外入口尚未設定。現場控制台可獨立使用；居民服務與管理資料不受影響。'
-    loaded = true
-  }
-  catch { status.textContent = '暫時未能核對入口。請稍後重新進入此分頁。' }
-  finally { busy = false }
+const retry = document.getElementById('retryRobotConsole')
+let ready = false, timer
+function pause() {
+  if (ready) frame.contentWindow?.postMessage({ type: 'neighbour-robot-pause' }, location.origin)
 }
+function connect() {
+  clearTimeout(timer)
+  ready = false
+  status.textContent = '正在載入控制台，沿用管理工作台登入…'
+  retry.hidden = true
+  window.dispatchEvent(new Event('cloud-robot-reset'))
+  frame.hidden = false
+  frame.src = '/cloud/robots'
+  timer = setTimeout(() => {
+    if (!ready) { status.textContent = '控制台未完成載入，可以重新連接。'; retry.hidden = false }
+  }, 20000)
+}
+function read() {
+  if (location.hash !== '#robots') { pause(); return }
+  if (!frame.getAttribute('src')) connect()
+}
+retry.addEventListener('click', connect)
+window.addEventListener('message', event => {
+  if (event.origin !== location.origin || event.source !== frame.contentWindow) return
+  if (event.data?.type === 'neighbour-robot-ready') {
+    clearTimeout(timer)
+    ready = true
+    status.textContent = '控制台已載入，請選擇機體。'
+    retry.hidden = false
+    if (location.hash !== '#robots') pause()
+  }
+  if (event.data?.type === 'neighbour-robot-error') {
+    clearTimeout(timer)
+    status.textContent = '管理登入未能核對，請重新進入管理工作台。'
+    retry.hidden = false
+  }
+  if (event.data?.type === 'neighbour-robot-size' && Number.isFinite(event.data.height))
+    frame.style.height = Math.max(620, Math.min(1600, event.data.height + 12)) + 'px'
+})
 window.addEventListener('hashchange', read)
+window.addEventListener('pagehide', pause)
+document.addEventListener('visibilitychange', () => { if (document.hidden) pause() })
 void read()

@@ -40,6 +40,7 @@ def cloud_main(source):
   const app = document.getElementById('app')
   if (app)
     app.replaceChildren(Object.assign(document.createElement('p'), { textContent: '畫面資料暫時未能載入，請由平台重新開啟此頁。未載入的設定不會覆蓋原有資料。' }))
+  parent.postMessage({ type: 'neighbour-service-error', area: 'resident' }, location.origin)
 })""",
     }
     for old, new in replacements.items():
@@ -73,7 +74,26 @@ def cloud_scene(source):
         source = source.replace(old, '', 1)
     while newline * 3 in source:
         source = source.replace(newline * 3, newline * 2)
+    anchor = "const componentState = defineModel<'pending' | 'loading' | 'mounted'>('state', { default: 'pending' })"
+    if source.count(anchor) != 1:
+        raise ValueError('cloud_stage_readiness_anchor_requires_review')
+    source = source.replace(anchor, anchor + newline + (
+        "watch(componentState, (state) => {\n"
+        "  if (Reflect.get(globalThis, '__NEIGHBOUR_CLOUD__') === true)\n"
+        "    parent.postMessage({ type: 'neighbour-service-stage', state }, location.origin)\n"
+        "  if (state === 'mounted') window.dispatchEvent(new Event('resident-avatar-ready'))\n"
+        "}, { immediate: true })").replace('\n', newline), 1)
     return source
+
+
+def cloud_model_gestures(source):
+    """Cloud build only: add a bounded head/shoulder gesture after native lip sync."""
+    anchor = "import { Emotion, EmotionNeutralMotionName } from '../../../constants/emotions'"
+    binding = "    motionManagerUpdate.register(useMotionUpdatePluginLipSync(mouthOpenSize, nowSpeaking), 'final')"
+    if source.count(anchor) != 1 or source.count(binding) != 1:
+        raise ValueError('cloud_model_gesture_anchor_requires_review')
+    source = source.replace(anchor, "import { residentGesturePlugin } from '../../../cloud-gestures'\n" + anchor, 1)
+    return source.replace(binding, binding + "\n    motionManagerUpdate.register(residentGesturePlugin(), 'final')", 1)
 
 
 def cloud_input_recovery(source):

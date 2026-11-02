@@ -3,8 +3,9 @@
 const photoPath = /^\/api\/v1\/patrol\/events\/[\w-]{1,120}\/photo$/
 const staffEventPath = /^\/api\/v1\/events\/[\w-]{1,120}$/
 const followupPath = /^\/api\/v1\/patrol\/events\/[a-f0-9]{32}\/followup$/
+const robotPath = /^\/api\/v1\/robot\/ep\/(?:fleet|qr|connection|connect|disconnect|cancel-pairing|lease|stop|prepare-control|command|reset-stop|discovery|devices\/[A-Za-z0-9_-]{1,60}(?:\/(?:frame\.jpg|connection|video-frame|connect|disconnect|prepare-control|lease|stop|command|video-start|video-stop|gimbal-start|gimbal-follow|gimbal-target|gimbal-stop|speed|manual-warning|infrared-warning|check-stop|reset-stop|patrol))?)$/
 const allowedHeaders = new Set(['content-type', 'accept', 'x-resident-session', 'x-resident-turn'])
-const allowedOptions = new Set(['method', 'body', 'headers', 'signal', 'cache', 'credentials', 'redirect', 'mode', 'referrerPolicy'])
+const allowedOptions = new Set(['method', 'body', 'headers', 'signal', 'cache', 'credentials', 'redirect', 'mode', 'referrerPolicy', 'keepalive'])
 const abortError = () => new DOMException('cloud_request_cancelled', 'AbortError')
 
 /** @template T @param {Promise<T>} promise @param {AbortSignal | undefined} signal @param {number | undefined} timeoutMs */
@@ -102,13 +103,15 @@ export function createCloudTransport({ origin, tokenProvider, fetcher = (...args
       const supported = url.pathname.startsWith('/api/v1/resident/') || url.pathname.startsWith('/api/v1/service-desk/')
         || url.pathname === '/api/v1/events.csv' || photoPath.test(url.pathname)
         || ['/api/v1/events', '/api/v1/event-stats', '/api/v1/patrol/followups', '/api/v1/patrol/workbench'].includes(url.pathname)
-        || staffEventPath.test(url.pathname) || followupPath.test(url.pathname)
+        || staffEventPath.test(url.pathname) || followupPath.test(url.pathname) || robotPath.test(url.pathname)
         || ['/api/v1/governance/audit', '/api/v1/governance/retention'].includes(url.pathname)
         || ['/v1/audio/resident-stream', '/_audio/v1/audio/resident-stream'].includes(url.pathname)
       if (url.origin !== origin || url.username || url.password || url.hash || !supported) {
         throw new Error('cloud_request_invalid')
       }
       const method = (init.method || 'GET').toUpperCase()
+      if (init.keepalive !== undefined && (typeof init.keepalive !== 'boolean' || !robotPath.test(url.pathname)))
+        throw new Error('cloud_request_invalid')
       if (!['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE'].includes(method)
         || (init.body != null && (typeof init.body !== 'string' || ['GET', 'HEAD'].includes(method)))) {
         throw new Error('cloud_request_invalid')
@@ -124,7 +127,7 @@ export function createCloudTransport({ origin, tokenProvider, fetcher = (...args
       }
       if (init.body != null && !headers.has('content-type'))
         headers.set('Content-Type', 'application/json')
-      return { url, method, headers, body: init.body, signal: init.signal || undefined }
+      return { url, method, headers, body: init.body, signal: init.signal || undefined, keepalive: init.keepalive }
     }
     catch {
       throw new Error('cloud_request_invalid')
@@ -147,7 +150,7 @@ export function createCloudTransport({ origin, tokenProvider, fetcher = (...args
       const signal = options.signal ? AbortSignal.any([options.signal, scopeSignal]) : scopeSignal
       options.headers.set('Authorization', `Bearer ${token}`)
       try {
-        const response = await fetcher(options.url.href, { method: options.method, headers: options.headers, body: options.body, signal, credentials: 'omit', redirect: 'error', cache: 'no-store', mode: 'same-origin', referrerPolicy: 'no-referrer' })
+        const response = await fetcher(options.url.href, { method: options.method, headers: options.headers, body: options.body, signal, credentials: 'omit', redirect: 'error', cache: 'no-store', mode: 'same-origin', referrerPolicy: 'no-referrer', ...(options.keepalive === undefined ? {} : { keepalive: options.keepalive }) })
         if (identity !== generation) {
           try {
             void response.body?.cancel().catch(() => undefined)

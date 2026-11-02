@@ -51,8 +51,8 @@ def test_cloud_workbench_reuses_required_controls_without_native_settings_or_bac
     assert b'grid-template-columns:repeat(6,minmax(0,1fr))' in assets.get('/assets/service-shell.css')[0]
     assert '官方免費額度</th>' not in html
     assert '免費配額與可用量' in html
-    # Explicit new-window link only, never an automatic cloud-to-LAN request.
-    assert 'href="http://127.0.0.1:8000/robots" target="_blank" rel="noopener noreferrer"' in html
+    # Original console is embedded same-origin; no public page probes the LAN.
+    assert 'id="robotConsoleFrame"' in html and 'http://127.0.0.1:8000/robots' not in html
     assert b'/api/v1/patrol/workbench' in assets.get('/cloud/admin/runtime.js')[0]
     assert b'timeoutMs = 12000' in assets.get('/cloud/admin/runtime.js')[0]
 

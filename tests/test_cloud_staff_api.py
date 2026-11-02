@@ -51,6 +51,15 @@ def test_events_stats_and_followups_are_staff_only_without_any_robot_calls(api):
     assert not api.calls and api.search.await_count == 0
 
 
+def test_robot_relay_requires_existing_staff_login_without_google_or_hardware(api):
+    path = '/api/v1/robot/ep/fleet'
+    assert api.client.get(path).status_code == 401
+    assert api.client.get(path, headers=api.resident).status_code == 403
+    # This fixture has no onsite presentation/endpoint; fail closed before relay.
+    assert api.client.get(path, headers=api.staff).status_code in (404, 503)
+    assert not api.calls and api.search.await_count == 0
+
+
 def test_patrol_three_photos_to_one_numbered_case_and_staff_progress_mirror(photographs):
     api, _, _ = photographs
     before = api.services.cases.list()['counts']['new']

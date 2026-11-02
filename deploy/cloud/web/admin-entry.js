@@ -18,15 +18,24 @@ try {
   const makeBroker = () => createFrameBroker({ origin: location.origin, frameWindow: () => settings?.contentWindow,
     tokenProvider: () => identity })
   let broker = makeBroker()
+  const robotFrame = document.getElementById('robotConsoleFrame')
+  const makeRobotBroker = () => createFrameBroker({ origin: location.origin,
+    frameWindow: () => robotFrame?.contentWindow, tokenProvider: () => identity })
+  let robotBroker = makeRobotBroker()
   window.addEventListener('message', event => broker.receive(event))
+  window.addEventListener('message', event => robotBroker.receive(event))
   window.addEventListener('cloud-settings-reset', () => { broker.close(); broker = makeBroker() })
+  window.addEventListener('cloud-robot-reset', () => { robotBroker.close(); robotBroker = makeRobotBroker() })
   window.addEventListener('pagehide', () => broker.close(), { once: true })
+  window.addEventListener('pagehide', () => robotBroker.close(), { once: true })
   window.addEventListener('pagehide', () => transport.clearAuth(), { once: true })
   for (const name of ['photo-privacy', 'latest-photo', 'api-quota', 'work-sections', 'workspace-navigation',
     'runtime', 'service-workbench', 'estate-management', 'presentation', 'robots']) await import(`/cloud/admin/${name}.js`)
   if (data.governance_supported === true) await import('/cloud/admin/governance.js')
+  parent.postMessage({ type: 'neighbour-service-ready', area: 'staff' }, location.origin)
 }
 catch {
+  parent.postMessage({ type: 'neighbour-service-error', area: 'staff' }, location.origin)
   transport?.clearAuth()
   document.body.replaceChildren(Object.assign(document.createElement('p'), { textContent: '請由鄰伴登入頁，以已核准的職員帳戶進入管理工作台。' }))
 }

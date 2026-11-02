@@ -42,6 +42,7 @@ try {
   await import(entry)
 }
 catch {
+  parent.postMessage({ type: 'neighbour-service-error', area: 'resident' }, location.origin)
   transport?.clearAuth()
   document.body.replaceChildren(Object.assign(document.createElement('p'), { textContent: '請由鄰伴登入頁進入服務台。' }))
 }

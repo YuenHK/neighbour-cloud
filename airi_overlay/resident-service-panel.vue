@@ -11,6 +11,7 @@ import { storeToRefs } from 'pinia'
 import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 
 import { createResidentApi } from './resident-api.js'
+import { residentGesture } from './resident-gestures.js'
 import { ResidentIdle } from './resident-idle.js'
 import { ResidentPcm, ResidentTiming } from './resident-pcm.js'
 import { createResidentTextFilter, readResidentReply, residentMessageParts, residentPlainText, residentSpeechText } from './resident-response.js'
@@ -44,6 +45,11 @@ const speechOutput = useSpeechOutputControlStore()
 const { nowSpeaking } = storeToRefs(useSpeakingStore())
 const { audioContext: residentAudioContext } = useAudioContext()
 const speechActive = ref(false)
+let activeCare = false
+watch(speechActive, (active) => {
+  if (active)
+    residentGesture(activeCare ? 'care' : 'speaking')
+})
 const inputControllers = new Set<AbortController>()
 let speechIntent: ReturnType<typeof speechRuntime.openIntent> | undefined
 let speechStartTimer: ReturnType<typeof setTimeout> | undefined
@@ -171,6 +177,8 @@ function cancelWaiting() {
   status.value = '已停止等候，內容已保留；已送達的個案仍會由職員跟進。'
 }
 function reset() {
+  activeCare = false
+  residentGesture('greeting')
   followupNotice.value = ''
   inactivity.stop()
   session.reset()
@@ -237,64 +245,11 @@ function beginSpeech() {
   speechStartTimer = setTimeout(() => {
     if (speechIntent === intent && !speechDidStart) {
       clearAudio()
-      status.value = '語音暫時未能播放；你仍可閱讀文字或稍後再按朗讀。'
+      status.value = '語音暫時未能播放；文字已保留，可以繼續傾談。'
     }
   }, 20000)
   return intent
 }
-function speak(text: string) {
-  if (!text.trim())
-    return
-  const cfg = providers.getProviderConfig(speechSettings.activeSpeechProvider)
-  const nativePcm = speechSettings.activeSpeechProvider === 'openai-compatible-audio-speech'
-    && /^http:\/\/(?:127\.0\.0\.1|localhost):8765\//.test(String(cfg?.baseUrl || ''))
-    && speechSettings.activeSpeechVoiceId === 'zh-HK-HiuMaanNeural'
-  if (residentApi.cloud || (speechRuntime.isHost() && nativePcm)) {
-    clearAudio()
-    speechActive.value = true
-    emit('speaking', true)
-    status.value = '正在準備朗讀…'
-    const player = new ResidentPcm({
-      ...residentApi.pcm,
-      context: residentAudioContext,
-      started: () => {
-        if (pcmPlayer !== player)
-          return
-        nowSpeaking.value = true
-        speechActive.value = true
-        emit('speaking', true)
-      },
-      failed: () => {
-        if (pcmPlayer !== player)
-          return
-        nowSpeaking.value = false
-        speechActive.value = false
-        emit('speaking', false)
-        status.value = '曉曼暫時未能完成朗讀，文字已保留。'
-      },
-      ended: () => {
-        if (pcmPlayer !== player)
-          return
-        nowSpeaking.value = false
-        speechActive.value = false
-        emit('speaking', false)
-      },
-    })
-    pcmPlayer = player
-    for (const sentence of text.match(/[^。！？!?\n]+[。！？!?\n]?/g) || [text])
-      player.write(residentSpeechText(sentence))
-    player.end()
-    return
-  }
-  if (residentApi.cloud) {
-    status.value = '語音暫時未準備好；文字已保留。'
-    return
-  }
-  const intent = beginSpeech()
-  intent?.writeLiteral(residentSpeechText(text))
-  intent?.end()
-}
-
 async function sendMessage(text = draft.value, voice = true, inputEndedAt?: number) {
   inactivity.check()
   text = text.trim()
@@ -305,6 +260,8 @@ async function sendMessage(text = draft.value, voice = true, inputEndedAt?: numb
   clearAudio()
   speechFailed = false
   const epoch = session.generation
+  activeCare = /壓力|唔開心|難受|擔心|跳樓|自殺|想死|生活困難|好攰|驚/.test(text)
+  residentGesture(activeCare ? 'care' : 'listen')
   busy.value = true
   messages.value = [...session.history, { role: 'user', content: text }]
   status.value = '我聽緊，等我整理一下…'
@@ -322,6 +279,8 @@ async function sendMessage(text = draft.value, voice = true, inputEndedAt?: numb
   let intent: ReturnType<typeof speechRuntime.openIntent> | undefined
   try {
     const answer = await session.send(text, 'voice', (delta: string) => {
+      if (!partial)
+        residentGesture(activeCare ? 'care' : 'speaking')
       timing.mark('first_text')
       void timing.report()
       partial += delta
@@ -452,7 +411,11 @@ function acknowledgeReady(event?: MessageEvent) {
     return
   window.parent.postMessage({ type: 'estate-assistant-ready' }, hubOrigin)
 }
+function greetAvatar() {
+  residentGesture('greeting')
+}
 onMounted(() => {
+  window.addEventListener('resident-avatar-ready', greetAvatar)
   touch()
   window.addEventListener('message', acknowledgeReady)
   window.addEventListener('focus', checkIdle)
@@ -460,6 +423,8 @@ onMounted(() => {
   acknowledgeReady()
 })
 onUnmounted(() => {
+  window.removeEventListener('resident-avatar-ready', greetAvatar)
+  residentGesture('clear')
   window.removeEventListener('message', acknowledgeReady)
   session.reset()
   cancelTranscription()
@@ -520,6 +485,8 @@ function checkIdle() {
       <div class="resident-panel-actions">
         <button type="button" :aria-pressed="listening" @click="emit('microphone')">
           {{ listening ? inputStatus === 'starting' ? '準備收音中 · 暫停' : inputStatus === 'failed' ? '重新準備語音' : inputStatus === 'waiting' ? '點一下啟動收音' : inputStatus === 'speaking' ? '朗讀中 · 暫停收音' : '正在聆聽 · 暫停' : '開始語音傾談' }}
+        </button><button v-if="speechActive" type="button" @click="clearAudio">
+          停止朗讀
         </button><button v-if="busy" type="button" @click="cancelWaiting">
           停止等候
         </button><button class="primary" type="submit" :disabled="busy || !draft.trim()">
@@ -527,11 +494,6 @@ function checkIdle() {
         </button>
       </div>
     </form>
-    <div class="resident-panel-actions resident-secondary">
-      <button type="button" :disabled="!messages.length || (busy && !speechActive)" @click="speechActive ? clearAudio() : speak(messages.filter(item => item.role === 'assistant').at(-1)?.content || '')">
-        {{ speechActive ? '停止朗讀' : '再聽一次' }}
-      </button>
-    </div>
   </section>
 </template>
 
@@ -614,6 +576,7 @@ font-size: 12px;
 color: #61756f;
 margin: 0 0 10px;
 }
+.resident-panel-status:empty { display: none; }
 .resident-assistant-panel form {
 display: grid;
 gap: 8px;

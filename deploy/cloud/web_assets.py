@@ -12,6 +12,7 @@ from starlette.responses import FileResponse, HTMLResponse, JSONResponse, Respon
 
 from deploy.cloud.admin_assets import CloudAdminAssets
 from deploy.cloud.database_profile import unique_object
+from deploy.cloud.robot_assets import robot_assets
 
 WEB = Path(__file__).with_name('web')
 OVERLAY = Path(__file__).resolve().parents[2] / 'airi_overlay'
@@ -19,8 +20,10 @@ SHELL = {
     '/': (WEB / 'index.html', 'text/html'),
     '/cloud/shell.js': (WEB / 'shell.js', 'text/javascript'),
     '/cloud/shell.css': (WEB / 'shell.css', 'text/css'),
+    '/cloud/launch-screen.js': (WEB / 'launch-screen.js', 'text/javascript'),
     '/cloud/frame-entry.js': (WEB / 'frame-entry.js', 'text/javascript'),
     '/cloud/admin-entry.js': (WEB / 'admin-entry.js', 'text/javascript'),
+    '/cloud/robot-entry.js': (WEB / 'robot-entry.js', 'text/javascript'),
     '/cloud/admin-request.js': (WEB / 'admin-request.js', 'text/javascript'),
     '/cloud/cloud-session.js': (OVERLAY / 'cloud-session.js', 'text/javascript'),
     '/cloud/cloud-frame.js': (OVERLAY / 'cloud-frame.js', 'text/javascript'),
@@ -42,6 +45,7 @@ class CloudWebAssets:
         self.files = {}
         self.resident = None
         self.admin = CloudAdminAssets(governance=governance)
+        self.admin.responses.update(robot_assets())
         if resident_root is None:
             return
         root = Path(resident_root)
@@ -100,7 +104,18 @@ class CloudWebAssets:
             return HTMLResponse('<p>已登出，請從鄰伴登入頁重新進入。</p>', headers=headers)
         if path in SHELL:
             source, media_type = SHELL[path]
-            return Response(source.read_bytes(), media_type=media_type, headers=headers)
+            data = source.read_bytes()
+            if path == '/' and self.resident is not None and not storage_acceptance:
+                resident = self.resident.read_text(encoding='utf-8')
+                entry = re.search(r'name="neighbour-cloud-entry" content="(/assets/[\w-]+\.js)"', resident)
+                preloads = []
+                if entry and entry[1] in self.files:
+                    preloads.append('<link rel="modulepreload" href="' + entry[1] + '">')
+                for css in re.findall(r'<link rel="stylesheet" crossorigin href="(/assets/[\w-]+\.css)"', resident):
+                    if css in self.files:
+                        preloads.append('<link rel="preload" as="style" href="' + css + '">')
+                data = data.replace(b'</head>', ''.join(preloads).encode() + b'</head>', 1)
+            return Response(data, media_type=media_type, headers=headers)
         admin = self.admin.get(path)
         if admin is not None:
             if storage_acceptance:

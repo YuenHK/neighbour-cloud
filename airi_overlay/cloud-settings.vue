@@ -120,35 +120,34 @@ async function save() {
 
 <template>
   <div class="cloud-airi-settings estate-inline-settings">
-    <nav class="cloud-airi-tabs" aria-label="AIRI 設定項目">
-      <button v-for="item in [['airi', '所有 AIRI 設定'], ['opening', '居民開場'], ['services', '雲端服務']]" :key="item[0]" type="button" :aria-pressed="tab === item[0]" @click="tab = item[0]">
-        {{ item[1] }}
+    <nav class="cloud-airi-toolbar" aria-label="AIRI 設定項目">
+      <button type="button" :aria-pressed="tab === 'airi' && route.path === '/settings'" @click="tab = 'airi'; router.push('/settings')">
+        所有 AIRI 設定
       </button>
-    </nav>
-    <div class="cloud-airi-save">
-      <button type="button" :disabled="busy || !ready || uncertain" @click="save">
+      <button type="button" :aria-pressed="tab === 'opening'" @click="tab = 'opening'">
+        居民開場
+      </button>
+      <button type="button" :aria-pressed="tab === 'services'" @click="tab = 'services'">
+        雲端服務
+      </button>
+      <button type="button" :aria-pressed="tab === 'airi' && route.path === '/settings/system/general'" @click="tab = 'airi'; router.push('/settings/system/general')">
+        一般設定
+      </button>
+      <button type="button" :aria-pressed="tab === 'airi' && route.path === '/settings/system/color-scheme'" @click="tab = 'airi'; router.push('/settings/system/color-scheme')">
+        外觀及色彩
+      </button>
+      <button class="cloud-airi-save" type="button" :disabled="busy || !ready || uncertain" @click="save">
         儲存至平台
       </button>
-      <p role="status">
-        {{ status }}
-      </p>
-    </div>
+    </nav>
+    <p class="cloud-airi-status" role="status">
+      {{ status }}
+    </p>
     <p v-if="!ready">
       正在載入 AIRI 設定…
     </p>
     <template v-else>
       <section v-if="tab === 'airi'" class="cloud-model-editor">
-        <nav class="cloud-airi-shortcuts" aria-label="AIRI 設定導航">
-          <button type="button" @click="router.push('/settings')">
-            ← 所有設定
-          </button>
-          <button type="button" @click="router.push('/settings/system/general')">
-            一般設定
-          </button>
-          <button type="button" @click="router.push('/settings/system/color-scheme')">
-            外觀及色彩
-          </button>
-        </nav>
         <p v-if="deviceOnly" class="cloud-device-notice">
           以下為 AIRI 原版的此裝置設定；不會更換平台的 Gemma、曉曼、Whisper 或 Tavily，亦不會取得平台金鑰。資料匯出／重設只影響此瀏覽器，不會清除雲端居民個案。
         </p>
@@ -175,13 +174,12 @@ async function save() {
 
 <style>
 .cloud-airi-settings{padding:16px;width:100%;height:auto!important;min-height:600px;color:#194f49}
-.cloud-airi-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:16px}
-.cloud-airi-tabs button,.cloud-airi-save button{border:1px solid #cadbd3;border-radius:12px;padding:12px;background:#fff}
-body.service-theme .cloud-airi-tabs button[aria-pressed=true],body.service-theme .cloud-airi-save button{background:#21695d;color:white}
-.cloud-airi-save{display:flex;align-items:center;gap:16px;margin-bottom:20px;flex-wrap:wrap}
-.cloud-airi-save p{flex:1;min-width:180px;font-size:14px}
+.cloud-airi-toolbar{display:flex;flex-wrap:nowrap;gap:6px;padding:6px;border:1px solid #d9e5df;border-radius:16px;background:#eaf1ed;overflow-x:auto;scrollbar-width:thin;max-width:100%;align-items:stretch}
+.cloud-airi-toolbar button{flex:1 0 auto;white-space:nowrap;border:0;border-radius:11px;padding:13px 15px;background:transparent;min-height:48px;font-size:14px}
+body.service-theme .cloud-airi-toolbar button[aria-pressed=true]{background:white;box-shadow:0 2px 8px #194f4908}
+body.service-theme .cloud-airi-toolbar .cloud-airi-save{background:#21695d;color:white;flex-grow:0;margin-left:4px}
+.cloud-airi-toolbar button:focus-visible{outline:3px solid #86b7a4;outline-offset:-3px}.cloud-airi-status{font-size:13px;color:#638075;margin:12px 2px 18px}
 .cloud-opening label{display:grid;gap:8px;margin-block:20px}.cloud-opening textarea,.cloud-opening select{padding:12px;border:1px solid #cadbd3;border-radius:10px}
 .cloud-model-editor{position:relative;min-height:650px}
-.cloud-airi-shortcuts{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px}.cloud-airi-shortcuts button{padding:10px;border:1px solid #cadbd3;border-radius:10px}.cloud-device-notice{padding:12px;background:#fff4d9;border-radius:12px;margin-bottom:16px}
-@media(max-width:680px){.cloud-airi-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.cloud-device-notice{padding:12px;background:#fff4d9;border-radius:12px;margin-bottom:16px}
 </style>

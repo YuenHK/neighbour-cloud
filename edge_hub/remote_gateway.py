@@ -1,13 +1,15 @@
 """Loopback-only, same-origin gateway behind an authenticated ngrok endpoint.
 
-The edge must perform Google OAuth + exact email allowlisting and inject a
-fresh random hop secret after removing any client-supplied copy. This server
-never exposes the existing unauthenticated loopback services on its own.
+The edge injects a fresh random hop secret after removing client-supplied copies.
+Hardware mode validates the existing cloud staff session on every robot request;
+legacy whole-site mode retains Google OAuth and exact email allowlisting.
+Neither mode exposes unauthenticated loopback services on its own.
 """
 import asyncio
 import hmac
 import json
 import os
+import re
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -15,6 +17,8 @@ import httpx
 import websockets
 from fastapi import FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import JSONResponse, Response, StreamingResponse
+
+from edge_hub.robot_platform_auth import PlatformStaff
 
 HOP_HEADER = 'x-neighbour-proxy'
 DROP = {'host', 'connection', 'keep-alive', 'transfer-encoding', 'upgrade', 'proxy-authorization',
@@ -62,12 +66,17 @@ def hardware_path(path):
             or path.startswith('/api/v1/robot/ep/'))
 
 
-def create_gateway(secret, hosts, *, transport=None, hardware_only=False):
+def create_gateway(secret, hosts, *, transport=None, hardware_only=False, cloud_origin=None, cloud_authorization=False):
     if not isinstance(secret, str) or len(secret) < 32 or not secret.isascii():
         raise ValueError('A fresh edge hop secret is required')
     hosts = frozenset(hosts)
     if not hosts or any(not isinstance(host, str) or '/' in host or ':' in host for host in hosts):
         raise ValueError('Exact remote hosts are required')
+    if cloud_authorization and (not hardware_only or not isinstance(cloud_origin, str)
+            or not re.fullmatch(r'https://[a-z0-9-]+\.onrender\.com', cloud_origin)):
+        raise ValueError('Exact owned cloud origin is required')
+    staff = PlatformStaff(cloud_origin) if cloud_authorization else None
+    local_token = None
 
     @asynccontextmanager
     async def lifespan(app):
@@ -85,15 +94,23 @@ def create_gateway(secret, hosts, *, transport=None, hardware_only=False):
             authorized = hmac.compare_digest(headers.get(HOP_HEADER, ''), secret)
         except TypeError:
             return False
-        return (authorized and host in hosts
-                and (not mutation or headers.get('origin') == 'https://'+host))
+        allowed_origin = cloud_origin if cloud_authorization else 'https://' + host
+        return (authorized and host in hosts and (not mutation or headers.get('origin') == allowed_origin))
 
     @app.api_route('/{path:path}', methods=['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'])
     async def proxy(request: Request, path: str):
+        nonlocal local_token
         if not trusted(request.headers, mutation=request.method not in ('GET', 'HEAD', 'OPTIONS')):
             return JSONResponse({'detail': '請透過已登入的鄰伴遠端入口使用。'}, status_code=403,
                                 headers={'Cache-Control': 'no-store'})
+        if staff is not None and path == '__remote/health':
+            return JSONResponse({'ready': True, 'authentication': 'platform_staff'}, headers={'Cache-Control': 'no-store'})
+        if staff is not None and not await staff.accepts(request.headers.get('authorization'), app.state.proxy):
+            return JSONResponse({'detail': '請先登入鄰伴管理工作台。'}, status_code=401,
+                                headers={'Cache-Control': 'no-store'})
         path = '/'+path
+        if staff is not None and not path.startswith('/api/v1/robot/ep/'):
+            raise HTTPException(404, '請在鄰伴管理工作台內操作機械人。')
         if hardware_only and not hardware_path(path):
             raise HTTPException(404)
         if path == '/__remote/runtime.js':
@@ -114,12 +131,29 @@ def create_gateway(secret, hosts, *, transport=None, hardware_only=False):
         url = origin+target+('?' + request.url.query if request.url.query else '')
         forwarded = headers_for_backend(request.headers, origin)
         if hardware_only:
-            # The authenticated OAuth edge is the sole remote caller. Preserve
+            # The authenticated platform/legacy edge is the remote caller. Preserve
             # native loopback policy; client-supplied fetch metadata is not proof.
             forwarded['sec-fetch-site'] = 'same-origin'
+        if staff is not None:
+            forwarded.pop('authorization', None)
+            if path.startswith('/api/v1/robot/ep/'):
+                if local_token is None:
+                    # Fetch the process-scoped capability from our own loopback
+                    # console. Never expose it or the staff token to the client.
+                    try:
+                        page = await app.state.proxy.get('http://127.0.0.1:8000/robots', timeout=3)
+                        match = re.search(r'id="epKey"[^>]*value="([A-Za-z0-9_-]{32,100})"', page.text)
+                        if page.status_code != 200 or match is None:
+                            raise ValueError('local_operator_unavailable')
+                        local_token = match[1]
+                    except (httpx.HTTPError, ValueError):
+                        return JSONResponse({'detail': '現場控制台尚未啟動。'}, status_code=503)
+                forwarded['x-operator-key'] = local_token
         try:
             outgoing = app.state.proxy.build_request(request.method, url, headers=forwarded, content=bytes(body))
             response = await app.state.proxy.send(outgoing, stream=True)
+            if staff is not None and response.status_code == 403:
+                local_token = None  # No automatic replay of a robot command.
         except httpx.HTTPError:
             return JSONResponse({'detail': '現場服務暫時未能連接，請稍後再試。'}, status_code=502)
         headers = {key: value for key, value in response.headers.items()
@@ -201,5 +235,13 @@ def create_gateway(secret, hosts, *, transport=None, hardware_only=False):
 
 
 def from_environment():
+    hardware = os.environ.get('NEIGHBOUR_HARDWARE_ONLY') == '1'
+    origin = None
+    if hardware:
+        from edge_hub.cloud_primary import cloud_primary
+        profile = cloud_primary(Path(__file__).resolve().parents[1])
+        if profile is None or profile['phase'] != 'cloud':
+            raise ValueError('Verified cloud primary required')
+        origin = profile['origin']
     return create_gateway(os.environ['NEIGHBOUR_PROXY_TOKEN'], json.loads(os.environ['NEIGHBOUR_REMOTE_HOSTS']),
-                          hardware_only=os.environ.get('NEIGHBOUR_HARDWARE_ONLY') == '1')
+                          hardware_only=hardware, cloud_origin=origin, cloud_authorization=hardware)

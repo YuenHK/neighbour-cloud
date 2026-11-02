@@ -18,19 +18,22 @@ from edge_hub.cloud_credentials import _crypt, settings_root
 from edge_hub.remote_gateway import HOP_HEADER
 
 
-def traffic_policy(email, proof):
+def traffic_policy(email, proof, *, hardware_only=False):
     if not re.fullmatch(r'[a-z0-9._+%-]+@[a-z0-9.-]+\.[a-z]{2,}', email):
         raise ValueError('Invalid operator account')
     if not re.fullmatch(r'[A-Za-z0-9_-]{32,100}', proof):
         raise ValueError('Invalid hop proof')
-    return {'on_http_request': [
+    rules = [
         {'actions': [{'type': 'oauth', 'config': {'provider': 'google', 'max_session_duration': '8h',
                                                 'idle_session_timeout': '1h'}}]},
         {'expressions': ['actions.ngrok.oauth.identity.email != '+json.dumps(email)],
          'actions': [{'type': 'deny'}]},
         {'actions': [{'type': 'remove-headers', 'config': {'headers': [HOP_HEADER]}},
                      {'type': 'add-headers', 'config': {'headers': {HOP_HEADER: proof}}}]},
-    ]}
+    ]
+    # Hardware mode authenticates EVERY request with the platform staff session
+    # in the gateway. The native old whole-site mode keeps its Google guard.
+    return {'on_http_request': rules[-1:] if hardware_only else rules}
 
 
 def main():
@@ -60,14 +63,15 @@ def main():
         stop.unlink()  # This application's own prior stop signal, never user data.
     run = Path(tempfile.mkdtemp(prefix='session-', dir=live))
     policy = run/'policy.json'
-    policy.write_text(json.dumps(traffic_policy(profile['allowed_emails'][0], proof)), encoding='utf-8')
+    policy.write_text(json.dumps(traffic_policy(profile['allowed_emails'][0], proof, hardware_only=args.hardware_only)), encoding='utf-8')
     config = run/'agent.json'
     config.write_text(json.dumps({'version': '3', 'agent': {'web_addr': '127.0.0.1:4041', 'update_check': False}}), encoding='utf-8')
     # Policy has only a per-run hop proof and an account allowlist; the persistent
     # ngrok token is supplied through this child's environment, never a command.
     state = {'pid': os.getpid(), 'status': 'starting', 'url': 'https://'+domain,
              'plan': 'Free', 'automatic_paid_upgrade': False, 'gateway_pid': None, 'agent_pid': None,
-             'last_error_code': None, 'sleep_request': False}
+             'last_error_code': None, 'sleep_request': False,
+             'authentication': 'platform_staff' if args.hardware_only else 'google_allowlist'}
     destination = live/'state.json'
     def save():
         temporary = run/'state.tmp'
@@ -90,8 +94,11 @@ def main():
                 if gateway.poll() is not None:
                     raise RuntimeError('gateway_start_failed')
                 try:
-                    response = client.get('http://127.0.0.1:8001/__remote/runtime.js', headers={HOP_HEADER: proof, 'Host': domain})
-                    if response.status_code == 200:
+                    probe = '/__remote/health' if args.hardware_only else '/__remote/runtime.js'
+                    response = client.get('http://127.0.0.1:8001' + probe, headers={HOP_HEADER: proof, 'Host': domain})
+                    if response.status_code == 200 and (not args.hardware_only or response.json() == {
+                        'ready': True, 'authentication': 'platform_staff',
+                    }):
                         break
                 except httpx.HTTPError:
                     pass
