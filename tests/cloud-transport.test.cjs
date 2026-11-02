@@ -8,6 +8,20 @@ const flush = () => new Promise(resolve => setImmediate(resolve))
 const deferred = () => { let resolve; const promise = new Promise(done => { resolve = done }); return {promise, resolve} }
 const token = label => ({token: 'header.' + Buffer.from(label).toString('base64url') + '.signature', expiresAtMs: 300000})
 
+test('onsite robot relay supports original keepalive release and record delete without key or replay', async () => {
+  const {createCloudTransport} = await transportModule()
+  const sent=[]
+  const api=createCloudTransport({origin,now:()=>1000,tokenProvider:()=>token('staff'),fetcher:async (url,init)=>{sent.push({url,init});return new Response('{}')}})
+  await api.fetch('/api/v1/robot/ep/devices/ep-2/stop',{method:'POST',body:'{}',keepalive:true})
+  await api.fetch('/api/v1/robot/ep/devices/ep-2',{method:'DELETE',keepalive:false})
+  assert.equal(sent.length,2)
+  assert.equal(sent[0].init.keepalive,true)
+  assert.equal(sent[1].init.method,'DELETE')
+  assert.equal(sent[0].init.headers.has('X-Operator-Key'),false)
+  await assert.rejects(api.fetch('/api/v1/resident/chat',{keepalive:true}))
+  await assert.rejects(api.fetch('/api/v1/robot/ep/devices/ep-2/private-key'))
+})
+
 test('formal governance reads use the same memory-only Google transport and reject unrelated settings', async () => {
   const {createCloudTransport} = await transportModule()
   const urls = []

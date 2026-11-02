@@ -1,6 +1,6 @@
 # 2026-11-02 啟動畫面、數字人動作及內嵌控制台
 
-候選已完成 frontend28 lint／typecheck／build、原生檔 byte 還原及隔離瀏覽器驗證，正式部署結果見 `.runtime/ui-polish-20261102/HANDOFF.json`。機械人沿用平台管理登入，不另經 Google；雲端只轉送固定現場端點，原 EP 停止／租約及故障保護保留。Live2D 新增短暫點頭、側頭回應，不改保存姿勢或口型，不增加模型請求。啟動畫面由真實載入階段驅動；Free 主機在 HTML 送出前的冷啟動仍可能需等待。Gemma＋曉曼及資料／免費限制不變。
+已部署並核對原網址，runtime `0b0d053c63a4a7a1cf102daf2123dfff1a390a57`／deploy `dep-dbjtv0142hec73e2fq1g`。frontend28 lint／typecheck／build、原生檔 byte 還原、隔離瀏覽器與真 HTTPS 程式／資料核對通過。8 個案、短號、controls、設定、MB842、33 期歷史額度及六份 EP 記錄保留。完整記錄見 ../../docs/ui-and-avatar-polish-2026-11-02.md 。此文件更新不需再次部署。機械人沿用平台管理登入，不另經 Google；雲端只轉送固定現場端點，原 EP 停止／租約及故障保護保留。Live2D 新增短暫點頭、側頭回應，不改保存姿勢或口型，不增加模型請求。啟動畫面由真實載入階段驅動；Free 主機在 HTML 送出前的冷啟動仍可能需等待。Gemma＋曉曼及資料／免費限制不變。
 
 # 2026-10-31 管理及機械人入口修復已部署
 
