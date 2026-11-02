@@ -1,3 +1,7 @@
+# 2026-11-02 共享模型／官方免費圖庫已部署
+
+最新交接 `.runtime/cloud-model-publish-20261102/HANDOFF.json`。原網址、Free Singapore 單實例保持；runtime `c7b03a9797dce9b57e0f6c1118b2379bce94a640`／deploy `dep-dbk1fkmc6qcc73d8g5e0`，唯一 npdz2/PID59，04:59:45Z ready。原版 AIRI 模型匯入→預覽→同一儲存至平台可發佈 Live2D ZIP，其他居民裝置新進入／可見閒置／下一位交接更新，不中斷現有對話。已加入 Mark／Wanko／Haru 官方圖庫，附來源與使用條款；非所有第三方網站或其他格式均一鍵匯入。32 MiB/檔及64 MiB總預留不是官方餘額；新屋苑兩表存原檔不可覆寫、舊版保留；原四表及所有個案／短號／設定／用量與控制旗標保留。新 barrier6 確認舊 writer 實際退出及唯一新 inert instance，關閉一致私人副本及新增空表核對後才獨立簽放行；不能重用本次批准。詳見 ../../docs/shared-live2d-models-2026-11-02.md 。本條覆蓋下面「自訂模型只本機」的舊說明，僅限本次支援格式。Gemma＋曉曼不改，沒有正式測試模型／假單／provider呼叫／真人咪播放／EP操作。GitHub Pages https://yuenhk.github.io/neighbour/ 已直接跳轉；舊根頁與遊戲保留。文件更新不再部署。
+
 # 2026-11-02 AIRI 統一設定已部署
 
 原網址、Free Singapore 單實例保持；runtime `328be95e84535275b7e61686c492eb02b133a0d2`／deploy `dep-dbk09tajnfac7397k3rg`。保留原版九入口、移除「雲端服務」，現有 Gemma、曉曼 F0、Whisper、Tavily 及長短期記憶接回 AIRI 原版模組及同一平台儲存流程。預設行為不變，偏好沿既有 JSON／revision 保存，沒有 DDL、搬資料或清用量。frontend35 建置、隔離原版頁儲存重開／無聲試聽／居民三輪流程、真 HTTPS SHA 及職員只讀服務核對通過。8 個案、短號、原設定、controls、MB842 及 33 期歷史 quota 保留。新 barrier5 核實舊程序退出、唯一新實例及 90 秒等待後才放行，不能重用批准。詳見 ../../docs/airi-settings-authority-2026-11-02.md 。匯入檔案及硬件／瀏覽器專用偏好仍為裝置範圍。未開真人咪、播放、呼叫正式供應商或操作 EP；文件更新不另部署。
