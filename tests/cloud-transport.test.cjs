@@ -8,6 +8,24 @@ const flush = () => new Promise(resolve => setImmediate(resolve))
 const deferred = () => { let resolve; const promise = new Promise(done => { resolve = done }); return {promise, resolve} }
 const token = label => ({token: 'header.' + Buffer.from(label).toString('base64url') + '.signature', expiresAtMs: 300000})
 
+test('bounded model ZIP bodies are allowed only on the exact staff upload path', async () => {
+  const {createCloudTransport} = await transportModule()
+  const calls = []
+  const api = createCloudTransport({origin, now: () => 1000, tokenProvider: () => token('staff'),
+    fetcher: async (url, options) => {calls.push({url, options}); return new Response('{}')}})
+  const body = new Blob(['synthetic ZIP'], {type:'application/zip'})
+  const path = '/api/v1/service-desk/airi-models/cloud-live2d-' + 'a'.repeat(64)
+  await api.fetch(path+'?name=PUBLIC.zip', {method:'PUT', body, headers:{'Content-Type':'application/zip'}})
+  assert.equal(calls.length, 1)
+  assert.equal(calls[0].options.body, body)
+  assert.equal(calls[0].options.headers.get('authorization'), 'Bearer '+token('staff').token)
+  for (const bad of ['/api/v1/resident/chat', '/api/v1/robot/ep/command', path+'x'])
+    await assert.rejects(api.fetch(bad, {method:'PUT', body}))
+  await assert.rejects(api.fetch(path, {method:'POST', body}))
+  await assert.rejects(api.fetch(path, {method:'PUT', body:new Blob([new Uint8Array(32*1024*1024+1)])}))
+  assert.equal(calls.length, 1)
+})
+
 test('onsite robot relay supports original keepalive release and record delete without key or replay', async () => {
   const {createCloudTransport} = await transportModule()
   const sent=[]

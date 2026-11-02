@@ -266,3 +266,27 @@ def cloud_web_search_editor(source):
     return source.replace(old, new).replace('<p v-if="managed">', '<p v-if="managed || cloud">').replace(
         '已連接本機 Tavily 金鑰，與居民服務台共用搜尋及快取；毋須重複輸入。',
         "{{ cloud ? (managed ? 'Tavily 已由平台接通，與居民服務台共用搜尋及快取；毋須輸入金鑰。' : '平台暫時未能確認 Tavily 設定；原有資料保留。') : '已連接本機 Tavily 金鑰，與居民服務台共用搜尋及快取；毋須重複輸入。' }}")
+
+
+def cloud_display_models(source):
+    """Resolve immutable shared IDs before native missing-file fallback."""
+    old = '  async function getDisplayModel(id: string) {\n    await until(displayModelsFromIndexedDBLoading).toBe(false)'
+    new = old + """
+    if (Reflect.get(globalThis, '__NEIGHBOUR_CLOUD__') === true && /^cloud-live2d-[a-f0-9]{64}$/.test(id)) {
+      try {
+        const loader = Reflect.get(globalThis, '__NEIGHBOUR_LOAD_SHARED_MODEL__')
+        if (typeof loader !== 'function')
+          throw new Error('cloud_model_loader_required')
+        const model = await loader(id)
+        displayModels.value = [...displayModels.value.filter(item => item.id !== id), model]
+        return model
+      }
+      catch {
+        window.dispatchEvent(new Event('estate:shared-model-unavailable'))
+        return displayModelsPresets.find(model => model.id === 'preset-live2d-2')
+      }
+    }"""
+    normal = source.replace('\r\n', '\n')
+    if normal.count(old) != 1:
+        raise ValueError('cloud_display_model_anchor_requires_review')
+    return normal.replace(old, new)

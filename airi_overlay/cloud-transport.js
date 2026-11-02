@@ -3,6 +3,7 @@
 const photoPath = /^\/api\/v1\/patrol\/events\/[\w-]{1,120}\/photo$/
 const staffEventPath = /^\/api\/v1\/events\/[\w-]{1,120}$/
 const followupPath = /^\/api\/v1\/patrol\/events\/[a-f0-9]{32}\/followup$/
+const modelUploadPath = /^\/api\/v1\/service-desk\/airi-models\/cloud-live2d-[a-f0-9]{64}$/
 const robotPath = /^\/api\/v1\/robot\/ep\/(?:fleet|qr|connection|connect|disconnect|cancel-pairing|lease|stop|prepare-control|command|reset-stop|discovery|devices\/[A-Za-z0-9_-]{1,60}(?:\/(?:frame\.jpg|connection|video-frame|connect|disconnect|prepare-control|lease|stop|command|video-start|video-stop|gimbal-start|gimbal-follow|gimbal-target|gimbal-stop|speed|manual-warning|infrared-warning|check-stop|reset-stop|patrol))?)$/
 const allowedHeaders = new Set(['content-type', 'accept', 'x-resident-session', 'x-resident-turn'])
 const allowedOptions = new Set(['method', 'body', 'headers', 'signal', 'cache', 'credentials', 'redirect', 'mode', 'referrerPolicy', 'keepalive'])
@@ -110,10 +111,12 @@ export function createCloudTransport({ origin, tokenProvider, fetcher = (...args
         throw new Error('cloud_request_invalid')
       }
       const method = (init.method || 'GET').toUpperCase()
+      const modelUpload = method === 'PUT' && modelUploadPath.test(url.pathname)
+        && init.body instanceof Blob && init.body.size > 0 && init.body.size <= 32 * 1024 * 1024
       if (init.keepalive !== undefined && (typeof init.keepalive !== 'boolean' || !robotPath.test(url.pathname)))
         throw new Error('cloud_request_invalid')
       if (!['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE'].includes(method)
-        || (init.body != null && (typeof init.body !== 'string' || ['GET', 'HEAD'].includes(method)))) {
+        || (init.body != null && ((!modelUpload && typeof init.body !== 'string') || ['GET', 'HEAD'].includes(method)))) {
         throw new Error('cloud_request_invalid')
       }
       for (const [key, expected] of Object.entries({ cache: 'no-store', credentials: 'omit', redirect: 'error', mode: 'same-origin', referrerPolicy: 'no-referrer' })) {

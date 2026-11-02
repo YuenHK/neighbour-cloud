@@ -142,7 +142,7 @@ test('actual cloud panel without a native speech host keeps three-turn context, 
   const ts = require('../.vendor/airi/node_modules/typescript')
   const vue = fs.readFileSync(path.join(__dirname, '../airi_overlay/resident-service-panel.vue'), 'utf8')
   const script = vue.match(/<script setup lang="ts">([\s\S]*?)<\/script>/)[1].replace(/^import .*$/gm, '')
-  const reader = streamReader(), calls = [], mounted = [], handshake = []
+  const reader = streamReader(), calls = [], mounted = [], handshake = [], visitorEvents = []
   const now = { value: 100 }
   let finishInput
   const context = { state: 'running', currentTime: 0, destination: {}, nodes: [], resume: async () => {},
@@ -161,7 +161,7 @@ test('actual cloud panel without a native speech host keeps three-turn context, 
     } },
     fetch: () => { assert.fail('cloud panel must never use raw Notebook/provider fetch') },
     location: { origin: 'https://neighbour.example' }, performance: { now: () => now.value }, Date: { now: () => now.value },
-    AbortController, AbortSignal, TextDecoder, Blob, DOMException, btoa, atob, crypto: require('node:crypto').webcrypto,
+    AbortController, AbortSignal, TextDecoder, Blob, DOMException, Event, btoa, atob, crypto: require('node:crypto').webcrypto,
     setTimeout: () => 1, clearTimeout() {}, ref: value => ({ value }),
     defineProps() {}, defineEmits: () => () => {}, defineExpose() {},
     nextTick: async callback => callback?.(), watch() {}, onMounted: callback => mounted.push(callback), onUnmounted() {},
@@ -172,7 +172,7 @@ test('actual cloud panel without a native speech host keeps three-turn context, 
     useProvidersStore: () => ({ getProviderConfig: () => ({}) }),
     useSpeechRuntimeStore: () => ({ isHost: () => false, openIntent: () => assert.fail('cloud must not fall back to local voice') }),
     useSpeechOutputControlStore: () => ({ requestStopSpeaking() {} }),
-    window: { addEventListener() {}, removeEventListener() {}, parent: { postMessage: (...args) => handshake.push(args) } },
+    window: { addEventListener() {}, removeEventListener() {}, dispatchEvent: event => visitorEvents.push(event.type), parent: { postMessage: (...args) => handshake.push(args) } },
     document: { addEventListener() {}, removeEventListener() {} },
     readResidentReply: reader.readResidentReply, residentPlainText: reader.residentPlainText,
     residentSpeechText: reader.residentSpeechText, createResidentTextFilter: reader.createResidentTextFilter,
@@ -211,6 +211,7 @@ test('actual cloud panel without a native speech host keeps three-turn context, 
   assert.equal(input.body.session_id,oldSession)
   sandbox.panel.draft.value = '未送出的舊居民內容'
   now.value += 180000; sandbox.panel.checkIdle()
+  assert.deepEqual(visitorEvents, ['estate:resident-session-ended'])
   assert.equal(input.signal.aborted,true)
   finishInput(new Response(JSON.stringify({text:'不屬於新居民的辨識',engine:'cloudflare-whisper-free',model:'@cf/openai/whisper-large-v3-turbo'})))
   await assert.rejects(oldInput)

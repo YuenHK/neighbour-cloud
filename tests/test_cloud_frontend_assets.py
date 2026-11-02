@@ -13,7 +13,8 @@ def build(tmp_path):
              'assets/js/sdk/Core/live2dcubismcore.min.js', 'assets/hiyori_free_zh-abcdefgh.zip',
              'assets/ort-wasm-test.wasm', 'assets/duckdb.wasm', 'assets/test.map',
              'assets/hiyori_pro_zh-test.zip', 'assets/unused.vrm', 'airi-local-profile.json',
-             'sw.js', 'registerSW.js', 'assets/large.ttf']
+             'sw.js', 'registerSW.js', 'assets/large.ttf', 'assets/gallery/mark.zip',
+             'assets/gallery/arbitrary.zip', 'assets/elsewhere/mark.zip']
     for name in names:
         path = source / name
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -34,7 +35,8 @@ def test_cloud_package_has_a_handshake_only_entry_and_omits_native_data_and_dead
     manifest = json.loads((output / 'CLOUD-ASSETS.json').read_text(encoding='utf-8'))
     files = {row['path'] for row in manifest['files']}
     assert files == {'resident.html', 'assets/resident-abcdefgh.js', 'assets/index-abcdefgh.css',
-        'assets/js/sdk/Core/live2dcubismcore.min.js', 'assets/hiyori_free_zh-abcdefgh.zip', 'assets/ort-wasm-test.wasm'}
+        'assets/js/sdk/Core/live2dcubismcore.min.js', 'assets/hiyori_free_zh-abcdefgh.zip', 'assets/ort-wasm-test.wasm',
+        'assets/hiyori_pro_zh-test.zip', 'assets/unused.vrm', 'assets/gallery/mark.zip'}
     assert result['files'] == len(files) and result['deployed'] is False
     html = (output / 'resident.html').read_text(encoding='utf-8')
     assert 'analytics.example' not in html and 'registerSW' not in html

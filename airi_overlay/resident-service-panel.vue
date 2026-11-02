@@ -191,6 +191,8 @@ function reset() {
   speechFailed = false
   status.value = '已結束今次服務。你好，下一位有咩需要？'
   emit('endSession')
+  if (residentApi.cloud)
+    window.dispatchEvent(new Event('estate:resident-session-ended'))
 }
 function touch() {
   inactivity.touch()
@@ -421,7 +423,14 @@ function acknowledgeReady(event?: MessageEvent) {
 function greetAvatar() {
   residentGesture('greeting')
 }
+function sharedModelUnavailable() {
+  if (!busy.value && messages.value.length === 0)
+    status.value = '共享模型暫時未能載入，先使用原有角色；對話及語音仍可繼續。'
+}
 onMounted(() => {
+  window.addEventListener('estate:shared-model-unavailable', sharedModelUnavailable)
+  if (residentApi.cloud)
+    Reflect.set(globalThis, '__NEIGHBOUR_RESIDENT_IDLE__', () => !busy.value && !draft.value && messages.value.length === 0 && !session.profile)
   window.addEventListener('resident-avatar-ready', greetAvatar)
   touch()
   window.addEventListener('message', acknowledgeReady)
@@ -430,6 +439,9 @@ onMounted(() => {
   acknowledgeReady()
 })
 onUnmounted(() => {
+  window.removeEventListener('estate:shared-model-unavailable', sharedModelUnavailable)
+  if (residentApi.cloud)
+    Reflect.deleteProperty(globalThis, '__NEIGHBOUR_RESIDENT_IDLE__')
   window.removeEventListener('resident-avatar-ready', greetAvatar)
   residentGesture('clear')
   window.removeEventListener('message', acknowledgeReady)

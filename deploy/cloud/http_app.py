@@ -19,6 +19,9 @@ from starlette.background import BackgroundTask
 from starlette.concurrency import run_in_threadpool
 from starlette.responses import HTMLResponse, JSONResponse, Response, StreamingResponse
 
+from deploy.cloud.avatar_api import UPLOAD as AVATAR_UPLOAD
+from deploy.cloud.avatar_api import AvatarWork, avatar_router
+from deploy.cloud.avatar_assets import AvatarAssets
 from deploy.cloud.bootstrap import CloudServices
 from deploy.cloud.google_identity import (
     GoogleIdentityVerifier,
@@ -218,7 +221,8 @@ def include_selected(app, router, prefixes):
 
 class CloudServiceBodyLimit(ServiceBodyLimitMiddleware):
     def matches(self, scope):
-        return scope.get('path') != TRANSCRIPTION_PATH and super().matches(scope)
+        return (scope.get('path') != TRANSCRIPTION_PATH and not AVATAR_UPLOAD.fullmatch(scope.get('path', ''))
+                and super().matches(scope))
 
 
 def create_app(services, verifier, *, origin, model_client=None, voice_client=None, quota_client=None,
@@ -263,12 +267,13 @@ def create_app(services, verifier, *, origin, model_client=None, voice_client=No
                 limits=httpx.Limits(max_connections=16, max_keepalive_connections=8, keepalive_expiry=30))
             cleanup.push_async_callback(app.state.robot_client.aclose)
             cleanup.push_async_callback(app.state.resident_transcription.close)
+            cleanup.push_async_callback(app.state.avatar_work.close)
             if maintenance is not None:
                 maintenance.scheduled = True
 
                 def pending_work():
                     return [item['task'] for item in app.state.resident_transcription.entries.values()
-                            if not item['task'].done()] + list(services.residents.search_pending.values())
+                            if not item['task'].done()] + list(services.residents.search_pending.values()) + list(app.state.avatar_work.pending)
 
                 async def run_maintenance():
                     while not maintenance.gate.stopping:
@@ -305,8 +310,14 @@ def create_app(services, verifier, *, origin, model_client=None, voice_client=No
     app.state.started = False
     app.state.browser_timings = BrowserTimings()
     app.state.resident_transcription = Transcription(lambda: app.state.resident_cloud_client)
+    app.state.avatar_work = AvatarWork()
     if presentation is not None:
         services.residents.runtime_settings = presentation.runtime
+        def model_connection(readonly):
+            return services.storage.connect(services.estate.path.as_uri() + ('?mode=ro' if readonly else '?mode=rw'),
+                                            uri=True, timeout=20, check_same_thread=False)
+        app.include_router(avatar_router(AvatarAssets(model_connection), presentation, require_staff, current_principal,
+                                         app.state.avatar_work))
 
         @app.get('/api/v1/service-desk/airi-services')
         def airi_services():

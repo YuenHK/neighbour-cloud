@@ -33,7 +33,8 @@ export async function loadLocalProfile() {
         && ['mint', 'sky', 'warm'].includes(value.background)) {
         Reflect.set(globalThis, '__NEIGHBOUR_PRESENTATION__', value)
         const model = value.airi?.stage_model ?? 'preset-live2d-2'
-        if (['preset-live2d-1', 'preset-live2d-2', 'preset-vrm-1', 'preset-vrm-2'].includes(model))
+        if (['preset-live2d-1', 'preset-live2d-2', 'preset-vrm-1', 'preset-vrm-2'].includes(model)
+          || /^cloud-live2d-[a-f0-9]{64}$/.test(model))
           localStorage.setItem('settings/stage/model', model)
         const colours = { mint: '#e5f3ec', sky: '#e7f1f8', warm: '#f6eee2' }
         const style = document.createElement('style')

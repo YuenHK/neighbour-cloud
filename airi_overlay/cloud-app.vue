@@ -8,20 +8,51 @@ import { RouterView } from 'vue-router'
 
 import '../../../packages/stage-ui-live2d/src/cloud-csp'
 import { installCloudAiriRuntime, prepareCloudAiriRuntime, publishedRuntime } from './modules/cloud-airi-runtime'
+import { installSharedModelLoader, loadSharedModel, sharedModelPattern } from './modules/cloud-shared-models'
 
 // Resident startup must not download the staff card/model editor modules.
 const CloudSettings = defineAsyncComponent({ loader: () => import('./modules/cloud-settings.vue'),
   loadingComponent: { render: () => h('p', { role: 'status' }, '正在載入 AIRI 設定…') }, delay: 0, timeout: 45000 })
+installSharedModelLoader()
 prepareCloudAiriRuntime()
 const display = useDisplayModelsStore()
 const settings = useSettings()
 const audio = useSettingsAudioDevice()
 const card = useAiriCardStore()
 const settingsMode = new URLSearchParams(location.search).get('settings') === '1'
+let modelTimer: ReturnType<typeof setInterval> | undefined
+let refreshingModel = false
+async function refreshPublishedModel() {
+  const idle = Reflect.get(globalThis, '__NEIGHBOUR_RESIDENT_IDLE__')
+  if (settingsMode || refreshingModel || document.hidden || typeof idle !== 'function' || !idle())
+    return
+  refreshingModel = true
+  try {
+    const transport = Reflect.get(globalThis, '__NEIGHBOUR_CLOUD_TRANSPORT__')
+    const response = await transport.fetch('/api/v1/resident/presentation', { signal: AbortSignal.timeout(10000) })
+    if (!response.ok)
+      return
+    const profile = await response.json()
+    const model = profile.airi?.stage_model
+    if (model === settings.stageModelSelected && settings.stageModelSelectedDisplayModel?.id === model)
+      return
+    if (sharedModelPattern.test(model))
+      await loadSharedModel(model)
+    else if (!['preset-live2d-1', 'preset-live2d-2', 'preset-vrm-1', 'preset-vrm-2'].includes(model))
+      return
+    if (!idle() || document.hidden)
+      return
+    settings.stageModelSelected = model
+    await settings.updateStageModel()
+  }
+  catch { /* Keep the current rendered character, never interrupt a conversation. */ }
+  finally { refreshingModel = false }
+}
 onMounted(async () => {
   if (settingsMode)
     return
   await display.loadDisplayModelsFromIndexedDB()
+  const audioStartup = audio.initialize()
   await settings.initializeStageModel()
   card.initialize()
   const presentation = Reflect.get(globalThis, '__NEIGHBOUR_PRESENTATION__')
@@ -36,9 +67,13 @@ onMounted(async () => {
     card.activeCardId = 'neighbour-cloud-profile'
   }
   installCloudAiriRuntime()
-  await audio.initialize()
+  await audioStartup
+  modelTimer = setInterval(refreshPublishedModel, 60000)
+  window.addEventListener('estate:resident-session-ended', refreshPublishedModel)
 })
 onUnmounted(() => {
+  clearInterval(modelTimer)
+  window.removeEventListener('estate:resident-session-ended', refreshPublishedModel)
   audio.enabled = false
 })
 </script>

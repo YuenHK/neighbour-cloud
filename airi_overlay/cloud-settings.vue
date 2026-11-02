@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // AIRI's actual editors and stores. No credentials or resident records.
 
-import { useDisplayModelsStore } from '@proj-airi/stage-ui/stores/display-models'
+import { DisplayModelFormat, useDisplayModelsStore } from '@proj-airi/stage-ui/stores/display-models'
 import { useAiriCardStore } from '@proj-airi/stage-ui/stores/modules/airi-card'
 import { useSettings } from '@proj-airi/stage-ui/stores/settings'
 import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
@@ -9,8 +9,11 @@ import { RouterView, useRoute, useRouter } from 'vue-router'
 
 import CloudAiriMemory from './cloud-airi-memory.vue'
 import CloudAiriProvider from './cloud-airi-provider.vue'
+import CloudModelGallery from './cloud-model-gallery.vue'
+import CloudModelLibrary from './cloud-model-library.vue'
 
 import { cloudRuntime, collectRuntime, installCloudAiriRuntime, managedProviderIds, prepareCloudAiriRuntime, publishedRuntime } from './cloud-airi-runtime'
+import { ModelUploadRejected, sharedModelPattern, uploadSharedModel } from './cloud-shared-models'
 
 const transport = Reflect.get(globalThis, '__NEIGHBOUR_CLOUD_TRANSPORT__')
 const saved = Reflect.get(globalThis, '__NEIGHBOUR_PRESENTATION__')
@@ -29,6 +32,7 @@ const deviceOnly = computed(() => !managedProvider.value && !memoryPage.value &&
 const status = ref('角色及模型編輯後，按「儲存至平台」套用到所有居民裝置。')
 const busy = ref(false)
 const ready = ref(false)
+const modelLibraryRevision = ref(0)
 const greeting = ref(saved.greeting)
 const persona = ref(saved.persona)
 const colour = ref(saved.background)
@@ -36,6 +40,25 @@ const scene = ref(saved.airi?.scene_background ?? 'none')
 let revision = saved.revision
 let uncertain = false
 let observer: ResizeObserver | undefined
+let dialogs: MutationObserver | undefined
+function positionDialogs() {
+  const frame = window.frameElement
+  if (!frame || parent === window)
+    return
+  const bounds = frame.getBoundingClientRect()
+  const top = Math.max(0, -bounds.top) + 16
+  const bottom = Math.min(window.innerHeight, parent.innerHeight - bounds.top) - 16
+  if (bottom - top < 120)
+    return
+  document.querySelectorAll<HTMLElement>('[role="dialog"][data-state="open"]').forEach((dialog) => {
+    dialog.style.top = `${(top + bottom) / 2}px`
+    dialog.style.bottom = 'auto'
+    dialog.style.left = '50%'
+    dialog.style.transform = 'translate(-50%, -50%)'
+    dialog.style.maxHeight = `${bottom - top}px`
+    dialog.style.overflowY = 'auto'
+  })
+}
 function forwardWheel(event: WheelEvent) {
   if (event.ctrlKey || event.defaultPrevented || !event.deltaY)
     return
@@ -54,6 +77,7 @@ function forwardWheel(event: WheelEvent) {
 }
 
 onMounted(async () => {
+  await display.initialize()
   await display.loadDisplayModelsFromIndexedDB()
   await settings.initializeStageModel()
   card.initialize()
@@ -81,6 +105,10 @@ onMounted(async () => {
   ready.value = true
   parent.postMessage({ type: 'estate:settings-ready' }, location.origin)
   window.addEventListener('wheel', forwardWheel, { passive: false })
+  parent.addEventListener('scroll', positionDialogs, { passive: true })
+  parent.addEventListener('resize', positionDialogs)
+  dialogs = new MutationObserver(positionDialogs)
+  dialogs.observe(document.body, { childList: true, subtree: true })
   await nextTick()
   const root = document.querySelector('.cloud-airi-settings')
   if (root) {
@@ -94,6 +122,9 @@ onMounted(async () => {
 })
 onUnmounted(() => {
   observer?.disconnect()
+  dialogs?.disconnect()
+  parent.removeEventListener('scroll', positionDialogs)
+  parent.removeEventListener('resize', positionDialogs)
   window.removeEventListener('wheel', forwardWheel)
 })
 
@@ -103,8 +134,12 @@ async function save() {
   const current = card.activeCard
   if (!current)
     return
-  if (!['preset-live2d-1', 'preset-live2d-2', 'preset-vrm-1', 'preset-vrm-2'].includes(settings.stageModelSelected)) {
-    status.value = '匯入模型仍只保存在本瀏覽器；請選內建模型才可同步至雲端。原檔會保留。'
+  const selected = settings.stageModelSelected
+  const builtin = ['preset-live2d-1', 'preset-live2d-2', 'preset-vrm-1', 'preset-vrm-2'].includes(selected)
+  const localModel = !builtin && !sharedModelPattern.test(selected) ? await display.getDisplayModel(selected) : undefined
+  if (!builtin && !sharedModelPattern.test(selected)
+    && (!localModel || localModel.type !== 'file' || localModel.format !== DisplayModelFormat.Live2dZip)) {
+    status.value = '目前共享匯入支援 Live2D ZIP；其他格式的原檔仍保存在此裝置。'
     return
   }
   const background = current.extensions?.airi?.modules?.activeBackgroundId ?? scene.value
@@ -112,10 +147,16 @@ async function save() {
     status.value = '自訂背景仍只保存在此裝置；同步至平台請先選內建背景。原檔會保留。'
     return
   }
-  const payload = { expected_revision: revision, name: current.name, greeting: greeting.value, persona: persona.value, background: colour.value, airi: { stage_model: settings.stageModelSelected, scene_background: background, runtime: collectRuntime(), card: { name: current.name, description: current.description ?? '', personality: current.personality ?? '', scenario: current.scenario ?? '', system_prompt: current.systemPrompt ?? '' } } }
   busy.value = true
   status.value = '正在儲存…'
+  const payload = { expected_revision: revision, name: current.name, greeting: greeting.value, persona: persona.value, background: colour.value, airi: { stage_model: selected, scene_background: background, runtime: collectRuntime(), card: { name: current.name, description: current.description ?? '', personality: current.personality ?? '', scenario: current.scenario ?? '', system_prompt: current.systemPrompt ?? '' } } }
   try {
+    let model = selected
+    if (localModel?.type === 'file') {
+      status.value = '正在上載及核對模型，完成後發佈到平台；請保留此頁。'
+      model = (await uploadSharedModel(localModel.file)).id
+    }
+    payload.airi.stage_model = model
     const response = await transport.fetch('/api/v1/service-desk/presentation', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), signal: AbortSignal.timeout(15000) })
     if (!response.ok) {
       if (response.status === 422) {
@@ -128,9 +169,15 @@ async function save() {
     if (value.revision !== revision + 1)
       throw new Error('save_unconfirmed')
     revision = value.revision
-    status.value = '已儲存至平台；重新進入居民服務台會使用這組 AIRI 角色、語音、搜尋及記憶設定。'
+    settings.stageModelSelected = model
+    modelLibraryRevision.value++
+    status.value = '已儲存至平台；新進入的裝置會用這組設定。已開啟的居民畫面會在閒置或下一位交接時更新模型，不中斷對話。'
   }
-  catch {
+  catch (error) {
+    if (error instanceof ModelUploadRejected) {
+      status.value = error.message
+      return
+    }
     uncertain = true
     status.value = '未能確認儲存結果，草稿保留。請先重新開啟設定核對，避免覆蓋另一位職員的更新。'
   }
@@ -164,7 +211,7 @@ async function save() {
       正在載入 AIRI 設定…
     </p>
     <template v-else>
-      <section v-if="tab === 'airi'" class="cloud-model-editor">
+      <section v-if="tab === 'airi'" class="cloud-model-editor" :inert="busy">
         <p v-if="deviceOnly" class="cloud-device-notice">
           此頁為裝置專用設定；匯入檔案、硬件裝置與瀏覽器資料管理保留在本裝置。居民角色、語音、搜尋及記憶則由 AIRI 儲存至平台統一套用。
         </p>
@@ -174,6 +221,10 @@ async function save() {
         <CloudAiriMemory v-if="memoryPage" />
         <CloudAiriProvider v-else-if="managedProvider" :provider-id="managedProvider" />
         <RouterView v-else v-slot="{ Component }">
+          <template v-if="route.path === '/settings/models'">
+            <CloudModelGallery @status="value => status = value" />
+            <CloudModelLibrary :key="modelLibraryRevision" @status="value => status = value" />
+          </template>
           <label v-if="route.path === '/settings/modules/hearing'" class="cloud-microphone-default"><input v-model="cloudRuntime.hearing.microphone_enabled" type="checkbox">居民服務台預設啟用語音輸入（此設定頁不會開咪）</label>
           <component :is="Component" />
         </RouterView>
