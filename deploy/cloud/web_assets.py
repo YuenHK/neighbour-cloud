@@ -23,6 +23,10 @@ SHELL = {
     '/cloud/launch-screen.js': (WEB / 'launch-screen.js', 'text/javascript'),
     '/cloud/launch-screen.css': (WEB / 'launch-screen.css', 'text/css'),
     '/cloud/module-warmup.js': (WEB / 'module-warmup.js', 'text/javascript'),
+    # A browser can request these after the real app becomes ready midway
+    # through loading the independent cold-start document.
+    '/cloud/boot-wait.js': (WEB / 'boot-wait.js', 'text/javascript'),
+    '/cloud/boot-wait.css': (WEB / 'boot-wait.css', 'text/css'),
     '/cloud/frame-entry.js': (WEB / 'frame-entry.js', 'text/javascript'),
     '/cloud/admin-entry.js': (WEB / 'admin-entry.js', 'text/javascript'),
     '/cloud/robot-entry.js': (WEB / 'robot-entry.js', 'text/javascript'),

@@ -1,2 +1,0 @@
-import{A as e,M as t,Pt as n,T as r,Z as i}from"./vue.runtime.esm-bundler-BalvS9Cy.js";import{n as a}from"./vue-router-CQZDoNGn.js";var o={"h-full":``,"font-cute":``},s=t({__name:`stage`,setup(t){return(t,s)=>(i(),r(`main`,o,[e(n(a))]))}});export{s as default};
-//# sourceMappingURL=stage-B-vpwZpo.js.map

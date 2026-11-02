@@ -13,11 +13,12 @@ import logging
 import sqlite3
 from contextlib import closing, suppress
 from datetime import datetime
+from pathlib import Path
 
-from starlette.responses import JSONResponse
+from starlette.responses import JSONResponse, Response
 
 SERVICE = 'srv-dbii3qijnfac73cgabd0'
-RELEASE = 'portal-preload-20261102-barrier10'
+RELEASE = 'model-picker-coldboot-20261102-barrier11'
 RECORD = hashlib.sha256(('rollout:' + RELEASE).encode()).hexdigest()
 DOMAIN = b'neighbour-stopped-writer-rollout-v1\0'
 FIELDS = {'format', 'release', 'service_id', 'stop_event_id', 'stopped_instance',
@@ -145,9 +146,24 @@ class RolloutHost:
         if scope['type'] == 'websocket':
             return await send({'type': 'websocket.close', 'code': 1013})
         if scope['type'] == 'http':
-            return await JSONResponse({'detail': '服務更新中，請稍後再試。',
+            # Free-host cold starts are normal, not an unfinished deployment.
+            # Serve only a public waiting document and its inert assets until
+            # the real application has completed startup. APIs stay closed.
+            boot_files = {'/': ('boot-wait.html', 'text/html'),
+                '/cloud/boot-wait.js': ('boot-wait.js', 'text/javascript'),
+                '/cloud/boot-wait.css': ('boot-wait.css', 'text/css')}
+            boot = boot_files.get(scope.get('path'))
+            if scope.get('method') in ('GET', 'HEAD') and boot:
+                return await Response((Path(__file__).with_name('web') / boot[0]).read_bytes(),
+                    media_type=boot[1], headers={'Cache-Control': 'no-store',
+                        'X-Content-Type-Options': 'nosniff',
+                        'Permissions-Policy': 'microphone=(), camera=(), autoplay=()',
+                        'Content-Security-Policy': "default-src 'none'; script-src 'self'; style-src 'self'; "
+                            "connect-src 'self'; frame-ancestors 'none'; base-uri 'none'"})(scope, receive, send)
+            return await JSONResponse({'detail': ('服務暫時未能啟動，請稍後再試。' if self.failed else '正在啟動服務，請稍後再試。' if self.activation_started else '服務更新中，請稍後再試。'),
                 'public_ready': False, 'rollout_waiting': not self.activation_started,
-                'rollout_failed': self.failed, 'rollout_release': RELEASE}, status_code=503,
+                'rollout_failed': self.failed, 'rollout_release': RELEASE,
+                'rollout_phase': 'failed' if self.failed else 'starting' if self.activation_started else 'waiting'}, status_code=503,
                 headers={'Cache-Control': 'no-store', 'Retry-After': '15'})(scope, receive, send)
 
 

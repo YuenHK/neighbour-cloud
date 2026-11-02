@@ -181,8 +181,8 @@
     },
     {
       "path": "airi_overlay/cloud-model-gallery.vue",
-      "bytes": 18600,
-      "sha256": "6a1bd4c8a5cd930e1e1c933d068795b6323a367ee56fd3fbe4fae753bcab5e04"
+      "bytes": 13078,
+      "sha256": "89a35eac78cf849ce2363e3d9979cef97bca66442f64dbef6d66e46872592829"
     },
     {
       "path": "airi_overlay/cloud-model-library.vue",
@@ -221,8 +221,8 @@
     },
     {
       "path": "airi_overlay/cloud-settings.vue",
-      "bytes": 14671,
-      "sha256": "d31c10f615ba614cda61257cbc4ead2b2365a58a9aa7a62744d71958bdd31783"
+      "bytes": 14500,
+      "sha256": "5c43ad0fd1d2b064331bcc98e59025b2c9b90a67c720b7da11052167d5f4a93a"
     },
     {
       "path": "airi_overlay/cloud-shared-models.ts",
@@ -456,8 +456,8 @@
     },
     {
       "path": "deploy/cloud/frontend_wiring.py",
-      "bytes": 19343,
-      "sha256": "28a77b0d02c2c26d5ca458c679cd95f89ab4fd7dd7f99c920c6606d75c04d22a"
+      "bytes": 21772,
+      "sha256": "17ddb8342b282f3312a1e3a55c9f89bf0772de99c8b9cb052ac8591d42595724"
     },
     {
       "path": "deploy/cloud/gallery_sources.py",
@@ -586,8 +586,8 @@
     },
     {
       "path": "deploy/cloud/rollout.py",
-      "bytes": 7114,
-      "sha256": "1bba388167295560ff28e2e3cbce3e362c16a7f124baf2f407208f8db52d3290"
+      "bytes": 8539,
+      "sha256": "af7050f27a0827fcd17909b9272291018497720e60cb4fe74dcf14852cf4d707"
     },
     {
       "path": "deploy/cloud/runtime_storage.py",
@@ -663,6 +663,21 @@
       "path": "deploy/cloud/web/admin-request.js",
       "bytes": 802,
       "sha256": "a9002aeb803943713a055458bb7607167dd0c0ab2fcbb613030d6af88c2c1a53"
+    },
+    {
+      "path": "deploy/cloud/web/boot-wait.css",
+      "bytes": 1367,
+      "sha256": "b3e3e356fa6155c2b0dfd63e495a08af3028ec3676239a17350a2ef2f32c547d"
+    },
+    {
+      "path": "deploy/cloud/web/boot-wait.html",
+      "bytes": 761,
+      "sha256": "a886d9665924a913d2de57aea63df25273ab800e3036635002df78ae46b0b9a1"
+    },
+    {
+      "path": "deploy/cloud/web/boot-wait.js",
+      "bytes": 1754,
+      "sha256": "010999b94f140413197b3a3896ececf630eee138209ac861543b4572039b1adc"
     },
     {
       "path": "deploy/cloud/web/frame-entry.js",
@@ -741,8 +756,8 @@
     },
     {
       "path": "deploy/cloud/web_assets.py",
-      "bytes": 10070,
-      "sha256": "90f1b481aed91ed81761b074850c8e554dfb01e25080a89a5dfad5f7920c7a49"
+      "bytes": 10338,
+      "sha256": "e9c85121dedfa5da125f51fc1d4e6c7e6dc0aeb35db1e8fc132c618cbcecc2f5"
     },
     {
       "path": "edge_hub/__init__.py",

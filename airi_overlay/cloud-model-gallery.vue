@@ -1,24 +1,94 @@
 <script setup lang="ts">
+import type { DisplayModel } from '@proj-airi/stage-ui/stores/display-models'
+
 import { errorMessageFrom } from '@moeru/std'
 import { DisplayModelFormat, useDisplayModelsStore } from '@proj-airi/stage-ui/stores/display-models'
-import { useSettings } from '@proj-airi/stage-ui/stores/settings'
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, inject, onMounted, ref } from 'vue'
 
 import gallery from './cloud-model-gallery.json'
 
-import { modelHash } from './cloud-shared-models'
+import { loadSharedModel, modelHash, sharedModels } from './cloud-shared-models'
 
-const emit = defineEmits<{ status: [message: string] }>()
+const props = defineProps<{ selectedModel?: DisplayModel }>()
+const emit = defineEmits<{ pick: [model: DisplayModel], close: [], status: [message: string] }>()
+const notify = inject<(message: string) => void>('neighbour-model-status', () => {})
 const display = useDisplayModelsStore()
-const settings = useSettings()
-const accepted = ref(false)
+const query = ref('')
+const platform = ref('all')
+const accepted = inject('neighbour-model-license-accepted', ref(false))
 const busy = ref('')
+const message = ref('選擇後先預覽；按「儲存至平台」才套用到所有裝置。')
+const failed = ref(new Set<string>())
+const imagesFailed = ref(new Set<string>())
+const shared = ref<{ id: string, name: string, bytes: number }[]>([])
 const ownFile = ref<File>()
+const ownRights = ref(false)
 const ownModels = ref<string[]>([])
 const ownEntry = ref('')
-const ownRights = ref(false)
-const ownStatus = ref('可整理多層 ZIP、引用路徑及取景，保留模型與圖片原樣；原檔不會更改。')
-
+type GalleryModel = typeof gallery.models[number]
+interface Choice { id: string, name: string, platform: string, image?: string, bytes?: number, model?: DisplayModel, gallery?: GalleryModel, sharedId?: string }
+const choices = computed(() => {
+  const rows: Choice[] = gallery.models.map(item => ({ id: `gallery:${item.id}`, name: item.name, platform: item.source.includes('live2d.com') ? 'Live2D 官方' : '社群 CC0', image: item.image, bytes: item.bytes, gallery: item }))
+  for (const item of shared.value)
+    rows.push({ id: item.id, name: item.name, platform: '平台共享', bytes: item.bytes, sharedId: item.id })
+  for (const item of display.displayModels) {
+    if (rows.some(row => row.id === item.id) || (item.format !== DisplayModelFormat.Live2dZip && !item.id.startsWith('preset-vrm-')))
+      continue
+    rows.push({ id: item.id, name: item.name, image: item.previewImage, model: item, platform: item.id.startsWith('preset-') ? 'AIRI 內建' : '此裝置' })
+  }
+  return rows.filter(row => !failed.value.has(row.id))
+})
+const platforms = computed(() => [...new Set(choices.value.map(row => row.platform))])
+const filtered = computed(() => choices.value.filter(row => (platform.value === 'all' || row.platform === platform.value)
+  && `${row.name} ${row.platform}`.toLocaleLowerCase().includes(query.value.trim().toLocaleLowerCase())))
+function status(value: string) {
+  message.value = value
+  notify(value)
+  emit('status', value)
+}
+function picked(model: DisplayModel) {
+  status('已選擇模型作預覽；按「儲存至平台」才發佈，Gemma 及曉曼保持不變。')
+  emit('pick', model)
+  emit('close')
+}
+onMounted(async () => {
+  try {
+    shared.value = (await sharedModels()).items
+  }
+  catch { message.value = '共享清單暫未載入；已核對圖庫及此裝置模型仍可選擇。' }
+})
+async function choose(row: Choice) {
+  if (busy.value || (row.gallery && !accepted.value))
+    return
+  busy.value = row.id
+  status(`正在準備 ${row.name}…`)
+  try {
+    let model = row.model
+    if (row.gallery) {
+      const item = row.gallery
+      const response = await fetch(item.archive, { credentials: 'omit', redirect: 'error', signal: AbortSignal.timeout(60000) })
+      if (!response.ok)
+        throw new Error('模型暫時未能下載。')
+      const content = await response.blob()
+      if (content.size !== item.bytes || await modelHash(content) !== item.sha256)
+        throw new Error('模型檔案核對未通過，沒有更換原角色。')
+      model = await display.addDisplayModel(DisplayModelFormat.Live2dZip, new File([content], `${item.id}-Live2D.zip`, { type: 'application/zip' }))
+    }
+    else if (row.sharedId) {
+      model = await loadSharedModel(row.sharedId, row.name)
+      if (!display.displayModels.some(item => item.id === model!.id))
+        display.displayModels.push(model)
+    }
+    if (!model)
+      throw new Error('模型未準備好。')
+    picked(model)
+  }
+  catch (error) {
+    failed.value.add(row.id)
+    status(`${errorMessageFrom(error) ?? '未能完整載入模型。'} 原角色保留，今次清單會先隱藏此項。`)
+  }
+  finally { busy.value = '' }
+}
 function chooseArchive(event: Event) {
   ownFile.value = (event.target as HTMLInputElement).files?.[0]
   ownModels.value = []
@@ -28,11 +98,11 @@ async function prepareOwnArchive() {
   if (!ownFile.value || !ownRights.value || busy.value)
     return
   if (ownFile.value.size > 32 * 1024 * 1024) {
-    ownStatus.value = 'ZIP 最大 32 MB；請先由作者提供較小的執行檔版本。'
+    status('ZIP 最大 32 MB；原檔沒有更改。')
     return
   }
   busy.value = 'own-archive'
-  ownStatus.value = '正在整理執行檔；不會更換平台角色…'
+  status('正在整理及核對 ZIP，原模型保留…')
   try {
     const transport = Reflect.get(globalThis, '__NEIGHBOUR_CLOUD_TRANSPORT__')
     const response = await transport.fetch(`/api/v1/service-desk/airi-models/prepare${ownEntry.value ? `?entrypoint=${encodeURIComponent(ownEntry.value)}` : ''}`, {
@@ -47,246 +117,78 @@ async function prepareOwnArchive() {
     }
     if (response.headers.get('content-type')?.includes('application/json')) {
       ownModels.value = (await response.json()).models
-      ownStatus.value = 'ZIP 有多個模型，請選擇一款再按整理。'
+      status('ZIP 內有多款模型，請選擇其中一款再整理。')
       return
     }
     const content = await response.blob()
-    const model = await display.addDisplayModel(DisplayModelFormat.Live2dZip, new File([content], `${ownFile.value.name.replace(/\.zip$/i, '')}-prepared.zip`, { type: 'application/zip' }))
-    settings.stageModelSelected = model.id
-    await settings.updateStageModel()
-    ownStatus.value = `已整理及載入預覽（${(content.size / 1024 / 1024).toFixed(1)} MB）。確認畫面正常後，按「儲存至平台」才發佈；不支援的核心版本仍需作者重新匯出。`
-    emit('status', ownStatus.value)
+    picked(await display.addDisplayModel(DisplayModelFormat.Live2dZip, new File([content], `${ownFile.value.name.replace(/\.zip$/i, '')}-prepared.zip`, { type: 'application/zip' })))
   }
-  catch (error) { ownStatus.value = errorMessageFrom(error) ?? '整理未完成，原檔及平台角色保留。' }
-  finally { busy.value = '' }
-}
-const source = ref('all')
-const query = ref('')
-const searching = ref(false)
-const searchStatus = ref('搜尋官方及社群作者頁；未核對授權的模型不會自動轉存或發佈。')
-const results = ref<{ title: string, url: string, description: string }[]>([])
-interface SourceItem { title: string, url: string, author?: string, format: string, license_status: string }
-interface SourceIndex { source: string, items: SourceItem[], last_success_ms: number | null, error: string }
-const sourceIndexes = ref<SourceIndex[]>([])
-const discoverySource = ref('all')
-const discoveryFilter = ref('')
-const discoveryCount = ref(24)
-const discoveryStatus = ref('正在讀取已保存的圖庫目錄…')
-let discoveryTimer: ReturnType<typeof setTimeout> | undefined
-let discoveryClosed = false
-let discoveryPolls = 0
-const discovered = computed(() => sourceIndexes.value
-  .filter(index => discoverySource.value === 'all' || index.source === discoverySource.value)
-  .flatMap(index => index.items.map(item => ({ ...item, sourceName: index.source, reviewed: gallery.models.find(model => model.source.replace(/\/$/, '') === item.url.replace(/\/$/, '')) })))
-  .filter(item => `${item.title} ${item.author ?? ''}`.toLowerCase().includes(discoveryFilter.value.toLowerCase())))
-async function readSources() {
-  try {
-    const transport = Reflect.get(globalThis, '__NEIGHBOUR_CLOUD_TRANSPORT__')
-    const response = await transport.fetch('/api/v1/service-desk/model-gallery/catalogue')
-    if (!response.ok)
-      throw new Error('catalogue_unavailable')
-    const value = await response.json()
-    if (discoveryClosed)
-      return
-    sourceIndexes.value = value.sources ?? []
-    discoveryStatus.value = value.cache_unavailable
-      ? '外站目錄暫未準備好；上方已核對模型仍可使用。'
-      : value.refreshing
-        ? '先顯示已保存目錄，正在背景檢查新模型；不影響對話或消耗 AI 額度。'
-        : '每次進入管理工作台會背景檢查新模型；一分鐘內重複進入會合併，失敗時保留上次目錄。'
-    if (value.refreshing && discoveryPolls++ < 8)
-      discoveryTimer = setTimeout(readSources, 6000)
-  }
-  catch {
-    if (!discoveryClosed)
-      discoveryStatus.value = '外站目錄未能更新；上方已核對模型不受影響。'
-  }
-}
-onMounted(readSources)
-onUnmounted(() => {
-  discoveryClosed = true
-  clearTimeout(discoveryTimer)
-})
-async function search() {
-  if (searching.value)
-    return
-  searching.value = true
-  searchStatus.value = '正在搜尋作者平台…'
-  try {
-    const transport = Reflect.get(globalThis, '__NEIGHBOUR_CLOUD_TRANSPORT__')
-    const response = await transport.fetch('/api/v1/service-desk/model-gallery/search', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ source: source.value, query: query.value }), signal: AbortSignal.timeout(20000) })
-    const value = await response.json()
-    if (!response.ok)
-      throw new Error(typeof value.detail === 'string' ? value.detail : '暫時未能搜尋；可直接使用下方平台入口。')
-    results.value = value.items
-    searchStatus.value = value.items.length ? `${value.cached ? '已載入快取' : '搜尋完成'}。請先到作者頁核對免費版本、AI 用途及轉發權限，再用下方 AIRI 原版 ZIP 匯入。` : '未找到合適結果；可更換關鍵字或直接瀏覽平台。'
-  }
-  catch (error) { searchStatus.value = errorMessageFrom(error) ?? '搜尋暫未完成。' }
-  finally { searching.value = false }
-}
-async function importModel(item: typeof gallery.models[number]) {
-  if (!accepted.value || busy.value)
-    return
-  busy.value = item.id
-  emit('status', `正在匯入 ${item.name}，完成後可預覽；尚未更換平台角色。`)
-  try {
-    const response = await fetch(item.archive, { credentials: 'omit', redirect: 'error', signal: AbortSignal.timeout(60000) })
-    if (!response.ok)
-      throw new Error('gallery_download_failed')
-    const content = await response.blob()
-    if (content.size !== item.bytes || await modelHash(content) !== item.sha256)
-      throw new Error('gallery_digest_mismatch')
-    const model = await display.addDisplayModel(DisplayModelFormat.Live2dZip, new File([content], `${item.id}-Live2D.zip`, { type: 'application/zip' }))
-    settings.stageModelSelected = model.id
-    await settings.updateStageModel()
-    emit('status', '已匯入並選擇預覽。按「儲存至平台」才會套用到所有裝置，Gemma 及曉曼保持不變。')
-  }
-  catch { emit('status', '圖庫模型未能完成匯入；平台原有角色保留，可以稍後再試或匯入自己的 ZIP。') }
+  catch (error) { status(errorMessageFrom(error) ?? '未能完成整理，原角色及檔案保留。') }
   finally { busy.value = '' }
 }
 </script>
 
 <template>
-  <section class="cloud-model-gallery" :aria-busy="!!busy">
-    <h2>免費模型圖庫</h2>
-    <p>共 {{ gallery.models.length }} 款已核對的官方及社群模型可直接匯入預覽。匯入不使用 AI API 額度，按「儲存至平台」才發佈。</p>
-    <div class="gallery-grid">
-      <article v-for="item in gallery.models" :key="item.id">
-        <img :src="item.image" :alt="item.name" loading="lazy" width="320" height="180">
-        <h3>{{ item.name }}</h3>
-        <p>{{ item.description }} · {{ (item.bytes / 1024 / 1024).toFixed(1) }} MB</p>
-        <p class="gallery-terms">
-          {{ item.individual_terms }} <a :href="item.source" target="_blank" rel="noopener noreferrer">作者／來源</a> · <a :href="item.license" target="_blank" rel="noopener noreferrer">授權</a> · <a :href="item.terms" target="_blank" rel="noopener noreferrer">使用條款</a>
-        </p>
-        <button type="button" :disabled="!accepted || !!busy" @click="importModel(item)">
-          {{ busy === item.id ? '正在匯入…' : '一鍵匯入預覽' }}
-        </button>
-      </article>
-    </div>
-    <label class="gallery-agreement"><input v-model="accepted" type="checkbox">我已閱讀所選模型的來源、授權及使用條款，並確認本次用途適用。</label>
-    <details class="discovered-models">
-      <summary>整理自己的 Live2D ZIP</summary>
-      <p>自動整理執行檔、保留原比例及接駁可辨認的口型參數。不轉換 PSD／cmo3、加密模型或新版 SDK，也不壓縮圖片畫質。</p>
-      <input type="file" accept=".zip,application/zip" aria-label="選擇要整理的模型 ZIP" @change="chooseArchive">
-      <select v-if="ownModels.length" v-model="ownEntry" aria-label="選擇 ZIP 內的模型">
-        <option disabled value="">
-          請選擇模型
-        </option>
-        <option v-for="name in ownModels" :key="name" :value="name">
+  <section class="model-picker" :aria-busy="!!busy">
+    <header class="model-picker-heading">
+      <div><h2>選擇模型</h2><p>{{ choices.length }} 款可用 · {{ props.selectedModel?.name ? `目前：${props.selectedModel.name}` : '選擇一款先預覽' }}</p></div>
+      <button type="button" aria-label="關閉模型選單" :disabled="!!busy" @click="emit('close')">
+        關閉
+      </button>
+    </header>
+    <div class="model-picker-filters">
+      <input v-model="query" type="search" aria-label="搜尋模型" placeholder="搜尋模型名稱或平台" maxlength="100">
+      <select v-model="platform" aria-label="模型來源">
+        <option value="all">
+          所有來源
+        </option><option v-for="name in platforms" :key="name" :value="name">
           {{ name }}
         </option>
       </select>
-      <label class="gallery-agreement"><input v-model="ownRights" type="checkbox">我有權將此模型放到本平台供非商業學習使用，並會保留作者要求的標示。</label>
-      <button type="button" :disabled="!ownFile || !ownRights || !!busy || (!!ownModels.length && !ownEntry)" @click="prepareOwnArchive">
-        {{ busy === 'own-archive' ? '正在整理…' : '自動整理並預覽' }}
-      </button>
-      <p role="status">
-        {{ ownStatus }}
-      </p>
-    </details>
-    <details class="discovered-models">
-      <summary>自動更新的外站圖庫 · {{ sourceIndexes.reduce((sum, index) => sum + index.items.length, 0) }} 個條目</summary>
-      <p role="status">
-        {{ discoveryStatus }}
-      </p>
-      <p>已通過授權及實際顯示檢查的模型可直接匯入；新發現不等於已獲轉存授權，不會自動替居民換角色。</p>
-      <div class="gallery-source-filter">
-        <select v-model="discoverySource" aria-label="自動圖庫來源" @change="discoveryCount = 24">
-          <option value="all">
-            全部來源
-          </option><option value="live2d">
-            Live2D 官方
-          </option>
-          <option value="vtubernook">
-            VTuber Nook
-          </option><option value="aplaybox">
-            模之屋 Live2D
-          </option>
-        </select>
-        <input v-model="discoveryFilter" aria-label="篩選外站模型" placeholder="搜尋名稱或作者" @input="discoveryCount = 24">
-      </div>
-      <p v-for="index in sourceIndexes" :key="index.source" class="gallery-terms">
-        {{ index.source }} · {{ index.items.length }} 個 · {{ index.last_success_ms ? new Date(index.last_success_ms).toLocaleString('zh-HK') : '首次更新中' }}
-        {{ index.error ? '（更新未完成，保留上次目錄）' : '' }}
-      </p>
-      <div class="gallery-grid">
-        <article v-for="item in discovered.slice(0, discoveryCount)" :key="item.url">
-          <h3>{{ item.title }}</h3><p v-if="item.author">
-            {{ item.author }}
-          </p>
-          <p class="gallery-terms">
-            {{ item.sourceName }} · {{ item.format }} · {{ item.reviewed ? '已核對，可匯入' : item.license_status === 'redistribution_prohibited' ? '作者禁止平台轉存' : '授權／執行檔待核對' }}
-          </p>
-          <button v-if="item.reviewed" type="button" :disabled="!accepted || !!busy" @click="importModel(item.reviewed)">
-            一鍵匯入預覽
-          </button>
-          <a :href="item.url" target="_blank" rel="noopener noreferrer">查看來源與授權</a>
-        </article>
-      </div>
-      <button v-if="discovered.length > discoveryCount" type="button" @click="discoveryCount += 24">
-        顯示更多（共 {{ discovered.length }} 個）
-      </button>
-    </details>
-    <p class="gallery-terms">
-      官方免費素材有用途限制；機構正式對外使用前，請按條款核對適用資格。其他創作者的模型仍可用 AIRI 原有匯入功能加入。
+    </div>
+    <label class="model-picker-license"><input v-model="accepted" type="checkbox">我已閱讀所選圖庫模型的授權及署名要求，只作非商業學習使用。</label>
+    <p class="model-picker-message" role="status">
+      {{ message }}
     </p>
-    <details>
-      <summary>來源及版權</summary>
-      <p>{{ gallery.notice }}</p>
-      <p>官方來源：Live2D 官方樣本包及 CubismWebSamples，移除附帶語音連結以保留曉曼。社群來源：puercatena / kenkipi（CC0），整理執行檔案並將 8K 貼圖縮為 4K，保留角色與授權。</p>
-    </details>
-    <details class="gallery-community">
-      <summary>其他官方示例（{{ gallery.official_catalogue.length }} 款）</summary>
-      <p class="gallery-terms">
-        官方清單的其他項目亦保留入口。未完成兼容核對或條款限制轉發的項目，不會顯示一鍵轉存。這不表示作者沒有提供下載。
-      </p>
-      <div class="gallery-results">
-        <article v-for="item in gallery.official_catalogue" :key="item.source">
-          <h3>{{ item.name }}</h3><p>{{ item.reason }}</p><a :href="item.source" target="_blank" rel="noopener noreferrer">前往官方示例頁</a>
-        </article>
-      </div>
-    </details>
-    <details class="gallery-community" open>
-      <summary>更多社群模型</summary>
-      <form class="gallery-search" @submit.prevent="search">
-        <label>平台<select v-model="source" aria-label="圖庫平台"><option value="all">全部</option><option value="live2d">Live2D 官方</option><option value="vtubernook">VTuber Nook</option><option value="aplaybox">模之屋 AplayBox</option><option value="booth">BOOTH</option><option value="itch">itch.io</option><option value="nizima">nizima</option></select></label>
-        <label>模型關鍵字<input v-model="query" maxlength="80" placeholder="例如：cat、鄰家女孩、chibi"></label>
-        <button type="submit" :disabled="searching">
-          {{ searching ? '搜尋中…' : '搜尋社群圖庫' }}
+    <div class="model-picker-grid">
+      <article v-for="row in filtered" :key="row.id" :class="{ current: props.selectedModel?.id === row.id }">
+        <button type="button" :disabled="!!busy || !!row.gallery && !accepted" :aria-label="`選擇 ${row.name}`" @click="choose(row)">
+          <img v-if="row.image && !imagesFailed.has(row.id)" :src="row.image" :alt="row.name" loading="lazy" @error="imagesFailed.add(row.id)">
+          <span v-else class="model-picker-placeholder" aria-hidden="true">♧</span>
+          <strong>{{ row.name }}</strong><span class="model-picker-tag">{{ row.platform }}</span>
+          <small>{{ busy === row.id ? '準備中…' : props.selectedModel?.id === row.id ? '目前選擇' : '選擇預覽' }}</small>
         </button>
-      </form>
-      <p class="gallery-terms">
-        只在按搜尋時使用既有免費 Tavily：基本搜尋每次 1 credit，相同搜尋 6 小時內用快取；另設每月最多 30 次圖庫搜尋預留，用完即停。只會搜尋你輸入的模型關鍵字，不附居民對話。
-      </p>
-      <p role="status">
-        {{ searchStatus }}
-      </p>
-      <div class="gallery-results">
-        <article v-for="item in results" :key="item.url">
-          <h3>{{ item.title }}</h3><p>{{ item.description }}</p><a :href="item.url" target="_blank" rel="noopener noreferrer">到作者頁核對及下載</a>
-        </article>
-      </div>
-      <p class="gallery-platforms">
-        <a href="https://booth.pm/en/search/Live2D?max_price=0" target="_blank" rel="noopener noreferrer">BOOTH 免費模型</a><a href="https://itch.io/game-assets/free/tag-live2d" target="_blank" rel="noopener noreferrer">itch.io 免費模型</a><a href="https://nizima.com/" target="_blank" rel="noopener noreferrer">nizima 圖庫</a>
-      </p>
-      <p class="gallery-terms">
-        免費下載不一定准許用於 AI 數字人或轉發檔案；部分只有 PSD／編輯原稿。平台共享需要可執行的 model3.json、moc3 及貼圖 ZIP，不會替你購買或繞過作者下載限制。
-      </p>
-      <p class="gallery-platforms">
-        <a href="https://www.live2d.com/zh-CHS/learn/sample/" target="_blank" rel="noopener noreferrer">Live2D 官方示例</a><a href="https://vtuber-nook.com/category/live2d-3d-pngtuber-models/" target="_blank" rel="noopener noreferrer">VTuber Nook 綜合圖庫</a><a href="https://www.aplaybox.com/model/model" target="_blank" rel="noopener noreferrer">模之屋 AplayBox</a>
-      </p>
-      <p class="gallery-terms">
-        VTuber Nook 同時收錄 Live2D、VRM 及 PNGtuber；模之屋亦有 PMX／MMD。PNGtuber 圖組或 PMX 不可直接當作 Live2D 模型使用。
-      </p>
+        <details v-if="row.gallery" class="model-picker-terms">
+          <summary>授權及來源</summary><p>{{ row.gallery.individual_terms }}</p><a :href="row.gallery.source" target="_blank" rel="noopener noreferrer">作者來源</a> · <a :href="row.gallery.license" target="_blank" rel="noopener noreferrer">授權</a> · <a :href="row.gallery.terms" target="_blank" rel="noopener noreferrer">條款</a>
+        </details>
+      </article>
+    </div>
+    <p v-if="!filtered.length" class="model-picker-empty">
+      未找到可用模型，試吓其他名稱或來源。
+    </p>
+    <details class="model-picker-import">
+      <summary>匯入自己的 Live2D ZIP</summary>
+      <p>自動整理多層資料夾、引用路徑及取景；保留原模型、貼圖及授權。32 MB 以內，整理失敗不改原角色。</p>
+      <input type="file" accept=".zip,application/zip" aria-label="自己的模型 ZIP" :disabled="!!busy" @change="chooseArchive">
+      <label v-if="ownFile"><input v-model="ownRights" type="checkbox">我有權在本平台使用及儲存這個模型。</label>
+      <select v-if="ownModels.length" v-model="ownEntry" aria-label="ZIP 內的模型">
+        <option value="">
+          請選擇模型
+        </option><option v-for="name in ownModels" :key="name" :value="name">
+          {{ name }}
+        </option>
+      </select>
+      <button type="button" :disabled="!!busy || !ownFile || !ownRights || ownModels.length > 0 && !ownEntry" @click="prepareOwnArchive">
+        {{ busy === 'own-archive' ? '整理中…' : '整理並預覽' }}
+      </button>
     </details>
   </section>
 </template>
 
 <style>
-.cloud-model-gallery{display:grid;gap:14px;margin-bottom:20px;padding:20px;border:1px solid #d5e5da;border-radius:16px;background:#f3f8f4}.cloud-model-gallery h2{font-size:22px}.cloud-model-gallery p{line-height:1.6}.gallery-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.gallery-grid article{display:grid;gap:10px;padding:14px;border:1px solid #d5e5da;border-radius:12px;background:white}.gallery-grid img{width:100%;height:180px;object-fit:contain;background:#f5f8f5;border-radius:8px}.gallery-grid h3{font-weight:600}.gallery-grid button{align-self:end;padding:12px;border-radius:10px;background:#236c60;color:white}.gallery-grid button:disabled{opacity:.5;cursor:default}.cloud-model-gallery a{text-decoration:underline;text-underline-offset:3px}.gallery-agreement{display:flex;gap:7px;align-items:center;flex-wrap:wrap}.gallery-agreement input{width:18px;height:18px}.gallery-terms{font-size:14px;color:#5c776a}@media(max-width:700px){.gallery-grid{grid-template-columns:1fr}.gallery-grid img{height:160px}}
+.model-picker{display:grid;gap:14px;color:#194f49;min-width:0}.model-picker-heading{display:flex;align-items:start;justify-content:space-between;gap:16px}.model-picker-heading h2{font-size:24px;font-weight:650;margin:0 0 4px}.model-picker-heading p{font-size:13px;color:#687d71;overflow-wrap:anywhere}.model-picker-heading>button,.model-picker-import>button{padding:9px 16px;border:1px solid #cbded4;border-radius:10px;background:#f0f7f2;white-space:nowrap}.model-picker-filters{display:flex;gap:10px}.model-picker-filters input{flex:1;min-width:0}.model-picker-filters input,.model-picker-filters select,.model-picker-import select{padding:11px 12px;border:1px solid #cbded4;border-radius:10px;background:#fff;max-width:100%}.model-picker-license{display:flex;align-items:start;gap:8px;font-size:13px;line-height:1.6}.model-picker-license input{flex:0 0 auto;margin-top:4px}.model-picker-message{font-size:13px;line-height:1.6;color:#627a6a}.model-picker-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:12px}.model-picker-grid article{overflow:hidden;border:1px solid #dae7df;border-radius:14px;background:#f8fbf8}.model-picker-grid article.current{border-color:#43957b;box-shadow:0 0 0 2px #b8d9c7}.model-picker-grid article>button{width:100%;display:flex;align-items:center;flex-direction:column;gap:7px;padding:12px;text-align:center;border:0;background:transparent}.model-picker-grid img,.model-picker-placeholder{height:130px;width:100%;object-fit:contain;display:grid;place-items:center;font-size:64px;color:#82aa91}.model-picker-grid strong{font-size:14px;overflow-wrap:anywhere}.model-picker-tag{font-size:11px;padding:3px 8px;border-radius:12px;background:#e6f0e8;color:#557662}.model-picker-grid small{font-size:12px;color:#23765e}.model-picker-grid button:disabled{opacity:.55;cursor:default}.model-picker button:focus-visible,.model-picker input:focus-visible,.model-picker select:focus-visible{outline:3px solid #88bca4;outline-offset:2px}.model-picker-terms{font-size:11px;line-height:1.5;padding:0 12px 10px}.model-picker-terms summary{cursor:pointer;color:#607969}.model-picker-terms a{text-decoration:underline}.model-picker-import{border-top:1px solid #dfebe3;padding-top:12px;font-size:13px;line-height:1.7}.model-picker-import summary{cursor:pointer;font-weight:600}.model-picker-import input[type=file],.model-picker-import>label,.model-picker-import>select{display:block;margin-block:12px;max-width:100%}.model-picker-empty{padding:32px;text-align:center;color:#728579}.cloud-current-model{font-size:14px;font-weight:600;padding:10px 0;overflow-wrap:anywhere}.cloud-model-options>summary{font-size:13px;cursor:pointer;padding:14px 0;color:#607c6b}@media(max-width:500px){.model-picker-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.model-picker-grid img,.model-picker-placeholder{height:100px}.model-picker-filters{flex-direction:column}.model-picker-heading h2{font-size:21px}}
 </style>
 
 <style>
-.gallery-grid{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}.gallery-grid img{height:150px}.gallery-community summary{font-weight:600;cursor:pointer}.gallery-search{display:flex;align-items:end;flex-wrap:wrap;gap:12px;margin-block:16px}.gallery-search label{display:grid;gap:6px}.gallery-search input,.gallery-search select{padding:10px;border:1px solid #cadbd3;border-radius:8px;max-width:100%}.gallery-search button{padding:12px;border-radius:10px;background:#236c60;color:white}.gallery-results{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}.gallery-results article{padding:14px;background:white;border:1px solid #d5e5da;border-radius:12px}.gallery-results h3{font-weight:600}.gallery-results p{font-size:14px}.gallery-platforms{display:flex;flex-wrap:wrap;gap:16px;margin-block:16px}
-.gallery-source-filter{display:flex;gap:12px;flex-wrap:wrap;margin-block:14px}.gallery-source-filter input,.gallery-source-filter select{padding:10px;border:1px solid #cadbd3;border-radius:8px;max-width:100%}.discovered-models summary{font-weight:600;cursor:pointer}.discovered-models button{padding:10px;border-radius:10px;background:#236c60;color:white}
+.model-picker-filters input[type=search]{width:auto;flex:1 1 0;min-width:0}.model-picker-filters select{width:180px;flex:0 0 180px;min-width:0}.model-picker-grid button:disabled{opacity:1}.model-picker-grid button:disabled small{color:#72877b}@media(max-width:500px){.model-picker-filters input[type=search],.model-picker-filters select{width:100%;flex:0 0 auto}}
 </style>

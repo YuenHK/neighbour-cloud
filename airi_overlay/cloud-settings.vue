@@ -4,13 +4,12 @@
 import { DisplayModelFormat, useDisplayModelsStore } from '@proj-airi/stage-ui/stores/display-models'
 import { useAiriCardStore } from '@proj-airi/stage-ui/stores/modules/airi-card'
 import { useSettings } from '@proj-airi/stage-ui/stores/settings'
-import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, provide, ref } from 'vue'
 import { RouterView, useRoute, useRouter } from 'vue-router'
 
 import CloudAiriMemory from './cloud-airi-memory.vue'
 import CloudAiriProvider from './cloud-airi-provider.vue'
 import CloudModelGallery from './cloud-model-gallery.vue'
-import CloudModelLibrary from './cloud-model-library.vue'
 
 import { cloudRuntime, collectRuntime, installCloudAiriRuntime, managedProviderIds, prepareCloudAiriRuntime, publishedRuntime } from './cloud-airi-runtime'
 import { ModelUploadRejected, sharedModelPattern, uploadSharedModel } from './cloud-shared-models'
@@ -30,9 +29,13 @@ const managedProvider = computed(() => route.path.startsWith('/settings/provider
 const memoryPage = computed(() => ['/settings/memory', '/settings/modules/memory-short-term', '/settings/modules/memory-long-term'].includes(route.path))
 const deviceOnly = computed(() => !managedProvider.value && !memoryPage.value && !['/settings', '/settings/airi-card', '/settings/models', '/settings/scene', '/settings/modules', '/settings/modules/speech', '/settings/modules/consciousness', '/settings/modules/hearing', '/settings/modules/web-search'].includes(route.path))
 const status = ref('角色及模型編輯後，按「儲存至平台」套用到所有居民裝置。')
+provide('neighbour-model-selector', CloudModelGallery)
+provide('neighbour-model-license-accepted', ref(false))
+provide('neighbour-model-status', (message: string) => {
+  status.value = message
+})
 const busy = ref(false)
 const ready = ref(false)
-const modelLibraryRevision = ref(0)
 const greeting = ref(saved.greeting)
 const persona = ref(saved.persona)
 const colour = ref(saved.background)
@@ -181,7 +184,6 @@ async function save() {
       throw new Error('save_unconfirmed')
     revision = value.revision
     settings.stageModelSelected = model
-    modelLibraryRevision.value++
     status.value = '已儲存至平台；新進入的裝置會用這組設定。已開啟的居民畫面會在閒置或下一位交接時更新模型，不中斷對話。'
   }
   catch (error) {
@@ -232,10 +234,6 @@ async function save() {
         <CloudAiriMemory v-if="memoryPage" />
         <CloudAiriProvider v-else-if="managedProvider" :provider-id="managedProvider" />
         <RouterView v-else v-slot="{ Component }">
-          <template v-if="route.path === '/settings/models'">
-            <CloudModelGallery @status="value => status = value" />
-            <CloudModelLibrary :key="modelLibraryRevision" @status="value => status = value" />
-          </template>
           <label v-if="route.path === '/settings/modules/hearing'" class="cloud-microphone-default"><input v-model="cloudRuntime.hearing.microphone_enabled" type="checkbox">居民服務台預設啟用語音輸入（此設定頁不會開咪）</label>
           <component :is="Component" />
         </RouterView>

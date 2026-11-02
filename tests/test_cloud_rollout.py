@@ -1,3 +1,4 @@
+import asyncio
 import hashlib
 import hmac
 import json
@@ -71,11 +72,64 @@ def test_waiting_shell_never_opens_real_application_or_accepts_writes():
     assert app.stops == 0
 
 
+def test_cold_boot_shows_a_waiting_page_but_never_exposes_api_or_ready_early():
+    app = Application()
+    with TestClient(rollout.RolloutHost(app, lambda: False, interval=.005)) as client:
+        page = client.get('/')
+        assert page.status_code == 200
+        assert page.headers['content-type'].startswith('text/html')
+        assert '/cloud/boot-wait.js' in page.text
+        assert 'no-store' in page.headers['cache-control']
+        assert client.get('/cloud/boot-wait.js').status_code == 200
+        assert client.get('/cloud/boot-wait.css').status_code == 200
+        assert client.get('/health').status_code == 503
+        assert client.post('/api/v1/chat', json={}).status_code == 503
+        assert client.get('/cloud/admin').status_code == 503
+        assert app.starts == app.requests == 0
+
+
+def test_starting_page_waits_for_actual_application_startup_without_accepting_requests():
+    release = threading.Event()
+
+    class SlowApplication(Application):
+        async def __call__(self, scope, receive, send):
+            if scope['type'] == 'lifespan':
+                assert (await receive())['type'] == 'lifespan.startup'
+                self.starts += 1
+                await asyncio.to_thread(release.wait)
+                await send({'type': 'lifespan.startup.complete'})
+                assert (await receive())['type'] == 'lifespan.shutdown'
+                self.stops += 1
+                return await send({'type': 'lifespan.shutdown.complete'})
+            return await super().__call__(scope, receive, send)
+
+    app = SlowApplication()
+    try:
+        with TestClient(rollout.RolloutHost(app, lambda: True, interval=.005)) as client:
+            deadline = time.monotonic() + 2
+            while not app.starts:
+                assert time.monotonic() < deadline
+                time.sleep(.005)
+            state = client.get('/health')
+            assert state.status_code == 503 and state.json()['rollout_phase'] == 'starting'
+            assert '/cloud/boot-wait.js' in client.get('/').text
+            assert client.post('/api/v1/chat', json={}).status_code == 503
+            assert app.requests == 0
+            release.set()
+            while client.get('/health').status_code == 503:
+                assert time.monotonic() < deadline
+                time.sleep(.005)
+            assert client.get('/').json() == {'active': True}
+    finally:
+        release.set()
+    assert app.starts == app.stops == 1
+
+
 def test_approval_starts_once_and_uses_real_lifespan_shutdown():
     app = Application()
     allowed = threading.Event()
     with TestClient(rollout.RolloutHost(app, allowed.is_set, interval=.005)) as client:
-        assert client.get('/').status_code == 503
+        assert '/cloud/boot-wait.js' in client.get('/').text
         allowed.set()
         deadline = time.monotonic() + 2
         while client.get('/health').status_code == 503:

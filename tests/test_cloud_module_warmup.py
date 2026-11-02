@@ -32,3 +32,10 @@ def test_robot_cache_alias_is_content_addressed_and_only_program_bytes_are_cache
         assert hashlib.sha256(response.body).hexdigest().startswith(name.rsplit('-', 1)[-1][:-3])
         assert name in page.body.decode()
     assert web.response('/cloud/robot-assets/ep-console-000000000000.js', storage_acceptance=False, client_id='unused') is None
+def test_cold_boot_assets_remain_available_after_readiness_changes():
+    web = CloudWebAssets()
+    for path, mime in (('/cloud/boot-wait.js', 'text/javascript'), ('/cloud/boot-wait.css', 'text/css')):
+        response = web.response(path, storage_acceptance=False, client_id='unused')
+        assert response.status_code == 200 and mime in response.headers['content-type']
+        assert response.headers['cache-control'] == 'no-store'
+        assert len(response.body) > 100

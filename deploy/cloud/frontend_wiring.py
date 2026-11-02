@@ -365,3 +365,30 @@ def cloud_display_models(source):
     if normal.count(old) != 1:
         raise ValueError('cloud_display_model_anchor_requires_review')
     return normal.replace(old, new)
+
+
+def cloud_model_selector(source):
+    """Use the cloud catalogue INSIDE the native accessible model dialog."""
+    if source.count("import { onMounted } from 'vue'") != 1 or source.count('<ModelManager ') != 2:
+        raise ValueError('native_model_selector_anchor_requires_review')
+    source = source.replace("import { onMounted } from 'vue'", "import { inject, onMounted } from 'vue'", 1)
+    source = source.replace('const props = defineProps<',
+        "const ModelManagerComponent = inject('neighbour-model-selector', ModelManager)\n\nconst props = defineProps<", 1)
+    source = source.replace('v-if="isDesktop"', 'v-if="isDesktop || ModelManagerComponent !== ModelManager"', 1)
+    return source.replace('<ModelManager ', '<component :is="ModelManagerComponent" ')
+
+
+def cloud_model_panel(source):
+    """Keep the selected preview clean without removing native adjustments."""
+    begin = '    <Callout :label="t(\'settings.model-select.panel-callout.support-status-header\')">'
+    if source.count(begin) != 1 or source.count('    </Callout>') != 1:
+        raise ValueError('native_model_panel_anchor_requires_review')
+    before, tail = source.split(begin, 1)
+    source = before + ('    <p class="cloud-current-model">目前模型：{{ stageModelSelectedDisplayModel?.name ?? "正在準備" }}</p>') + tail.split('    </Callout>', 1)[1]
+    source = source.replace('{ Button, Callout }', '{ Button }', 1)
+    source = source.replace("{{ t('settings.model-select.select-model.button') }}", '選擇模型', 1)
+    source = source.replace("import { useI18n } from 'vue-i18n'\n", '').replace("const { t } = useI18n()\n", '')
+    if source.count('    <Live2D\n') != 1 or source.count('    />\n  </div>') != 1:
+        raise ValueError('native_model_adjustments_anchor_requires_review')
+    source = source.replace('    <Live2D\n', '    <details class="cloud-model-options"><summary>調整模型外觀與動作</summary>\n    <Live2D\n', 1)
+    return source.replace('    />\n  </div>', '    />\n    </details>\n  </div>', 1)
