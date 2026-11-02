@@ -15,7 +15,7 @@
 <main id="staffLogin" hidden><div class="login-card-heading"><span class="login-mark" aria-hidden="true">鄰</span><p class="login-eyebrow">職員入口</p><h1>管理工作台</h1><p>查看居民需要、跟進個案，同團隊一齊照顧社區。</p></div><form id="staffLoginForm"><label for="staffPassword">管理口令</label><input id="staffPassword" type="password" autocomplete="current-password" maxlength="128" placeholder="輸入管理口令" required><p id="staffLoginStatus" role="status"></p><div class="login-actions"><button id="cancelStaffLogin" type="button">返回居民服務台</button><button id="staffSubmit" type="submit">進入管理工作台</button></div></form></main>
 <section id="service" aria-label="服務畫面"></section>
 <section id="launchScreen" aria-labelledby="launchTitle" aria-busy="true"><div class="launch-card">
-<div class="launch-scene" aria-hidden="true"><svg viewBox="0 0 360 176">
+<div class="launch-portal" aria-hidden="true"><div class="launch-window-bar"><i></i><i></i><i></i><span>NEIGHBOUR</span></div><div class="launch-scene"><svg viewBox="0 0 360 176">
 <g class="launch-sun"><path d="M287 9v-5m0 70v-5m30-30h5m-70 0h5m52-22 4-4m-52 52 4-4m0-44-4-4m52 52-4-4"/><circle cx="287" cy="39" r="21"/><path d="M279 38v1m16-1v1m-15 6q7 6 14 0"/></g>
 <path class="launch-cloud" d="M34 58c-17 0-16-20-3-22 3-18 29-19 35-2 20-8 28 21 8 24Z"/><path class="launch-cloud launch-cloud-two" d="M262 96c-13 0-13-15-2-17 3-14 22-14 27-2 15-5 20 19 4 19Z"/>
 <ellipse class="launch-ground" cx="177" cy="151" rx="126" ry="15"/><path class="launch-path" d="M162 145h31l18 17h-66Z"/>
@@ -23,8 +23,9 @@
 <g class="launch-house"><path class="launch-house-wall" d="M127 90h100v57H127Z"/><path class="launch-house-roof" d="m115 94 62-49 62 49Z"/><rect class="launch-window" x="140" y="101" width="18" height="18" rx="5"/><rect class="launch-window" x="196" y="101" width="18" height="18" rx="5"/><path class="launch-door" d="M166 147v-22a11 11 0 0 1 22 0v22Z"/><g class="launch-face"><circle cx="165" cy="95" r="2"/><circle cx="189" cy="95" r="2"/><path d="M171 101q6 6 12 0"/></g><ellipse class="launch-blush" cx="159" cy="102" rx="5" ry="2.5"/><ellipse class="launch-blush" cx="195" cy="102" rx="5" ry="2.5"/></g>
 <g class="launch-bubble"><rect x="236" y="55" width="42" height="32" rx="12"/><path d="m247 85-5 8 14-7m-9-17q3-6 7 0 4-6 7 0-1 4-7 8-6-4-7-8"/></g>
 <path class="launch-spark" d="m111 42 3 7 7 3-7 3-3 7-3-7-7-3 7-3Z"/><path class="launch-spark launch-spark-two" d="m258 125 2 5 5 2-5 2-2 5-2-5-5-2 5-2Z"/>
-</svg></div>
+</svg></div><div class="launch-window-foot"><span></span><span></span><span></span></div></div>
 <p class="launch-brand">鄰伴 · 智慧社區平台</p><h1 id="launchTitle">今日，一齊開心傾吓！</h1>
+<div class="launch-modules" aria-label="背景預載程式"><div data-warm-chip="services"><b>居民服務台</b><span class="warm-state">預載程式中</span></div><div data-warm-chip="settings"><b>數字人設定</b><span class="warm-state">預載程式中</span></div><div data-warm-chip="robots"><b>機械人控制台</b><span class="warm-state">預載程式中</span></div></div>
 <div class="launch-current"><span class="launch-live-dot" aria-hidden="true"></span><span id="launchStep">第 1 / 3 步</span></div>
 <h2 id="launchStatus" role="status">連接服務</h2><p id="launchDetail">同鄰伴服務台接通，準備開始。</p>
 <div class="launch-progress"><div class="launch-progress-heading"><span id="launchComplete">已完成 0 / 3 個階段</span><span id="launchElapsed">已等候 0 秒</span></div>

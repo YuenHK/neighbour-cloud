@@ -4,6 +4,7 @@ const {chromium}=require(path.resolve('.experiments/optimization-lab-20261029/no
 const origin='https://startup.neighbour.test'
 const token='header.'+Buffer.from(JSON.stringify({role:'resident',exp:Math.floor(Date.now()/1000)+3600})).toString('base64url')+'.signature'
 async function main(){
+ fs.mkdirSync(path.resolve('.runtime/portal-launch-20261102/launch'),{recursive:true})
  const browser=await chromium.launch({headless:true,executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',args:['--mute-audio']})
  const context=await browser.newContext({serviceWorkers:'block',permissions:[]})
  await context.route('**/*',async route=>{
@@ -12,7 +13,7 @@ async function main(){
   if(u.pathname==='/api/v1/resident/access')return route.fulfill({json:{token}})
   if(u.pathname==='/api/v1/resident/session')return route.fulfill({json:{authenticated:true,role:'resident',storage_acceptance:false}})
   if(u.pathname==='/cloud/resident')return route.fulfill({contentType:'text/html',body:'<p>合成居民畫面</p><script>parent.postMessage({type:"neighbour-service-stage",state:"mounted"},location.origin);parent.postMessage({type:"estate-assistant-ready"},location.origin)</script>'})
-  const files={'/':'deploy/cloud/web/index.html','/cloud/launch-screen.js':'deploy/cloud/web/launch-screen.js','/cloud/launch-screen.css':'deploy/cloud/web/launch-screen.css','/cloud/shell.js':'deploy/cloud/web/shell.js','/cloud/shell.css':'deploy/cloud/web/shell.css','/cloud/cloud-session.js':'airi_overlay/cloud-session.js','/cloud/cloud-frame.js':'airi_overlay/cloud-frame.js'}
+  const files={'/':'deploy/cloud/web/index.html','/cloud/launch-screen.js':'deploy/cloud/web/launch-screen.js','/cloud/launch-screen.css':'deploy/cloud/web/launch-screen.css','/cloud/module-warmup.js':'deploy/cloud/web/module-warmup.js','/cloud/shell.js':'deploy/cloud/web/shell.js','/cloud/shell.css':'deploy/cloud/web/shell.css','/cloud/cloud-session.js':'airi_overlay/cloud-session.js','/cloud/cloud-frame.js':'airi_overlay/cloud-frame.js'}
   if(files[u.pathname])return route.fulfill({contentType:u.pathname.endsWith('.js')?'text/javascript':u.pathname.endsWith('.css')?'text/css':'text/html',body:fs.readFileSync(files[u.pathname])})
   throw Error('Unexpected '+u.pathname)
  })
@@ -26,9 +27,10 @@ async function main(){
   await page.getByText(/仍在核對：語音收音/).waitFor()
   assert.equal(await page.locator('#launchScreen').isVisible(),true)
   await child.evaluate(()=>parent.postMessage({type:'neighbour-readiness',area:'resident',checks:{interface:'ready',runtime:'ready',avatar:'ready',input:'ready'},textReady:true,ready:true},location.origin))
+  await page.locator('#launchScreen[data-state=handoff]').waitFor();assert.equal(await page.locator('#service iframe').getAttribute('inert'),'');assert.ok(await page.locator('#service iframe').evaluate(n=>n.classList.contains('is-revealing')));await page.screenshot({path:'.runtime/portal-launch-20261102/launch/handoff.png'});
   await page.locator('#launchScreen').waitFor({state:'hidden'})
   assert.equal(await page.locator('#service iframe').getAttribute('inert'),null)
-  console.log(JSON.stringify({avatar_alone_does_not_reveal:true,input_pending_keeps_launch:true,all_checks_reveal:true,production_requests:0}))
+  console.log(JSON.stringify({avatar_alone_does_not_reveal:true,input_pending_keeps_launch:true,all_checks_reveal:true,real_frame_handoff_only_after_ready:true,production_requests:0}))
  }finally{await context.close();await browser.close()}
 }
 main().catch(error=>{console.error(error);process.exitCode=1})

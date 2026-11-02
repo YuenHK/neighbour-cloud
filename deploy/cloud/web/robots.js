@@ -1,6 +1,7 @@
 const frame = document.getElementById('robotConsoleFrame')
 const status = document.getElementById('robotConsoleStatus')
 const retry = document.getElementById('retryRobotConsole')
+const boot = document.getElementById('robotBoot')
 let ready = false, timer
 function pause() {
   if (ready) frame.contentWindow?.postMessage({ type: 'neighbour-robot-pause' }, location.origin)
@@ -12,6 +13,9 @@ function connect() {
   retry.hidden = true
   window.dispatchEvent(new Event('cloud-robot-reset'))
   frame.hidden = false
+  frame.inert = true
+  frame.parentElement.classList.add('is-loading')
+  boot.hidden = false
   frame.src = '/cloud/robots'
   timer = setTimeout(() => {
     if (!ready) { status.textContent = '控制台未完成載入，可以重新連接。'; retry.hidden = false }
@@ -24,9 +28,14 @@ function read() {
 retry.addEventListener('click', connect)
 window.addEventListener('message', event => {
   if (event.origin !== location.origin || event.source !== frame.contentWindow) return
+  if (event.data?.type === 'neighbour-robot-stage')
+    status.textContent = '管理登入已核對，正在準備控制畫面…'
   if (event.data?.type === 'neighbour-robot-ready') {
     clearTimeout(timer)
     ready = true
+    frame.inert = false
+    frame.parentElement.classList.remove('is-loading')
+    boot.hidden = true
     status.textContent = '控制台已載入，請選擇機體。'
     retry.hidden = false
     if (location.hash !== '#robots') pause()

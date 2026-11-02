@@ -127,3 +127,24 @@ async def test_every_staff_entry_checks_again_but_polling_and_fast_reload_coales
     await restarted.refresh(minimum_age=60000)
     assert len(calls) == 6  # Persistent guard also works after a process restart.
     assert (await c.snapshot())['check_on_staff_entry']
+
+
+@async_test
+async def test_staff_entry_during_warm_cache_check_is_not_lost(store):
+    for name in NAMES:
+        assert store.claim(name, 1000)
+        store.save(name, [{'title': 'cached'}], 1000)
+    calls = []
+    class Catalogue(SourceCatalogue):
+        async def collect(self, name):
+            calls.append(name)
+            return [{'title': 'fresh'}]
+    c = Catalogue(store, None, now=lambda: 61000)
+    c.schedule()  # No source due at the six-hour threshold.
+    c.schedule(staff_entry=True)
+    assert c.staff_entry_pending
+    while c.tasks:
+        await asyncio.gather(*list(c.tasks))
+        await asyncio.sleep(0)
+    assert sorted(calls) == sorted(NAMES)
+    assert all(row['last_success_ms'] == 61000 for row in store.rows())

@@ -2,6 +2,7 @@
 const frame = document.getElementById('cloudAiriSettings')
 const status = document.getElementById('cloudSettingsStatus')
 const retry = document.getElementById('cloudSettingsRetry')
+const boot = document.getElementById('settingsBoot')
 let timer
 let pending, resolveReady, rejectReady
 function load() {
@@ -9,6 +10,9 @@ function load() {
   status.textContent = '正在載入 AIRI 設定，首次開啟可能需稍等…'
   status.hidden = false
   retry.hidden = true
+  frame.inert = true
+  frame.parentElement.classList.add('is-loading')
+  boot.hidden = false
   window.dispatchEvent(new Event('cloud-settings-reset'))
   frame.src = '/cloud/resident?estate=1&settings=1'
   timer = setTimeout(() => {
@@ -36,6 +40,9 @@ window.addEventListener('message', event => {
     clearTimeout(timer)
     status.hidden = true
     retry.hidden = true
+    frame.inert = false
+    frame.parentElement.classList.remove('is-loading')
+    boot.hidden = true
     resolveReady?.()
   }
   if (event.data?.type === 'estate:settings-size' && Number.isFinite(event.data.height))

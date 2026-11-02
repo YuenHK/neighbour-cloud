@@ -1,7 +1,13 @@
 import { createCloudTransport } from '/cloud/cloud-transport.js'
 import { frameIdentity } from '/cloud/cloud-frame.js'
+import { preloadModules } from '/cloud/module-warmup.js'
 let transport
 try {
+  const scripts = ['console', 'fleet'].map(kind => {
+    const value = document.querySelector(`link[data-robot-script="${kind}"]`)?.getAttribute('href')
+    return { key: kind, path: value && new RegExp(`^/cloud/robot-assets/ep-${kind}-[a-f0-9]{12}\\.js$`).test(value) ? value : `/cloud/robot-assets/ep-${kind}.js` }
+  })
+  void preloadModules(document, scripts)
   const identity = await frameIdentity({ target: window, parent, origin: location.origin,
     onClose() { transport?.clearAuth(); location.replace('/cloud/signed-out') } })
   transport = createCloudTransport({ origin: location.origin, tokenProvider: () => identity })
@@ -12,8 +18,8 @@ try {
     __NEIGHBOUR_CLOUD__: { value: true },
     __NEIGHBOUR_CLOUD_TRANSPORT__: { value: transport },
   })
-  await import('/cloud/robot-assets/ep-console.js')
-  await import('/cloud/robot-assets/ep-fleet.js')
+  parent.postMessage({ type: 'neighbour-robot-stage', state: 'interface' }, location.origin)
+  for (const script of scripts) await import(script.path)
   parent.postMessage({ type: 'neighbour-robot-ready' }, location.origin)
   const body = document.querySelector('.fleet-console')
   if (body) new ResizeObserver(() => {

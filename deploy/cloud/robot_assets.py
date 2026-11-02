@@ -1,4 +1,5 @@
 """Original console program with an authenticated same-origin transport."""
+import hashlib
 import re
 from pathlib import Path
 
@@ -21,4 +22,11 @@ def robot_assets():
         if name == 'ep-fleet.css':
             data += '\n.fleet-console{max-width:none;padding:12px}.fleet-console>.service-heading-row{display:none}\n'
         responses['/cloud/robot-assets/' + name] = (data.encode(), 'text/javascript' if name.endswith('.js') else 'text/css')
+    preloads = []
+    for kind in ('console', 'fleet'):
+        data, mime = responses['/cloud/robot-assets/ep-' + kind + '.js']
+        alias = '/cloud/robot-assets/ep-' + kind + '-' + hashlib.sha256(data).hexdigest()[:12] + '.js'
+        responses[alias] = (data, mime)
+        preloads.append('<link rel="modulepreload" data-robot-script="' + kind + '" href="' + alias + '">')
+    responses['/cloud/robots'] = (page.replace('</head>', ''.join(preloads) + '</head>', 1).encode(), 'text/html')
     return responses

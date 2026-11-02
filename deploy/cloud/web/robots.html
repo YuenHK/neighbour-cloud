@@ -1,6 +1,6 @@
 <section id="panel-robots" role="tabpanel" aria-labelledby="tab-robots" hidden>
   <section class="service-card robot-workspace"><div class="robot-workspace-heading"><div><h2>機械人控制</h2><p id="robotConsoleStatus" role="status">正在準備現場控制台…</p></div><div class="robot-workspace-actions"><button id="retryRobotConsole" type="button" hidden>重新連接</button></div></div>
-    <iframe id="robotConsoleFrame" title="EP 機械人控制台" allow="microphone 'none'; camera 'none'; fullscreen" allowfullscreen referrerpolicy="no-referrer" hidden></iframe>
+    <div class="module-stage"><div id="robotBoot" class="module-boot" hidden aria-hidden="true"><span class="module-boot-mark">鄰</span><strong>正在準備機械人控制台</strong><span class="module-boot-dots"><i></i><i></i><i></i></span></div><iframe id="robotConsoleFrame" title="EP 機械人控制台" allow="microphone 'none'; camera 'none'; fullscreen" allowfullscreen referrerpolicy="no-referrer" hidden></iframe></div>
     <details class="robot-workspace-help"><summary>連線提示</summary><p>沿用管理工作台的登入，現場同街外都在此操作，不用額外 Google 驗證。現場電腦需要開機、同 EP 在同一網絡，並執行現場及遠端連接程式。</p><p>啟動程式不會自行連接、開鏡頭或移動 EP。自動巡查回報同步雲端仍待接通。</p></details>
   </section>
 </section>

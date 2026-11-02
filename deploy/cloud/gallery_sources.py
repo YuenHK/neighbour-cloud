@@ -8,6 +8,7 @@ import asyncio
 import json
 import re
 import sqlite3
+import threading
 import time
 from contextlib import closing
 from html.parser import HTMLParser
@@ -27,6 +28,7 @@ SCHEMA = '''CREATE TABLE cloud_gallery_sources(
 class SourceStore:
     def __init__(self, connect):
         self.connect = connect
+        self.write_lock = threading.RLock()
 
     def initialize(self):
         """Explicit stopped-writer installation only; never called at app boot."""
@@ -52,27 +54,29 @@ class SourceStore:
 
     def claim(self, name, now, minimum_age=TTL):
         assert name in NAMES
-        with closing(self.connect(False)) as db, db:
-            db.execute('BEGIN IMMEDIATE')
-            row = db.execute('SELECT last_attempt_ms FROM cloud_gallery_sources WHERE name=?', (name,)).fetchone()
-            if row is None:
+        # One conditional mutation, without holding a remote transaction across
+        # a SELECT and another network round trip. Serialize our small writes.
+        with self.write_lock, closing(self.connect(False)) as db, db:
+            row = db.execute('UPDATE cloud_gallery_sources SET last_attempt_ms=? '
+                             'WHERE name=? AND (last_attempt_ms=0 OR last_attempt_ms<=?) RETURNING name',
+                             (now, name, now - minimum_age)).fetchone()
+            if row is not None:
+                return True
+            if db.execute('SELECT 1 FROM cloud_gallery_sources WHERE name=?', (name,)).fetchone() is None:
                 raise ValueError('gallery_source_cache_requires_explicit_installation')
-            if row[0] and now - row[0] < minimum_age:
-                return False
-            db.execute('UPDATE cloud_gallery_sources SET last_attempt_ms=? WHERE name=?', (now, name))
-        return True
+        return False
 
     def save(self, name, items, stamp):
         assert name in NAMES and len(items) <= 400
         payload = json.dumps(items, ensure_ascii=False, separators=(',', ':'))
         if len(payload.encode()) > 1024 * 1024:
             raise ValueError('gallery_cache_bound')
-        with closing(self.connect(False)) as db, db:
+        with self.write_lock, closing(self.connect(False)) as db, db:
             db.execute('UPDATE cloud_gallery_sources SET payload=?,last_success_ms=?,error=? WHERE name=?',
                        (payload, stamp, '', name))
 
     def failed(self, name):
-        with closing(self.connect(False)) as db, db:
+        with self.write_lock, closing(self.connect(False)) as db, db:
             db.execute('UPDATE cloud_gallery_sources SET error=? WHERE name=?', ('source_unavailable_previous_list_retained', name))
 
 
@@ -139,11 +143,18 @@ class SourceCatalogue:
         self.closed = False
         self.next_check_ms = 0
         self.next_staff_check_ms = 0
+        self.staff_entry_pending = False
 
     def schedule(self, *, staff_entry=False):
         stamp = self.now()
         next_check = self.next_staff_check_ms if staff_entry else self.next_check_ms
-        if self.closed or self.tasks or stamp < next_check:
+        if self.closed or stamp < next_check:
+            return
+        if self.tasks:
+            # A warm-cache check may be in flight without fetching any source.
+            # Do not lose a simultaneous staff-entry request behind that task.
+            if staff_entry:
+                self.staff_entry_pending = True
             return
         self.next_check_ms = stamp + 60000
         if staff_entry:
@@ -154,6 +165,9 @@ class SourceCatalogue:
             self.tasks.discard(done)
             if not done.cancelled():
                 done.exception()
+            if self.staff_entry_pending and not self.tasks:
+                self.staff_entry_pending = False
+                self.schedule(staff_entry=True)
         task.add_done_callback(finished)
 
     async def close(self):

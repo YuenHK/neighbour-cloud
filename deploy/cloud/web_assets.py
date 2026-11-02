@@ -22,6 +22,7 @@ SHELL = {
     '/cloud/shell.css': (WEB / 'shell.css', 'text/css'),
     '/cloud/launch-screen.js': (WEB / 'launch-screen.js', 'text/javascript'),
     '/cloud/launch-screen.css': (WEB / 'launch-screen.css', 'text/css'),
+    '/cloud/module-warmup.js': (WEB / 'module-warmup.js', 'text/javascript'),
     '/cloud/frame-entry.js': (WEB / 'frame-entry.js', 'text/javascript'),
     '/cloud/admin-entry.js': (WEB / 'admin-entry.js', 'text/javascript'),
     '/cloud/robot-entry.js': (WEB / 'robot-entry.js', 'text/javascript'),
@@ -111,7 +112,14 @@ class CloudWebAssets:
                 entry = re.search(r'name="neighbour-cloud-entry" content="(/assets/[\w-]+\.js)"', resident)
                 preloads = []
                 if entry and entry[1] in self.files:
-                    preloads.append('<link rel="modulepreload" href="' + entry[1] + '">')
+                    preloads.append('<link rel="modulepreload" data-neighbour-warm="services" href="' + entry[1] + '">')
+                settings = next((name for name in self.files if re.fullmatch(r'/assets/cloud-settings-[\w-]+\.js', name)), None)
+                if settings:
+                    preloads.append('<link rel="modulepreload" data-neighbour-warm="settings" href="' + settings + '">')
+                for kind in ('console', 'fleet'):
+                    robot = next(name for name in self.admin.responses if re.fullmatch(r'/cloud/robot-assets/ep-' + kind + r'-[a-f0-9]{12}\.js', name))
+                    key = ' data-neighbour-warm="robots"' if kind == 'console' else ''
+                    preloads.append('<link rel="modulepreload"' + key + ' href="' + robot + '">')
                 for css in re.findall(r'<link rel="stylesheet" crossorigin href="(/assets/[\w-]+\.css)"', resident):
                     if css in self.files:
                         preloads.append('<link rel="preload" as="style" href="' + css + '">')
@@ -125,6 +133,8 @@ class CloudWebAssets:
                 "default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; "
                 "img-src 'self' data: blob:; frame-src 'self'; frame-ancestors 'self'; base-uri 'none'")
             headers['Permissions-Policy'] = 'microphone=(), camera=(), autoplay=(self)'
+            if re.fullmatch(r'/cloud/robot-assets/ep-(?:console|fleet)-[a-f0-9]{12}\.js', path):
+                headers['Cache-Control'] = 'public, max-age=3600, immutable'
             return Response(admin[0], media_type=admin[1], headers=headers)
         if path in ('/cloud/resident', '/cloud/resident/'):
             if storage_acceptance:

@@ -1,6 +1,7 @@
 import { createFrameBroker } from '/cloud/cloud-frame.js'
 import { createCloudSession } from '/cloud/cloud-session.js'
 import { createLaunchScreen } from '/cloud/launch-screen.js'
+import { preloadModules } from '/cloud/module-warmup.js'
 
 const node = id => document.getElementById(id)
 let frame, broker, expire, provider, role
@@ -18,12 +19,20 @@ const launch = createLaunchScreen(document, {
   onContinue() { reveal() },
 })
 launch.start('resident')
+void preloadModules(document, [...document.querySelectorAll('link[data-neighbour-warm]')].map(link => ({
+  key: link.dataset.neighbourWarm, path: new URL(link.href).pathname,
+})), { onState: (key, state) => launch.moduleState(key, state) })
 function reveal() {
-  if (!frame) return
-  frame.classList.remove('is-warming')
-  frame.inert = false
-  frame.removeAttribute('aria-hidden')
-  launch.hide()
+  if (!frame || !frame.classList.contains('is-warming')) return
+  const showing = frame
+  showing.classList.remove('is-warming')
+  showing.classList.add('is-revealing')
+  launch.finish(() => {
+    if (frame !== showing) return
+    showing.classList.remove('is-revealing')
+    showing.inert = false
+    showing.removeAttribute('aria-hidden')
+  })
 }
 window.addEventListener('message', event => {
   if (event.origin !== location.origin || !frame || event.source !== frame.contentWindow) return

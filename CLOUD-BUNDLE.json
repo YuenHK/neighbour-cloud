@@ -391,8 +391,8 @@
     },
     {
       "path": "deploy/cloud/admin_assets.py",
-      "bytes": 7743,
-      "sha256": "6c5f0b829c5cf2f29aa82beab605dd0be708147ace9a9d290facc63885540377"
+      "bytes": 7787,
+      "sha256": "9c4bb485aef10da1492d5eb2916ff213f7a27c4c6713265442ec0210c012034c"
     },
     {
       "path": "deploy/cloud/airi_runtime.py",
@@ -461,8 +461,8 @@
     },
     {
       "path": "deploy/cloud/gallery_sources.py",
-      "bytes": 12896,
-      "sha256": "547a631f5e672011aaf5964f339992b3f7e93e10d6f8173eab8dfe30f2c40851"
+      "bytes": 13685,
+      "sha256": "990d7c0000b11bafa0a88f3b5481297a2abe4b6a584409b59757788d1802874a"
     },
     {
       "path": "deploy/cloud/google_identity.py",
@@ -576,8 +576,8 @@
     },
     {
       "path": "deploy/cloud/robot_assets.py",
-      "bytes": 1445,
-      "sha256": "f7076c33ffb827916122c9d02595e6b57e8ea3bd1d1eff287c53c15c75e1692c"
+      "bytes": 1955,
+      "sha256": "3cb492d4adcc93931e23a62a35871fbe3454cba42608242ed3d9170fc31a852c"
     },
     {
       "path": "deploy/cloud/robot_proxy.py",
@@ -586,8 +586,8 @@
     },
     {
       "path": "deploy/cloud/rollout.py",
-      "bytes": 7120,
-      "sha256": "e5d6fb9f2993caf4358679e4c65ac9ea6cee5a2ef51689422221524691a84ef4"
+      "bytes": 7114,
+      "sha256": "1bba388167295560ff28e2e3cbce3e362c16a7f124baf2f407208f8db52d3290"
     },
     {
       "path": "deploy/cloud/runtime_storage.py",
@@ -656,8 +656,8 @@
     },
     {
       "path": "deploy/cloud/web/admin-entry.js",
-      "bytes": 3238,
-      "sha256": "5adfcf171d3e9d49bb76d57473e52988a1f2204f7ed6da080fc7b10d7c71448a"
+      "bytes": 3603,
+      "sha256": "4706a24d0e7a129b6265d7fc92a2bef34a5afb2895ce23bd5ce6e83fd568d29e"
     },
     {
       "path": "deploy/cloud/web/admin-request.js",
@@ -671,28 +671,38 @@
     },
     {
       "path": "deploy/cloud/web/index.html",
-      "bytes": 6247,
-      "sha256": "901761a4708950fbeccb78462153a04cf8fb14145d7af3f50d61737772aa5ce5"
+      "bytes": 6824,
+      "sha256": "4c114983c9278cd9bcb88f63b7ead37a705d07dc75b51cb8f278b06c677a5773"
     },
     {
       "path": "deploy/cloud/web/launch-screen.css",
-      "bytes": 7202,
-      "sha256": "2b9fb1c57726e0ec3a820bc81ccb1d19b70bea35b01a270ab6bb62e1009adc6c"
+      "bytes": 10697,
+      "sha256": "65c4269747cfe42ced1e22fdbf8b29426dc324be2c803f64acdf67fb5cf90d99"
     },
     {
       "path": "deploy/cloud/web/launch-screen.js",
-      "bytes": 5807,
-      "sha256": "76b58ca9fba610db166cd6acf73161cc36b9e1120a7ffce95578abf1ad380293"
+      "bytes": 7235,
+      "sha256": "3f180f2bec080ddd081a7f449ccd32f182fa05933cbeb4d1c26ec7c6e1ab79f0"
+    },
+    {
+      "path": "deploy/cloud/web/module-loading.css",
+      "bytes": 1338,
+      "sha256": "2866392da3a054378585cbd7bee9d7d30b9d599a6b7a8659ee845b39663becae"
+    },
+    {
+      "path": "deploy/cloud/web/module-warmup.js",
+      "bytes": 1591,
+      "sha256": "66183f5facedc5de68de2a05bbc65ff12aaff5e1bda92151265d5401d0d6b06b"
     },
     {
       "path": "deploy/cloud/web/presentation.html",
-      "bytes": 466,
-      "sha256": "013f0322c57a0d8ba4d62befba75badda9cedbc40c1b208143a0987319c5654e"
+      "bytes": 717,
+      "sha256": "8fac706adf1a456c6e0933752d3fda4afe194d2654b9a6dec475b00dfc318080"
     },
     {
       "path": "deploy/cloud/web/presentation.js",
-      "bytes": 1959,
-      "sha256": "f98e90bd7cd928faf3c72277651f991cac42de2d883d204398dabab837f6a1ee"
+      "bytes": 2207,
+      "sha256": "e1fdcea80e743c6d8f53962c0886b37d076c2b5feaae70219dd1f688459a34e3"
     },
     {
       "path": "deploy/cloud/web/quota-compact.js",
@@ -701,8 +711,8 @@
     },
     {
       "path": "deploy/cloud/web/robot-entry.js",
-      "bytes": 1755,
-      "sha256": "1aa6db57e41a5a9ced8ddc09114eb400bbc0b05b8d35a3f6f1445ab6e129f7cd"
+      "bytes": 2224,
+      "sha256": "9b23370aa9802c52b331bc7f1a846dc60dffcd334d694c965a8e516f74c362e7"
     },
     {
       "path": "deploy/cloud/web/robots.css",
@@ -711,28 +721,28 @@
     },
     {
       "path": "deploy/cloud/web/robots.html",
-      "bytes": 988,
-      "sha256": "d51f12e64a4d36581115e70c3ca890c04a19962499460073ceba143e449356a4"
+      "bytes": 1239,
+      "sha256": "3b4d151e8c7439c133089346739a3400a1ce59cea5fd21c2a1aff77fa7168a44"
     },
     {
       "path": "deploy/cloud/web/robots.js",
-      "bytes": 1836,
-      "sha256": "c96b17dacc5f551c1b6acd1292651dc4930a331a84798a66530f4027f021dc0d"
+      "bytes": 2212,
+      "sha256": "daba9b3421e006f94ad0e0e7a287173316a6685b806fbc0cad5737bd8c9ed483"
     },
     {
       "path": "deploy/cloud/web/shell.css",
-      "bytes": 3454,
-      "sha256": "f490edcebfe5d2179fdb102e58b6db9b95938341ab395a705ad9e913f8795a79"
+      "bytes": 3862,
+      "sha256": "0912e1200b4215d0ec0da0df629314698c85623684b0747a5d3cf96ae94bfc8e"
     },
     {
       "path": "deploy/cloud/web/shell.js",
-      "bytes": 9511,
-      "sha256": "565632b866abb2031d6fe0bf48a23ef989c6454d71f6fea661fd9c60d8589a99"
+      "bytes": 10018,
+      "sha256": "96ef87a8d426a108af2e9bae04fbc2635139a4e6eda4b6a3d23165a141c4d31a"
     },
     {
       "path": "deploy/cloud/web_assets.py",
-      "bytes": 9121,
-      "sha256": "c5670eeca466b035b123c59513027fbeacd92af7f1e263b16a14da33cc17ed54"
+      "bytes": 10070,
+      "sha256": "90f1b481aed91ed81761b074850c8e554dfb01e25080a89a5dfad5f7920c7a49"
     },
     {
       "path": "edge_hub/__init__.py",

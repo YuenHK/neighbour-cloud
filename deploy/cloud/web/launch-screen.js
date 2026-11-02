@@ -9,7 +9,7 @@ export function createLaunchScreen(document, { onRetry, onContinue }) {
   const phases = ['connect', 'interface', 'avatar']
   const titles = ['連接服務', '載入畫面', '準備角色']
   const descriptions = ['同鄰伴服務台接通，準備開始。', '正在載入對話介面同必要資料。', '準備數字人、表情同對話畫面。']
-  let timer, ticker, active = false, area = 'resident', textAvailable = false, index = 0, startedAt = 0
+  let timer, ticker, active = false, area = 'resident', textAvailable = false, index = 0, startedAt = 0, generation = 0
   function stopTimers() { clearTimeout(timer); clearInterval(ticker) }
   function elapsed() {
     const seconds = Math.max(0, Math.floor((performance.now() - startedAt) / 1000))
@@ -43,6 +43,7 @@ export function createLaunchScreen(document, { onRetry, onContinue }) {
   function start(nextArea, value = 'connect') {
     const continuing = active && area === nextArea && value !== 'connect'
     stopTimers()
+    generation++
     area = nextArea
     active = true
     if (!continuing) { index = 0; startedAt = performance.now() }
@@ -66,7 +67,31 @@ export function createLaunchScreen(document, { onRetry, onContinue }) {
       skip.hidden = !textAvailable
     }, Math.max(0, 30000 - (performance.now() - startedAt)))
   }
-  function hide() { stopTimers(); active = false; root.hidden = true; root.setAttribute('aria-busy', 'false') }
+  function hide() { generation++; stopTimers(); active = false; root.hidden = true; root.setAttribute('aria-busy', 'false') }
+  function finish(complete) {
+    if (!active) return
+    const own = ++generation
+    stopTimers(); active = false
+    root.dataset.state = 'handoff'
+    root.setAttribute('aria-busy', 'false')
+    const total = area === 'staff' ? 2 : 3
+    node('launchProgress').setAttribute('aria-valuenow', String(total))
+    node('launchProgress').setAttribute('aria-valuetext', '必要畫面已準備好，正在開啟')
+    node('launchComplete').textContent = `已完成 ${total} / ${total} 個階段`
+    text.textContent = '準備好，一齊開始！'
+    steps.filter(step => !step.hidden).forEach(step => {
+      step.dataset.state = 'done'
+      step.querySelector('.launch-step-number').textContent = '✓'
+      step.querySelector('.launch-step-state').textContent = '已完成'
+      step.removeAttribute('aria-current')
+    })
+    const reduced = document.defaultView.matchMedia('(prefers-reduced-motion: reduce)').matches
+    timer = setTimeout(() => {
+      if (own !== generation) return
+      root.hidden = true
+      complete()
+    }, reduced ? 0 : 560)
+  }
   function fail(message) {
     stopTimers()
     active = true
@@ -96,7 +121,12 @@ export function createLaunchScreen(document, { onRetry, onContinue }) {
       node('launchNote').textContent = '若瀏覽器未允許收音，可先用文字進入，再按咪高峰啟用。此檢查不會試用 API 或扣除 AI 額度。'
     }
   }
-  return { start, phase, hide, fail, checks, staffSettings() {
+  return { start, phase, hide, finish, fail, checks, moduleState(key, state) {
+    const chip = document.querySelector(`[data-warm-chip="${key}"]`)
+    if (!chip) return
+    chip.dataset.state = state
+    chip.querySelector('.warm-state').textContent = state === 'loaded' ? '程式已預載' : state === 'failed' ? '開啟時再載入' : '預載程式中'
+  }, staffSettings() {
     if (!active || area !== 'staff') return
     phase('interface')
     node('launchDetail').textContent = '正在預備 AIRI 原版設定、模型匯入器及各設定入口；完成後才進入管理工作台。'

@@ -70,7 +70,7 @@ class CloudAdminAssets:
         self.responses['/cloud/admin/robots.js'] = ((WEB / 'robots.js').read_bytes(), 'text/javascript')
         self.responses['/assets/service-shell.css'] = (self.responses['/assets/service-shell.css'][0] +
             b'\n.service-tabs{grid-template-columns:repeat(7,minmax(0,1fr))}@media(max-width:680px){.service-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}}\n' +
-            (WEB / 'robots.css').read_bytes(), 'text/css')
+            (WEB / 'robots.css').read_bytes() + (WEB / 'module-loading.css').read_bytes(), 'text/css')
         for name in SCRIPTS + (('governance.js',) if governance else ()):
             script = (static / name).read_text(encoding='utf-8')
             if name == 'estate-management.js':

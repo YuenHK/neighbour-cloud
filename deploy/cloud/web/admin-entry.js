@@ -1,5 +1,6 @@
 import { createCloudTransport } from '/cloud/cloud-transport.js'
 import { createFrameBroker, frameIdentity } from '/cloud/cloud-frame.js'
+import { preloadModules } from '/cloud/module-warmup.js'
 
 let transport
 try {
@@ -34,12 +35,17 @@ try {
   window.addEventListener('pagehide', () => broker.close(), { once: true })
   window.addEventListener('pagehide', () => robotBroker.close(), { once: true })
   window.addEventListener('pagehide', () => transport.clearAuth(), { once: true })
-  for (const name of ['photo-privacy', 'latest-photo', 'api-quota', 'work-sections', 'workspace-navigation',
-    'runtime', 'service-workbench', 'estate-management', 'presentation', 'robots']) await import(`/cloud/admin/${name}.js`)
-  if (data.governance_supported === true) await import('/cloud/admin/governance.js')
+  const modules = ['photo-privacy', 'latest-photo', 'api-quota', 'work-sections', 'workspace-navigation',
+    'runtime', 'service-workbench', 'estate-management', 'presentation', 'robots',
+    ...(data.governance_supported === true ? ['governance'] : [])]
+  void preloadModules(document, modules.map(name => ({ key: name, path: `/cloud/admin/${name}.js` })))
   const { prepareSettings } = await import('/cloud/admin/presentation.js')
   parent.postMessage({ type: 'neighbour-service-stage', area: 'staff', state: 'settings' }, location.origin)
-  await prepareSettings()
+  // Start the editor iframe while workbench code is downloading. Execute the
+  // original modules in their original order; preloading never executes them.
+  await Promise.all([prepareSettings(), (async () => {
+    for (const name of modules) await import(`/cloud/admin/${name}.js`)
+  })()])
   parent.postMessage({ type: 'neighbour-service-ready', area: 'staff' }, location.origin)
 }
 catch {
