@@ -83,5 +83,22 @@ export function createLaunchScreen(document, { onRetry, onContinue }) {
   }
   retry.addEventListener('click', onRetry)
   skip.addEventListener('click', () => { if (active && textAvailable) onContinue() })
-  return { start, phase, hide, fail, textReady() { textAvailable = true; if (!retry.hidden) skip.hidden = false } }
+  function checks(value) {
+    if (!active || area !== 'resident') return
+    textAvailable = value.textReady === true
+    const labels = { interface: '對話介面', runtime: '對話及曉曼設定', avatar: '角色及背景', input: '語音收音' }
+    const pending = Object.entries(labels).filter(([key]) => value.checks?.[key] !== 'ready')
+    phase('avatar')
+    node('launchDetail').textContent = pending.length ? `仍在核對：${pending.map(([key, label]) => `${label}${['action', 'failed'].includes(value.checks?.[key]) ? '（需要處理）' : ''}`).join('、')}。` : '必要畫面及輸入已準備好。'
+    if (pending.some(([key]) => ['action', 'failed'].includes(value.checks?.[key]))) {
+      retry.hidden = false
+      skip.hidden = !textAvailable
+      node('launchNote').textContent = '若瀏覽器未允許收音，可先用文字進入，再按咪高峰啟用。此檢查不會試用 API 或扣除 AI 額度。'
+    }
+  }
+  return { start, phase, hide, fail, checks, staffSettings() {
+    if (!active || area !== 'staff') return
+    phase('interface')
+    node('launchDetail').textContent = '正在預備 AIRI 原版設定、模型匯入器及各設定入口；完成後才進入管理工作台。'
+  }, textReady() { textAvailable = true; if (!retry.hidden) skip.hidden = false } }
 }

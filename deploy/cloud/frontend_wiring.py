@@ -22,6 +22,16 @@ def resident_page(source):
     return source.replace(old, new, 1)
 
 
+def cloud_resident_layout(source):
+    layout = '<div relative flex="~ 1 row gap-y-0 gap-x-2 <md:col">'
+    replaced = '<div class="estate-resident-layout" relative flex="~ 1 row gap-y-0 gap-x-2 <md:col">'
+    if replaced in source:
+        return source
+    if source.count(layout) != 1:
+        raise ValueError('cloud_resident_layout_anchor_requires_review')
+    return source.replace(layout, replaced, 1)
+
+
 def cloud_main(source):
     """Keep the cloud resident build on its sole supported Vue route.
 
@@ -83,6 +93,14 @@ def cloud_scene(source):
         "    parent.postMessage({ type: 'neighbour-service-stage', state }, location.origin)\n"
         "  if (state === 'mounted') window.dispatchEvent(new Event('resident-avatar-ready'))\n"
         "}, { immediate: true })").replace('\n', newline), 1)
+    late = 'watch([stageModelRenderer, () => props.paused]'
+    if source.count(late) != 1:
+        raise ValueError('cloud_vrm_readiness_anchor_requires_review')
+    source = source.replace(late, (
+        "watch(componentState, (state) => {\n"
+        "  if (state === 'mounted' && stageModelRenderer.value !== 'live2d')\n"
+        "    window.dispatchEvent(new CustomEvent('resident-render-state', { detail: { state: 'ready' } }))\n"
+        "}, { immediate: true })\n\n").replace('\n', newline) + late, 1)
     return source
 
 
@@ -93,7 +111,33 @@ def cloud_model_gestures(source):
     if source.count(anchor) != 1 or source.count(binding) != 1:
         raise ValueError('cloud_model_gesture_anchor_requires_review')
     source = source.replace(anchor, "import { residentGesturePlugin } from '../../../cloud-gestures'\n" + anchor, 1)
-    return source.replace(binding, binding + "\n    motionManagerUpdate.register(residentGesturePlugin(), 'final')", 1)
+    source = source.replace(binding, binding + "\n    motionManagerUpdate.register(residentGesturePlugin(), 'final')", 1)
+    capture = "  try {\n    if (isUnmounted) {"
+    setup = '    await Live2DFactory.setupLive2DModel(live2DModel, { url: modelSrcRef.value, id: props.modelId }, { autoInteract: false })'
+    if source.count(capture) != 1 or source.count(setup) != 1:
+        raise ValueError('cloud_model_generation_anchor_requires_review')
+    source = source.replace(capture, "  const loadingModelId = props.modelId\n  const loadingModelSource = modelSrcRef.value\n" + capture, 1)
+    source = source.replace(setup, (
+        '    await Live2DFactory.setupLive2DModel(live2DModel, { url: loadingModelSource, id: loadingModelId }, { autoInteract: false })\n'
+        '    if (isUnmounted || !pixiApp.value?.stage || loadingModelId !== props.modelId || loadingModelSource !== modelSrcRef.value) {\n'
+        '      live2DModel.destroy()\n      return\n    }'), 1)
+    # These returns precede the try/finally that normally releases the mutex.
+    for old in (
+        "      componentState.value = 'mounted'\n      return\n    }\n  }\n\n  // REVIEW:",
+        "    componentState.value = 'mounted'\n    return\n  }\n\n  const loadingModelId",
+    ):
+        if source.count(old) != 1:
+            raise ValueError('cloud_model_early_release_anchor_requires_review')
+        source = source.replace(old, old.replace('return', 'modelLoadMutex.release()\n' + ('      ' if old.startswith('      ') else '    ') + 'return', 1), 1)
+    for old, new in (
+        ("  componentState.value = 'loading'", "  componentState.value = 'loading'\n  window.dispatchEvent(new CustomEvent('resident-render-state', { detail: { state: 'pending', modelId: props.modelId } }))"),
+        ("    emits('modelLoaded')", "    emits('modelLoaded')\n    window.dispatchEvent(new CustomEvent('resident-render-state', { detail: { state: 'ready', modelId: loadingModelId } }))"),
+        ("    console.error('[Live2D] Failed to load model:', error)", "    if (loadingModelId === props.modelId && loadingModelSource === modelSrcRef.value)\n      window.dispatchEvent(new CustomEvent('resident-render-state', { detail: { state: 'failed', modelId: loadingModelId } }))\n    console.error('[Live2D] Failed to load model:', error)"),
+    ):
+        if source.count(old) != 1:
+            raise ValueError('cloud_live2d_readiness_anchor_requires_review')
+        source = source.replace(old, new, 1)
+    return source
 
 
 def cloud_input_recovery(source):
@@ -108,9 +152,16 @@ def cloud_input_recovery(source):
     new = """const inputRecovery = new InputRecovery()
 const inputRecovering = ref(false)
 const inputStatus = ref('starting')
+watch(enabled, value => {
+  inputStatus.value = value ? 'starting' : 'paused'
+}, { flush: 'sync' })
+watch(inputStatus, state => {
+  if (cloudResidentInput)
+    window.dispatchEvent(new CustomEvent('resident-input-state', { detail: state }))
+}, { immediate: true })
 let inputFrameAt = 0
 watch(vadFrames, () => {
-  if (enabled.value && stream.value) {
+  if (enabled.value && stream.value?.getAudioTracks().some(track => track.readyState === 'live')) {
     inputFrameAt = Date.now()
     inputStatus.value = 'ready'
   }
@@ -242,6 +293,26 @@ def cloud_audio_device(source):
         source = source.replace("import { defineStore } from 'pinia'",
                                 "import { refManualReset } from '@vueuse/core'\nimport { defineStore } from 'pinia'")
     return source
+
+
+def cloud_audio_default(source):
+    """Keep an already captured default mic when device enumeration completes.
+
+    Explicit device changes still use native autoSwitch. Ended/unplugged inputs
+    still fall through to native selection and recovery.
+    """
+    old = '  watch(audioInputs, () => {\n    selectAvailableAudioInput()\n  })'
+    new = ('  watch(audioInputs, () => {\n'
+           "    if (!selectedAudioInput.value && stream.value?.getAudioTracks().some(track => track.readyState === 'live'))\n"
+           '      return\n'
+           '    selectAvailableAudioInput()\n  })')
+    newline = '\r\n' if '\r\n' in source else '\n'
+    normal = source.replace('\r\n', '\n')
+    if new in normal:
+        return source
+    if normal.count(old) != 1:
+        raise ValueError('cloud_default_microphone_anchor_requires_review')
+    return normal.replace(old, new, 1).replace('\n', newline)
 
 
 def cloud_web_search_tool(source):

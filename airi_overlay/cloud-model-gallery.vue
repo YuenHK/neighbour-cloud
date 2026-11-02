@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { errorMessageFrom } from '@moeru/std'
 import { DisplayModelFormat, useDisplayModelsStore } from '@proj-airi/stage-ui/stores/display-models'
 import { useSettings } from '@proj-airi/stage-ui/stores/settings'
 import { ref } from 'vue'
@@ -12,6 +13,28 @@ const display = useDisplayModelsStore()
 const settings = useSettings()
 const accepted = ref(false)
 const busy = ref('')
+const source = ref('all')
+const query = ref('')
+const searching = ref(false)
+const searchStatus = ref('搜尋官方及社群作者頁；未核對授權的模型不會自動轉存或發佈。')
+const results = ref<{ title: string, url: string, description: string }[]>([])
+async function search() {
+  if (searching.value)
+    return
+  searching.value = true
+  searchStatus.value = '正在搜尋作者平台…'
+  try {
+    const transport = Reflect.get(globalThis, '__NEIGHBOUR_CLOUD_TRANSPORT__')
+    const response = await transport.fetch('/api/v1/service-desk/model-gallery/search', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ source: source.value, query: query.value }), signal: AbortSignal.timeout(20000) })
+    const value = await response.json()
+    if (!response.ok)
+      throw new Error(typeof value.detail === 'string' ? value.detail : '暫時未能搜尋；可直接使用下方平台入口。')
+    results.value = value.items
+    searchStatus.value = value.items.length ? `${value.cached ? '已載入快取' : '搜尋完成'}。請先到作者頁核對免費版本、AI 用途及轉發權限，再用下方 AIRI 原版 ZIP 匯入。` : '未找到合適結果；可更換關鍵字或直接瀏覽平台。'
+  }
+  catch (error) { searchStatus.value = errorMessageFrom(error) ?? '搜尋暫未完成。' }
+  finally { searching.value = false }
+}
 async function importModel(item: typeof gallery.models[number]) {
   if (!accepted.value || busy.value)
     return
@@ -37,32 +60,80 @@ async function importModel(item: typeof gallery.models[number]) {
 <template>
   <section class="cloud-model-gallery" :aria-busy="!!busy">
     <h2>免費模型圖庫</h2>
-    <p>直接匯入 Live2D 官方模型作預覽，毋須另外找檔案。只下載模型，不使用 AI API 額度。</p>
+    <p>共 {{ gallery.models.length }} 款已核對的官方及社群模型可直接匯入預覽。匯入不使用 AI API 額度，按「儲存至平台」才發佈。</p>
     <div class="gallery-grid">
       <article v-for="item in gallery.models" :key="item.id">
         <img :src="item.image" :alt="item.name" loading="lazy" width="320" height="180">
         <h3>{{ item.name }}</h3>
         <p>{{ item.description }} · {{ (item.bytes / 1024 / 1024).toFixed(1) }} MB</p>
         <p class="gallery-terms">
-          {{ item.individual_terms }} <a :href="item.source" target="_blank" rel="noopener noreferrer">官方介紹</a>
+          {{ item.individual_terms }} <a :href="item.source" target="_blank" rel="noopener noreferrer">作者／來源</a> · <a :href="item.license" target="_blank" rel="noopener noreferrer">授權</a> · <a :href="item.terms" target="_blank" rel="noopener noreferrer">使用條款</a>
         </p>
         <button type="button" :disabled="!accepted || !!busy" @click="importModel(item)">
           {{ busy === item.id ? '正在匯入…' : '一鍵匯入預覽' }}
         </button>
       </article>
     </div>
-    <label class="gallery-agreement"><input v-model="accepted" type="checkbox">我已閱讀並同意 <a :href="gallery.models[0].license" target="_blank" rel="noopener noreferrer">免費素材授權</a>及<a :href="gallery.models[0].terms" target="_blank" rel="noopener noreferrer">角色使用條款</a>，並確認本次用途適用。</label>
+    <label class="gallery-agreement"><input v-model="accepted" type="checkbox">我已閱讀所選模型的來源、授權及使用條款，並確認本次用途適用。</label>
     <p class="gallery-terms">
       官方免費素材有用途限制；機構正式對外使用前，請按條款核對適用資格。其他創作者的模型仍可用 AIRI 原有匯入功能加入。
     </p>
     <details>
       <summary>來源及版權</summary>
       <p>{{ gallery.notice }}</p>
-      <p>來源：Live2D / CubismWebSamples；只整理為 AIRI 可匯入的 ZIP，移除附帶語音連結以保留曉曼，沒有改動角色圖像。</p>
+      <p>官方來源：Live2D / CubismWebSamples，移除附帶語音連結以保留曉曼。社群來源：puercatena / kenkipi（CC0），整理執行檔案並將 8K 貼圖縮為 4K，保留角色與授權。</p>
+    </details>
+    <details class="gallery-community">
+      <summary>其他官方示例（{{ gallery.official_catalogue.length }} 款）</summary>
+      <p class="gallery-terms">
+        官方清單的其他項目亦保留入口。未完成兼容核對或條款限制轉發的項目，不會顯示一鍵轉存。這不表示作者沒有提供下載。
+      </p>
+      <div class="gallery-results">
+        <article v-for="item in gallery.official_catalogue" :key="item.source">
+          <h3>{{ item.name }}</h3><p>{{ item.reason }}</p><a :href="item.source" target="_blank" rel="noopener noreferrer">前往官方示例頁</a>
+        </article>
+      </div>
+    </details>
+    <details class="gallery-community" open>
+      <summary>更多社群模型</summary>
+      <form class="gallery-search" @submit.prevent="search">
+        <label>平台<select v-model="source" aria-label="圖庫平台"><option value="all">全部</option><option value="live2d">Live2D 官方</option><option value="vtubernook">VTuber Nook</option><option value="aplaybox">模之屋 AplayBox</option><option value="booth">BOOTH</option><option value="itch">itch.io</option><option value="nizima">nizima</option></select></label>
+        <label>模型關鍵字<input v-model="query" maxlength="80" placeholder="例如：cat、鄰家女孩、chibi"></label>
+        <button type="submit" :disabled="searching">
+          {{ searching ? '搜尋中…' : '搜尋社群圖庫' }}
+        </button>
+      </form>
+      <p class="gallery-terms">
+        只在按搜尋時使用既有免費 Tavily：基本搜尋每次 1 credit，相同搜尋 6 小時內用快取；另設每月最多 30 次圖庫搜尋預留，用完即停。只會搜尋你輸入的模型關鍵字，不附居民對話。
+      </p>
+      <p role="status">
+        {{ searchStatus }}
+      </p>
+      <div class="gallery-results">
+        <article v-for="item in results" :key="item.url">
+          <h3>{{ item.title }}</h3><p>{{ item.description }}</p><a :href="item.url" target="_blank" rel="noopener noreferrer">到作者頁核對及下載</a>
+        </article>
+      </div>
+      <p class="gallery-platforms">
+        <a href="https://booth.pm/en/search/Live2D?max_price=0" target="_blank" rel="noopener noreferrer">BOOTH 免費模型</a><a href="https://itch.io/game-assets/free/tag-live2d" target="_blank" rel="noopener noreferrer">itch.io 免費模型</a><a href="https://nizima.com/" target="_blank" rel="noopener noreferrer">nizima 圖庫</a>
+      </p>
+      <p class="gallery-terms">
+        免費下載不一定准許用於 AI 數字人或轉發檔案；部分只有 PSD／編輯原稿。平台共享需要可執行的 model3.json、moc3 及貼圖 ZIP，不會替你購買或繞過作者下載限制。
+      </p>
+      <p class="gallery-platforms">
+        <a href="https://www.live2d.com/zh-CHS/learn/sample/" target="_blank" rel="noopener noreferrer">Live2D 官方示例</a><a href="https://vtuber-nook.com/category/live2d-3d-pngtuber-models/" target="_blank" rel="noopener noreferrer">VTuber Nook 綜合圖庫</a><a href="https://www.aplaybox.com/model/model" target="_blank" rel="noopener noreferrer">模之屋 AplayBox</a>
+      </p>
+      <p class="gallery-terms">
+        VTuber Nook 同時收錄 Live2D、VRM 及 PNGtuber；模之屋亦有 PMX／MMD。PNGtuber 圖組或 PMX 不可直接當作 Live2D 模型使用。
+      </p>
     </details>
   </section>
 </template>
 
 <style>
 .cloud-model-gallery{display:grid;gap:14px;margin-bottom:20px;padding:20px;border:1px solid #d5e5da;border-radius:16px;background:#f3f8f4}.cloud-model-gallery h2{font-size:22px}.cloud-model-gallery p{line-height:1.6}.gallery-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.gallery-grid article{display:grid;gap:10px;padding:14px;border:1px solid #d5e5da;border-radius:12px;background:white}.gallery-grid img{width:100%;height:180px;object-fit:contain;background:#f5f8f5;border-radius:8px}.gallery-grid h3{font-weight:600}.gallery-grid button{align-self:end;padding:12px;border-radius:10px;background:#236c60;color:white}.gallery-grid button:disabled{opacity:.5;cursor:default}.cloud-model-gallery a{text-decoration:underline;text-underline-offset:3px}.gallery-agreement{display:flex;gap:7px;align-items:center;flex-wrap:wrap}.gallery-agreement input{width:18px;height:18px}.gallery-terms{font-size:14px;color:#5c776a}@media(max-width:700px){.gallery-grid{grid-template-columns:1fr}.gallery-grid img{height:160px}}
+</style>
+
+<style>
+.gallery-grid{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}.gallery-grid img{height:150px}.gallery-community summary{font-weight:600;cursor:pointer}.gallery-search{display:flex;align-items:end;flex-wrap:wrap;gap:12px;margin-block:16px}.gallery-search label{display:grid;gap:6px}.gallery-search input,.gallery-search select{padding:10px;border:1px solid #cadbd3;border-radius:8px;max-width:100%}.gallery-search button{padding:12px;border-radius:10px;background:#236c60;color:white}.gallery-results{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}.gallery-results article{padding:14px;background:white;border:1px solid #d5e5da;border-radius:12px}.gallery-results h3{font-weight:600}.gallery-results p{font-size:14px}.gallery-platforms{display:flex;flex-wrap:wrap;gap:16px;margin-block:16px}
 </style>

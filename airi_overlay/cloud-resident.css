@@ -1,0 +1,13 @@
+/* Resident presentation stays soft even when the device prefers dark mode.
+   AIRI's own colour-wave background and selected scene remain mounted. */
+body[data-cloud-view="resident"][data-estate-kiosk] { --resident-ambient:#edf7f2; --resident-wave:#d6eee2; background:var(--resident-ambient); }
+body[data-cloud-view="resident"] .customized-background { min-height:100dvh; background:var(--resident-ambient); isolation:isolate; }
+body[data-cloud-view="resident"] .cross-background-container { background:transparent!important; }
+body[data-cloud-view="resident"] .customized-background:has(.cross-background-container)::before { content:""; position:absolute; inset:-10%; pointer-events:none; background:radial-gradient(circle at 12% 23%,#bde6d68c 0 10%,transparent 10.2%),radial-gradient(circle at 73% 78%,#bfe2ef70 0 14%,transparent 14.2%),radial-gradient(circle at 80% 18%,#ffffffaa 0 8%,transparent 8.2%),radial-gradient(circle at 34% 90%,#fff2cd70 0 9%,transparent 9.2%); animation:resident-bubbles 24s ease-in-out infinite alternate; }
+body[data-cloud-view="resident"] .customized-background .wave { background:var(--resident-wave)!important; opacity:.65; }
+body[data-cloud-view="resident"] .estate-resident-layout { display:grid!important; grid-template-columns:minmax(0,1.4fr) minmax(360px,600px); width:min(100%,1920px); height:100%; min-height:0; padding:16px 24px; margin-inline:auto; gap:24px; }
+body[data-cloud-view="resident"][data-estate-kiosk] .estate-avatar-canvas { background:transparent!important; border-radius:0; flex:initial; width:100%; max-width:none; min-width:0; height:100%; }
+body[data-cloud-view="resident"] .resident-assistant-panel { position:relative; inset:auto; width:100%; min-width:0; height:100%; margin:0; }
+@keyframes resident-bubbles { from{transform:translate(-1%,-1%) scale(1)} to{transform:translate(2%,1%) scale(1.06)} }
+@media(max-width:760px) { body[data-cloud-view="resident"] .estate-resident-layout { display:flex!important; flex-direction:column; padding:8px; gap:8px; } body[data-cloud-view="resident"][data-estate-kiosk] .estate-avatar-canvas { flex:0 0 31%; min-height:160px; height:31%; } body[data-cloud-view="resident"] .resident-assistant-panel { flex:1; min-height:0; height:auto; padding:16px; } }
+@media(prefers-reduced-motion:reduce) { body[data-cloud-view="resident"] .customized-background::before,body[data-cloud-view="resident"] .customized-background .wave { animation:none!important; } }

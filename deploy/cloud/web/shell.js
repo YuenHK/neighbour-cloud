@@ -27,12 +27,15 @@ function reveal() {
 }
 window.addEventListener('message', event => {
   if (event.origin !== location.origin || !frame || event.source !== frame.contentWindow) return
-  if (event.data?.type === 'estate-assistant-ready' && currentArea === 'resident') launch.textReady()
-  if (event.data?.type === 'neighbour-service-stage' && currentArea === 'resident') {
-    if (event.data.state === 'mounted') reveal()
-    else launch.phase('avatar')
+  if (event.data?.type === 'neighbour-readiness' && currentArea === 'resident') {
+    launch.checks(event.data)
+    if (event.data.ready === true) reveal()
   }
-  if (event.data?.type === 'neighbour-service-ready' && event.data.area === currentArea) reveal()
+  if (event.data?.type === 'neighbour-service-stage' && currentArea === 'resident') {
+    launch.phase('avatar')
+  }
+  if (event.data?.type === 'neighbour-service-stage' && currentArea === 'staff') launch.staffSettings()
+  if (event.data?.type === 'neighbour-service-ready' && event.data.area === 'staff' && currentArea === 'staff') reveal()
   if (event.data?.type === 'neighbour-service-error') launch.fail('畫面未能完成載入，可以重新連接。原有資料仍然保留。')
 })
 function beginNavigation() {

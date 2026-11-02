@@ -1,8 +1,9 @@
-// Load the real AIRI editor only after staff authentication and tab selection.
+// Warm the real AIRI editor after staff authentication, before entry is revealed.
 const frame = document.getElementById('cloudAiriSettings')
 const status = document.getElementById('cloudSettingsStatus')
 const retry = document.getElementById('cloudSettingsRetry')
 let timer
+let pending, resolveReady, rejectReady
 function load() {
   clearTimeout(timer)
   status.textContent = '正在載入 AIRI 設定，首次開啟可能需稍等…'
@@ -13,12 +14,20 @@ function load() {
   timer = setTimeout(() => {
     status.textContent = 'AIRI 設定仍未完成載入，可重新載入；平台原有設定不會被清除。'
     retry.hidden = false
+    rejectReady?.(new Error('airi_settings_startup_timeout'))
   }, 45000)
 }
-retry.addEventListener('click', load)
+export function prepareSettings() {
+  if (!pending) {
+    pending = new Promise((resolve, reject) => { resolveReady = resolve; rejectReady = reject })
+    load()
+  }
+  return pending
+}
+retry.addEventListener('click', () => { pending = undefined; void prepareSettings().catch(() => {}) })
 function read() {
   if (['#avatar', '#settings'].includes(location.hash) && !frame.getAttribute('src'))
-    load()
+    void prepareSettings().catch(() => {})
 }
 window.addEventListener('hashchange', read)
 window.addEventListener('message', event => {
@@ -27,6 +36,7 @@ window.addEventListener('message', event => {
     clearTimeout(timer)
     status.hidden = true
     retry.hidden = true
+    resolveReady?.()
   }
   if (event.data?.type === 'estate:settings-size' && Number.isFinite(event.data.height))
     frame.style.height = `${Math.max(600, Math.min(20000, event.data.height))}px`

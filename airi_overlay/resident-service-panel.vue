@@ -437,6 +437,7 @@ onMounted(() => {
   window.addEventListener('focus', checkIdle)
   document.addEventListener('visibilitychange', checkIdle)
   acknowledgeReady()
+  window.dispatchEvent(new Event('resident-conversation-ready'))
 })
 onUnmounted(() => {
   window.removeEventListener('estate:shared-model-unavailable', sharedModelUnavailable)

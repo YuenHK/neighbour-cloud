@@ -1,7 +1,7 @@
 // Fresh synthetic origin; no production, microphone, playback, model or EP calls.
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path')
 const {chromium}=require(path.resolve('.experiments/optimization-lab-20261029/node/node_modules/playwright'))
-const origin='https://launch.neighbour.test',area=path.resolve('.runtime/launch-refresh-20261102')
+const origin='https://launch.neighbour.test',area=path.resolve('.runtime/wide-readiness-gallery-20261102/launch')
 async function main(){
  fs.mkdirSync(area,{recursive:true})
  const browser=await chromium.launch({headless:true,executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',args:['--mute-audio']})
@@ -38,7 +38,8 @@ async function main(){
   await page.screenshot({path:path.join(area,'launch-mobile.png')})
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false)
   const buttons=await page.locator('#launchRetry').boundingBox();assert.ok(buttons.x>=0&&buttons.x+buttons.width<=390)
-  await page.evaluate(()=>launch.textReady())
+  await page.evaluate(()=>launch.checks({textReady:true,checks:{interface:'ready',runtime:'ready',avatar:'ready',input:'action'}}))
+  assert.match(await page.locator('#launchDetail').textContent(),/語音收音（需要處理）/)
   await page.getByRole('button',{name:'先用文字開始',exact:true}).click()
   assert.equal(await page.evaluate(()=>continued),true)
   await page.evaluate(()=>launch.fail('合成載入失敗'))

@@ -32,6 +32,9 @@ try {
   for (const name of ['photo-privacy', 'latest-photo', 'api-quota', 'work-sections', 'workspace-navigation',
     'runtime', 'service-workbench', 'estate-management', 'presentation', 'robots']) await import(`/cloud/admin/${name}.js`)
   if (data.governance_supported === true) await import('/cloud/admin/governance.js')
+  const { prepareSettings } = await import('/cloud/admin/presentation.js')
+  parent.postMessage({ type: 'neighbour-service-stage', area: 'staff', state: 'settings' }, location.origin)
+  await prepareSettings()
   parent.postMessage({ type: 'neighbour-service-ready', area: 'staff' }, location.origin)
 }
 catch {

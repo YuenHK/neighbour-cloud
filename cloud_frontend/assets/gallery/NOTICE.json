@@ -50,5 +50,34 @@
       "individual_terms": "遵守官方角色使用條款。",
       "removed_voice_links": 4
     }
-  ]
+  ],
+  "community": {
+    "creator": "puercatena / kenkipi",
+    "licence": "CC0 1.0",
+    "licence_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "sources": [
+      "https://puercatena.itch.io/radium-model",
+      "https://puercatena.itch.io/puer-in-catenis"
+    ],
+    "modifications": "Runtime-only subset, texture 8192 to 4096 with original aspect/UV, existing ParamMouthOpenY linked to native LipSync group. Included individual licence/source in each ZIP."
+  },
+  "additional_official": {
+    "models": [
+      "Hiyori Momose",
+      "Niziiro Mao"
+    ],
+    "repository": "Live2D/CubismWebSamples",
+    "commit": "b1de66b0b1f1cb881d95fb6158622aeb6a2827bd",
+    "all_git_blob_sha1_verified": true,
+    "design_and_textures_unchanged": true,
+    "sound_links_removed_to_keep_HiuMaan": true,
+    "terms": "https://www.live2d.com/en/learn/sample/model-terms/",
+    "excluded_collaboration_downloads": [
+      "Jin Natori",
+      "Tsumiki Harugasa"
+    ],
+    "pending_viewport_review": [
+      "Rice Glassfield"
+    ]
+  }
 }

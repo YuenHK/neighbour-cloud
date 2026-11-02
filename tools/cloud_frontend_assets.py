@@ -53,7 +53,7 @@ def package(source, output, verification):
         elif relative.parts[0] == 'assets' and path.suffix in SUFFIX_TYPES:
             if path.suffix == '.wasm' and not path.name.startswith('ort-wasm-'):
                 continue
-            gallery = relative.as_posix() in {'assets/gallery/mark.zip', 'assets/gallery/wanko.zip', 'assets/gallery/haru.zip'}
+            gallery = relative.as_posix() in {'assets/gallery/mark.zip', 'assets/gallery/wanko.zip', 'assets/gallery/haru.zip', 'assets/gallery/radium.zip', 'assets/gallery/puer.zip', 'assets/gallery/hiyori.zip', 'assets/gallery/mao.zip'}
             if path.suffix == '.zip' and not gallery and not path.name.startswith(('hiyori_free_zh-', 'hiyori_pro_zh-')):
                 continue
             selected.append(path)

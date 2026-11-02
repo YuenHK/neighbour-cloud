@@ -77,6 +77,17 @@ function forwardWheel(event: WheelEvent) {
 }
 
 onMounted(async () => {
+  // Resolve the native top-level editor chunks without mounting hardware or
+  // provider editors. Later tab visits reuse the same module promises.
+  const routes = router.getRoutes().filter(item => item.meta?.settingsEntry || ['/settings', '/settings/system/general', '/settings/system/color-scheme'].includes(item.path))
+  const loaders = routes.flatMap(item => Object.values(item.components ?? {}).filter(value => typeof value === 'function'))
+  let cursor = 0
+  await Promise.all(Array.from({ length: Math.min(3, loaders.length) }, async () => {
+    while (cursor < loaders.length) {
+      const loader = loaders[cursor++] as () => Promise<unknown>
+      await loader()
+    }
+  }))
   await display.initialize()
   await display.loadDisplayModelsFromIndexedDB()
   await settings.initializeStageModel()

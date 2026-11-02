@@ -7,8 +7,10 @@ import { defineAsyncComponent, h, onMounted, onUnmounted } from 'vue'
 import { RouterView } from 'vue-router'
 
 import '../../../packages/stage-ui-live2d/src/cloud-csp'
+import './modules/cloud-resident.css'
 import { installCloudAiriRuntime, prepareCloudAiriRuntime, publishedRuntime } from './modules/cloud-airi-runtime'
 import { installSharedModelLoader, loadSharedModel, sharedModelPattern } from './modules/cloud-shared-models'
+import { createReadiness } from './modules/cloud-readiness.js'
 
 // Resident startup must not download the staff card/model editor modules.
 const CloudSettings = defineAsyncComponent({ loader: () => import('./modules/cloud-settings.vue'),
@@ -20,6 +22,23 @@ const settings = useSettings()
 const audio = useSettingsAudioDevice()
 const card = useAiriCardStore()
 const settingsMode = new URLSearchParams(location.search).get('settings') === '1'
+const startup = createReadiness((value: object) => parent.postMessage(value, location.origin))
+function avatarReady(event: Event) {
+  startup.update('avatar', (event as CustomEvent).detail.state)
+}
+function interfaceReady() {
+  startup.update('interface', 'ready')
+}
+function inputReady(event: Event) {
+  const state = (event as CustomEvent).detail
+  const intentionallyPaused = publishedRuntime().hearing.microphone_enabled === false
+  startup.update('input', state === 'ready' || (state === 'paused' && intentionallyPaused) ? 'ready' : ['failed', 'paused', 'waiting'].includes(state) ? 'action' : 'pending')
+}
+if (!settingsMode) {
+  window.addEventListener('resident-render-state', avatarReady)
+  window.addEventListener('resident-conversation-ready', interfaceReady)
+  window.addEventListener('resident-input-state', inputReady)
+}
 let modelTimer: ReturnType<typeof setInterval> | undefined
 let refreshingModel = false
 async function refreshPublishedModel() {
@@ -51,8 +70,19 @@ async function refreshPublishedModel() {
 onMounted(async () => {
   if (settingsMode)
     return
+  // Initialize alongside the child's shared request, before network waits.
+  // A live stream already belongs to this frame and must not be reopened.
+  const audioStartup = audio.stream?.getAudioTracks().some(track => track.readyState === 'live') ? undefined : audio.initialize()
+  try {
+  const transport = Reflect.get(globalThis, '__NEIGHBOUR_CLOUD_TRANSPORT__')
+  const response = await transport.fetch('/api/v1/resident/readiness', { signal: AbortSignal.timeout(12000) })
+  if (!response.ok)
+    throw new Error('runtime_configuration_unavailable')
+  const services = await response.json()
+  if (services.configured?.['cloudflare-workers-ai'] !== true || services.configured?.['microsoft-speech'] !== true
+    || (publishedRuntime().hearing.microphone_enabled && services.configured?.['openai-compatible-audio-transcription'] !== true))
+    throw new Error('runtime_configuration_incomplete')
   await display.loadDisplayModelsFromIndexedDB()
-  const audioStartup = audio.initialize()
   await settings.initializeStageModel()
   card.initialize()
   const presentation = Reflect.get(globalThis, '__NEIGHBOUR_PRESENTATION__')
@@ -68,10 +98,17 @@ onMounted(async () => {
   }
   installCloudAiriRuntime()
   await audioStartup
+  startup.update('runtime', 'ready')
   modelTimer = setInterval(refreshPublishedModel, 60000)
   window.addEventListener('estate:resident-session-ended', refreshPublishedModel)
+  }
+  catch { startup.update('runtime', 'failed') }
 })
 onUnmounted(() => {
+  startup.close()
+  window.removeEventListener('resident-render-state', avatarReady)
+  window.removeEventListener('resident-conversation-ready', interfaceReady)
+  window.removeEventListener('resident-input-state', inputReady)
   clearInterval(modelTimer)
   window.removeEventListener('estate:resident-session-ended', refreshPublishedModel)
   audio.enabled = false

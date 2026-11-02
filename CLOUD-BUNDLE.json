@@ -161,8 +161,8 @@
     },
     {
       "path": "airi_overlay/cloud-app.vue",
-      "bytes": 4215,
-      "sha256": "0e428d6b89f5cc84917dd24acdc06eaf61247da1ab2cc9831fd1530be322133d"
+      "bytes": 6358,
+      "sha256": "e112c10860e14c653114fcfc6ab1755764c0d2e59863d8a0de658de51158d491"
     },
     {
       "path": "airi_overlay/cloud-frame.js",
@@ -176,13 +176,13 @@
     },
     {
       "path": "airi_overlay/cloud-model-gallery.json",
-      "bytes": 2578,
-      "sha256": "c2d42074179a5d83d702172dc3eace523078c2d086606bb655f5faf24874b452"
+      "bytes": 10307,
+      "sha256": "d69ff50ab1f74524cc330a1c936267ff100181ec42354adef8106367ac90aa10"
     },
     {
       "path": "airi_overlay/cloud-model-gallery.vue",
-      "bytes": 4470,
-      "sha256": "e9f6daa0df9a3494357bc8360a83da27266f1e4e6c27b2e42432477a1335d49a"
+      "bytes": 10263,
+      "sha256": "be46de7e63c9786287040985fb6048656c2461fb96176a693bbf40e30535cc74"
     },
     {
       "path": "airi_overlay/cloud-model-library.vue",
@@ -201,8 +201,18 @@
     },
     {
       "path": "airi_overlay/cloud-profile-bootstrap.ts",
-      "bytes": 3263,
-      "sha256": "8218bbea818a86482bcb5d7f7b503d3e952ce308ba8cedf01f0c1a3db61ba4de"
+      "bytes": 3880,
+      "sha256": "2986f8b37586a55d120fd69f237d90590d74d0607aa3685db40f1cc79f31dc34"
+    },
+    {
+      "path": "airi_overlay/cloud-readiness.js",
+      "bytes": 745,
+      "sha256": "6f66da06f5af50ce2f00f0c80c44ef87cddb7966699485ac1bec932090893c8c"
+    },
+    {
+      "path": "airi_overlay/cloud-resident.css",
+      "bytes": 2455,
+      "sha256": "93c7559e723e28bd9f4648e47a9aee77f89fe40602acdc8279f8340ccd1a2f08"
     },
     {
       "path": "airi_overlay/cloud-session.js",
@@ -211,8 +221,8 @@
     },
     {
       "path": "airi_overlay/cloud-settings.vue",
-      "bytes": 13973,
-      "sha256": "15605590864f67a77dbdf501578ca0e8172792aaa2f4fde1fe6c3061b2f0b7ee"
+      "bytes": 14671,
+      "sha256": "d31c10f615ba614cda61257cbc4ead2b2365a58a9aa7a62744d71958bdd31783"
     },
     {
       "path": "airi_overlay/cloud-shared-models.ts",
@@ -316,8 +326,8 @@
     },
     {
       "path": "airi_overlay/resident-service-panel.vue",
-      "bytes": 25821,
-      "sha256": "3eaf6dbd374c26e01b960c64b3cc1159b1f5d31aabb9571519fe72b005227f8a"
+      "bytes": 25887,
+      "sha256": "c977a3cbd5936b54945463397939adf4408fd2f1a182c54024399575d5f11f59"
     },
     {
       "path": "airi_overlay/resident-session.js",
@@ -436,8 +446,8 @@
     },
     {
       "path": "deploy/cloud/frontend_wiring.py",
-      "bytes": 14374,
-      "sha256": "7de282a51ab59cf0ebb9a67589429c92a559019e186d8eecb3bcbc706a1de4d0"
+      "bytes": 18884,
+      "sha256": "9b297610bfe312437b4b641d5af4d3b97eb2553aea579dc11615c3486c7fa870"
     },
     {
       "path": "deploy/cloud/google_identity.py",
@@ -451,8 +461,8 @@
     },
     {
       "path": "deploy/cloud/http_app.py",
-      "bytes": 25716,
-      "sha256": "6f4cd235d5319800e72d99dcf9a495e96d7d87d43d5ba857ea5fa2b1d041fd82"
+      "bytes": 26462,
+      "sha256": "322e51e47ad8566d10e8e481f308fd41185032c240422c10355c84af2a148bd0"
     },
     {
       "path": "deploy/cloud/libsql_connection.py",
@@ -495,6 +505,11 @@
       "sha256": "55e0cf33b94dd47d8c96cd4312b7e31212c9060160c735fce89614223719ae7a"
     },
     {
+      "path": "deploy/cloud/model_discovery.py",
+      "bytes": 7137,
+      "sha256": "dda9a8ec2276e3f831f9252654f617fdbe5a577cf6e4f8519542b209b98f8d90"
+    },
+    {
       "path": "deploy/cloud/native_adapters.py",
       "bytes": 7901,
       "sha256": "8f7006c65e44531fb3af9a23df0c889bb771cd9cd176ede20ea764c44e838e2b"
@@ -521,8 +536,8 @@
     },
     {
       "path": "deploy/cloud/quota_api.py",
-      "bytes": 8920,
-      "sha256": "61415510261cb0ef93a18afdc0c4df41e8ca08a5acdd11ead19f99106e5f51b6"
+      "bytes": 9183,
+      "sha256": "aebed8a7e12cb81d8ab93cc4f34a2aea6cf0cca8d3570fe96ec7aa947f4c37fe"
     },
     {
       "path": "deploy/cloud/release_envelope.py",
@@ -556,8 +571,8 @@
     },
     {
       "path": "deploy/cloud/rollout.py",
-      "bytes": 6961,
-      "sha256": "30b6b3ed4250c33c66b9edfd4b80fe4f1d001e0cfc1a43f47e22fbf1cdf64782"
+      "bytes": 7121,
+      "sha256": "6ee1796afa058d1477e65fa0083938f3410d05017c4a56c823d217921d74c0c6"
     },
     {
       "path": "deploy/cloud/runtime_storage.py",
@@ -626,8 +641,8 @@
     },
     {
       "path": "deploy/cloud/web/admin-entry.js",
-      "bytes": 2716,
-      "sha256": "3f11ce17e7e784005bad5af443b6f73bc1739525a4357c001996cfae833bfd46"
+      "bytes": 2926,
+      "sha256": "4e03b5960bf4c743794883106475829094503da0b46ddbf526087888b8412b62"
     },
     {
       "path": "deploy/cloud/web/admin-request.js",
@@ -651,8 +666,8 @@
     },
     {
       "path": "deploy/cloud/web/launch-screen.js",
-      "bytes": 4614,
-      "sha256": "551182b68c0b0728da17e60cae1280636bff6d9e1bd20846c0d91ecb8cdcd380"
+      "bytes": 5807,
+      "sha256": "76b58ca9fba610db166cd6acf73161cc36b9e1120a7ffce95578abf1ad380293"
     },
     {
       "path": "deploy/cloud/web/presentation.html",
@@ -661,8 +676,8 @@
     },
     {
       "path": "deploy/cloud/web/presentation.js",
-      "bytes": 1552,
-      "sha256": "25f4a04632cc261a040c9c52448a9ce50ab6a8f0c8183aabaa12b74bd51ea1c7"
+      "bytes": 1959,
+      "sha256": "f98e90bd7cd928faf3c72277651f991cac42de2d883d204398dabab837f6a1ee"
     },
     {
       "path": "deploy/cloud/web/quota-compact.js",
@@ -696,8 +711,8 @@
     },
     {
       "path": "deploy/cloud/web/shell.js",
-      "bytes": 9380,
-      "sha256": "23257519dc52460a1bc14c3a6d88d102e4df3063f53babc298a390b5d597ccda"
+      "bytes": 9511,
+      "sha256": "565632b866abb2031d6fe0bf48a23ef989c6454d71f6fea661fd9c60d8589a99"
     },
     {
       "path": "deploy/cloud/web_assets.py",
@@ -766,8 +781,8 @@
     },
     {
       "path": "edge_hub/cloud_allowance.py",
-      "bytes": 4326,
-      "sha256": "89b02e345dcec031c809b1d4026295aba10e9c6afa9897afa640370c10e7de0a"
+      "bytes": 4377,
+      "sha256": "28243b11f7556eb640fde13b74ecaf55433ea041c90665be6360c0a5880d2608"
     },
     {
       "path": "edge_hub/cloud_credentials.py",
@@ -1431,8 +1446,8 @@
     },
     {
       "path": "tools/cloud_frontend_assets.py",
-      "bytes": 5064,
-      "sha256": "5db05310b23067ef65e687c7fbc8d7a202f2aee9a2f554e7086ad4111c3043c8"
+      "bytes": 5175,
+      "sha256": "af463f8f28abd8371b329c48333abe4354284722665543da2c4764ac6df42cae"
     },
     {
       "path": "tools/cloud_preflight.py",

@@ -14,6 +14,7 @@ from pathlib import Path
 
 # Headroom below advertised F0 allowances. Groq limits vary by model/account.
 LIMITS = {
+    "model_gallery_search_credits": ("month", 30),
     "patrol_cloud_checks": ("day", 20),
     "patrol_cloud_neuron_reservations": ("day", 2000),
     "cloudflare_gemma_neuron_reservations": ("day", 8000),

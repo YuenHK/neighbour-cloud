@@ -49,6 +49,181 @@
       "terms": "https://www.live2d.com/en/learn/sample/model-terms/",
       "individual_terms": "遵守官方角色使用條款。",
       "removed_voice_links": 4
+    },
+    {
+      "id": "radium",
+      "name": "Radium Holly",
+      "description": "創作者 CC0 社群角色 · 4K 輕量版",
+      "archive": "/assets/gallery/radium.zip",
+      "image": "/assets/gallery/radium.webp",
+      "bytes": 2204168,
+      "sha256": "e22589bcc6ed853e9f585538ab6d4454cdb8bc94544267aa81013add5cda49bb",
+      "source": "https://puercatena.itch.io/radium-model",
+      "license": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "terms": "https://puercatena.itch.io/radium-model",
+      "individual_terms": "puercatena / kenkipi · CC0；已保留來源及授權。",
+      "community": true
+    },
+    {
+      "id": "puer",
+      "name": "Puer in catenis",
+      "description": "創作者 CC0 社群角色 · 4K 輕量版",
+      "archive": "/assets/gallery/puer.zip",
+      "image": "/assets/gallery/puer.webp",
+      "bytes": 3187789,
+      "sha256": "b6f200d3ef6875611b07f2b0d0bb5fb0246f2b72780e3e38f0ce3f3b56ca0824",
+      "source": "https://puercatena.itch.io/puer-in-catenis",
+      "license": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "terms": "https://puercatena.itch.io/puer-in-catenis",
+      "individual_terms": "puercatena / kenkipi · CC0；已保留來源及授權。",
+      "community": true
+    },
+    {
+      "id": "hiyori",
+      "name": "Hiyori Momose · Live2D 官方",
+      "description": "官方原創角色 · 可執行模型",
+      "source": "https://www.live2d.com/en/learn/sample/momose-hiyori/",
+      "archive": "/assets/gallery/hiyori.zip",
+      "image": "/assets/gallery/hiyori.webp",
+      "bytes": 4478151,
+      "sha256": "8584af6c6ec834a8bac48076511e36b59b6f8f7545fb649ff8d55859c8d5666d",
+      "copyright": "Live2D Inc.",
+      "license": "https://www.live2d.com/eula/live2d-free-material-license-agreement_en.html",
+      "terms": "https://www.live2d.com/en/learn/sample/model-terms/",
+      "individual_terms": "不可更改角色設計。",
+      "removed_voice_links": 0
+    },
+    {
+      "id": "mao",
+      "name": "Niziiro Mao · Live2D 官方",
+      "description": "官方原創角色 · 可執行模型",
+      "source": "https://www.live2d.com/en/learn/sample/niziiro-mao/",
+      "archive": "/assets/gallery/mao.zip",
+      "image": "/assets/gallery/mao.webp",
+      "bytes": 3530551,
+      "sha256": "7a4baaad0ea68f12984b0c04bef2093789cfb8dbf1be0b42c5e3d9611077438c",
+      "copyright": "Live2D Inc.",
+      "license": "https://www.live2d.com/eula/live2d-free-material-license-agreement_en.html",
+      "terms": "https://www.live2d.com/en/learn/sample/model-terms/",
+      "individual_terms": "遵守官方原創角色使用條款。",
+      "removed_voice_links": 0
+    }
+  ],
+  "official_catalogue": [
+    {
+      "name": "ずんだもん",
+      "source": "https://www.live2d.com/en/learn/sample/zundamon/",
+      "reason": "本次未完成可執行格式及渲染器兼容驗收；可前往官方查看。"
+    },
+    {
+      "name": "Ren Foster",
+      "source": "https://www.live2d.com/en/learn/sample/ren-foster/",
+      "reason": "本次未完成可執行格式及渲染器兼容驗收；可前往官方查看。"
+    },
+    {
+      "name": "Sample for Parameter Controller",
+      "source": "https://www.live2d.com/en/learn/sample/param-ctrl/",
+      "reason": "本次未完成可執行格式及渲染器兼容驗收；可前往官方查看。"
+    },
+    {
+      "name": "Kei",
+      "source": "https://www.live2d.com/en/learn/sample/kei/",
+      "reason": "本次未完成可執行格式及渲染器兼容驗收；可前往官方查看。"
+    },
+    {
+      "name": "Hatsune Miku",
+      "source": "https://www.live2d.com/en/learn/sample/hatsune-miku/",
+      "reason": "第三方角色，須另核對權利人的使用規則。"
+    },
+    {
+      "name": "Jin Natori",
+      "source": "https://www.live2d.com/en/learn/sample/natori-jin/",
+      "reason": "聯名角色條款禁止轉發檔案；只提供官方入口。"
+    },
+    {
+      "name": "Miara",
+      "source": "https://www.live2d.com/en/learn/sample/miara/",
+      "reason": "本次未完成可執行格式及渲染器兼容驗收；可前往官方查看。"
+    },
+    {
+      "name": "Tororo & Hijiki",
+      "source": "https://www.live2d.com/en/learn/sample/tororo-hijiki/",
+      "reason": "本次未完成可執行格式及渲染器兼容驗收；可前往官方查看。"
+    },
+    {
+      "name": "Mark-kun (video version)",
+      "source": "https://www.live2d.com/en/learn/sample/mark-video/",
+      "reason": "本次未完成可執行格式及渲染器兼容驗收；可前往官方查看。"
+    },
+    {
+      "name": "Hiyori Momose (video version)",
+      "source": "https://www.live2d.com/en/learn/sample/momose-hiyori-video/",
+      "reason": "本次未完成可執行格式及渲染器兼容驗收；可前往官方查看。"
+    },
+    {
+      "name": "Simple model",
+      "source": "https://www.live2d.com/en/learn/sample/simple-model/",
+      "reason": "本次未完成可執行格式及渲染器兼容驗收；可前往官方查看。"
+    },
+    {
+      "name": "Epsilon",
+      "source": "https://www.live2d.com/en/learn/sample/epsilon/",
+      "reason": "本次未完成可執行格式及渲染器兼容驗收；可前往官方查看。"
+    },
+    {
+      "name": "Haru",
+      "source": "https://www.live2d.com/en/learn/sample/haru/",
+      "reason": "本次未完成可執行格式及渲染器兼容驗收；可前往官方查看。"
+    },
+    {
+      "name": "Chitose",
+      "source": "https://www.live2d.com/en/learn/sample/chitose/",
+      "reason": "本次未完成可執行格式及渲染器兼容驗收；可前往官方查看。"
+    },
+    {
+      "name": "Shizuku",
+      "source": "https://www.live2d.com/en/learn/sample/shizuku/",
+      "reason": "本次未完成可執行格式及渲染器兼容驗收；可前往官方查看。"
+    },
+    {
+      "name": "Hibiki",
+      "source": "https://www.live2d.com/en/learn/sample/hibiki/",
+      "reason": "本次未完成可執行格式及渲染器兼容驗收；可前往官方查看。"
+    },
+    {
+      "name": "Koharu & Haruto",
+      "source": "https://www.live2d.com/en/learn/sample/koharu-haruto/",
+      "reason": "本次未完成可執行格式及渲染器兼容驗收；可前往官方查看。"
+    },
+    {
+      "name": "[Collaboration character] Tsumiki Harugasa",
+      "source": "https://www.live2d.com/en/learn/sample/tsumiki-harugasa/",
+      "reason": "聯名角色條款禁止轉發檔案；只提供官方入口。"
+    },
+    {
+      "name": "Unity-chan",
+      "source": "https://www.live2d.com/en/learn/sample/unity-chan/",
+      "reason": "第三方角色，須另核對權利人的使用規則。"
+    },
+    {
+      "name": "Izumi",
+      "source": "https://www.live2d.com/en/learn/sample/izumi/",
+      "reason": "本次未完成可執行格式及渲染器兼容驗收；可前往官方查看。"
+    },
+    {
+      "name": "Gantzert & Felixander",
+      "source": "https://www.live2d.com/en/learn/sample/gantzert-felixander/",
+      "reason": "本次未完成可執行格式及渲染器兼容驗收；可前往官方查看。"
+    },
+    {
+      "name": "Nito",
+      "source": "https://www.live2d.com/en/learn/sample/nito/",
+      "reason": "本次未完成可執行格式及渲染器兼容驗收；可前往官方查看。"
+    },
+    {
+      "name": "Rice Glassfield",
+      "source": "https://www.live2d.com/en/learn/sample/rice-glassfield/",
+      "reason": "模型可載入，但服務台初始構圖未達驗收；暫只提供官方入口。"
     }
   ]
 }

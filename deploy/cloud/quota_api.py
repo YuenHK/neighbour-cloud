@@ -108,7 +108,7 @@ def search_rows(snapshot):
                 'unit': 'credits', 'reset_at': None}
     row = {'id': 'tavily', 'platform': 'Tavily', 'service': '網上搜尋', 'active': True,
            'provider': provider, 'guard': None,
-           'purpose': '居民詢問最新或屋苑資料未涵蓋的公開資訊時搜尋資料。',
+           'purpose': '居民詢問最新或屋苑資料未涵蓋的公開資訊，以及職員主動搜尋社群模型作者頁；圖庫搜尋設每月 30 次獨立預留，相同搜尋用快取。',
            'note': '直接讀官方 usage API；更新失敗只標示上次記錄，不推算最新餘額。',
            'reset_label': '官方每月 1 號重設；未提供時區及精確時刻。'}
     rows = [row]

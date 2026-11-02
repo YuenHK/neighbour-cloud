@@ -218,3 +218,19 @@ def test_lifespan_always_closes_stores_even_if_identity_cleanup_fails(seeded, ke
     finally:
         services.close()
         asyncio.run(client.aclose())
+
+
+def test_readiness_checks_owned_configuration_without_provider_requests(api, monkeypatch):
+    from deploy.cloud import airi_runtime
+    checked = []
+    def catalog():
+        checked.append(True)
+        return {'configured': {'cloudflare-workers-ai': True, 'microsoft-speech': True}}
+    monkeypatch.setattr(airi_runtime, 'catalog', catalog)
+    path = '/api/v1/resident/readiness'
+    assert api.client.get(path).status_code == 401
+    response = api.client.get(path, headers=api.resident)
+    assert response.status_code == 200
+    assert response.json()['provider_requests'] == 0
+    assert response.json()['site_hardware'] is False
+    assert checked == [True] and not api.calls

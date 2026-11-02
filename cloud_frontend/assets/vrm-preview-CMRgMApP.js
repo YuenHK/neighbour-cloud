@@ -1,0 +1,1 @@
+import{t as e}from"./vrm-preview-YNAu0DmS.js";export{e as loadVrmModelPreview};

@@ -1,6 +1,11 @@
 import pytest
 
-from deploy.cloud.frontend_wiring import cloud_audio_device, cloud_main, resident_page
+from deploy.cloud.frontend_wiring import (
+    cloud_audio_default,
+    cloud_audio_device,
+    cloud_main,
+    resident_page,
+)
 
 
 @pytest.mark.parametrize('newline', ['\n', '\r\n'])
@@ -20,6 +25,16 @@ def test_cloud_branch_preserves_native_audio_and_original_line_endings(newline):
 def test_changed_or_ambiguous_vendor_source_requires_review():
     with pytest.raises(ValueError):
         resident_page('different upstream entry')
+
+
+def test_default_device_enumeration_keeps_live_capture_but_retains_explicit_switch():
+    source = "  watch(audioInputs, () => {\n    selectAvailableAudioInput()\n  })"
+    result = cloud_audio_default(source)
+    assert "!selectedAudioInput.value && stream.value?.getAudioTracks().some(track => track.readyState === 'live')" in result
+    assert result.index('return') < result.index('selectAvailableAudioInput()')
+    assert cloud_audio_default(result) == result
+    with pytest.raises(ValueError):
+        cloud_audio_default('upstream changed')
 
 
 def test_cloud_mic_enable_is_local_to_one_frame_not_shared_with_staff_or_next_tab():

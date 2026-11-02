@@ -1,0 +1,2 @@
+import{T as e,Z as t}from"./vue.runtime.esm-bundler-BalvS9Cy.js";import{t as n}from"./_plugin-vue_export-helper-BPRVag0c.js";var r={};function i(n,r){return t(),e(`div`,null,` Settings `)}var a=n(r,[[`render`,i]]);export{a as default};
+//# sourceMappingURL=settings-DPRF48R0.js.map

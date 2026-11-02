@@ -37,9 +37,10 @@ export async function loadLocalProfile() {
           || /^cloud-live2d-[a-f0-9]{64}$/.test(model))
           localStorage.setItem('settings/stage/model', model)
         const colours = { mint: '#e5f3ec', sky: '#e7f1f8', warm: '#f6eee2' }
-        const style = document.createElement('style')
-        style.textContent = `.estate-avatar-canvas{background:${colours[value.background as keyof typeof colours]};border-radius:18px}`
-        document.head.append(style)
+        // Published colour wins over the resident stylesheet's default even
+        // on another device with a different OS colour scheme.
+        document.body.style.setProperty('--resident-ambient', colours[value.background as keyof typeof colours])
+        document.body.style.setProperty('--resident-wave', colours[value.background as keyof typeof colours])
       }
     }
   }
@@ -50,11 +51,23 @@ export async function loadLocalProfile() {
   }
   document.body.classList.add('service-theme')
   document.body.dataset.estateKiosk = 'true'
+  document.body.dataset.cloudView = settingsMode ? 'settings' : 'resident'
   document.title = settingsMode ? '鄰伴 · AIRI 設定' : '鄰伴 · 居民服務台'
   const theme = document.createElement('link')
   theme.rel = 'stylesheet'
   theme.href = '/estate-theme.css'
-  document.head.append(theme)
+  await new Promise<void>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('cloud_theme_not_loaded')), 12000)
+    theme.onload = () => {
+      clearTimeout(timer)
+      resolve()
+    }
+    theme.onerror = () => {
+      clearTimeout(timer)
+      reject(new Error('cloud_theme_not_loaded'))
+    }
+    document.head.append(theme)
+  })
   // Only presentation preferences persist on this cloud origin. Conversation,
   // Google identity and residents' contact details never go into this profile.
   if (!localStorage.getItem('settings/stage/model'))

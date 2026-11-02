@@ -29,6 +29,7 @@ from deploy.cloud.google_identity import (
     InvalidIdentity,
 )
 from deploy.cloud.maintenance import CloudMaintenance
+from deploy.cloud.model_discovery import ModelDiscovery, discovery_router
 from deploy.cloud.photo_api import PHOTO_PATH, photo_router
 from deploy.cloud.presentation import PUBLIC_PATH as PRESENTATION_PUBLIC_PATH
 from deploy.cloud.presentation import STAFF_PATH as PRESENTATION_STAFF_PATH
@@ -268,12 +269,13 @@ def create_app(services, verifier, *, origin, model_client=None, voice_client=No
             cleanup.push_async_callback(app.state.robot_client.aclose)
             cleanup.push_async_callback(app.state.resident_transcription.close)
             cleanup.push_async_callback(app.state.avatar_work.close)
+            cleanup.push_async_callback(app.state.model_discovery.close)
             if maintenance is not None:
                 maintenance.scheduled = True
 
                 def pending_work():
                     return [item['task'] for item in app.state.resident_transcription.entries.values()
-                            if not item['task'].done()] + list(services.residents.search_pending.values()) + list(app.state.avatar_work.pending)
+                            if not item['task'].done()] + list(services.residents.search_pending.values()) + list(app.state.avatar_work.pending) + list(app.state.model_discovery.tasks)
 
                 async def run_maintenance():
                     while not maintenance.gate.stopping:
@@ -408,6 +410,15 @@ def create_app(services, verifier, *, origin, model_client=None, voice_client=No
             result['governance_supported'] = True
         return result
 
+    @app.get('/api/v1/resident/readiness')
+    def resident_readiness():
+        if current_principal() is None:
+            raise HTTPException(401)
+        from deploy.cloud.airi_runtime import catalog
+        result = catalog()
+        return {'configured': result['configured'], 'check': 'configuration_only',
+                'provider_requests': 0, 'site_hardware': False}
+
     async def strict_completion(payload, *, prompt, context='', client=None, model=GEMMA_MODEL):
         if model != GEMMA_MODEL:
             raise CloudUnavailable('fixed_gemma_only')
@@ -440,6 +451,8 @@ def create_app(services, verifier, *, origin, model_client=None, voice_client=No
     app.include_router(robot_router(presentation, require_staff, lambda: app.state.robot_client))
     app.state.quotas = CloudQuotas(lambda: app.state.quota_client)
     app.include_router(quota_router(require_staff, app.state.quotas))
+    app.state.model_discovery = ModelDiscovery(app.state.quotas, lambda: app.state.quota_client)
+    app.include_router(discovery_router(require_staff, app.state.model_discovery))
 
     if maintenance is not None:
         @app.get('/api/v1/governance/audit')
