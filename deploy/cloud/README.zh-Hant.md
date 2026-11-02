@@ -1,3 +1,7 @@
+# 2026-11-02 AIRI 統一設定已部署
+
+原網址、Free Singapore 單實例保持；runtime `328be95e84535275b7e61686c492eb02b133a0d2`／deploy `dep-dbk09tajnfac7397k3rg`。保留原版九入口、移除「雲端服務」，現有 Gemma、曉曼 F0、Whisper、Tavily 及長短期記憶接回 AIRI 原版模組及同一平台儲存流程。預設行為不變，偏好沿既有 JSON／revision 保存，沒有 DDL、搬資料或清用量。frontend35 建置、隔離原版頁儲存重開／無聲試聽／居民三輪流程、真 HTTPS SHA 及職員只讀服務核對通過。8 個案、短號、原設定、controls、MB842 及 33 期歷史 quota 保留。新 barrier5 核實舊程序退出、唯一新實例及 90 秒等待後才放行，不能重用批准。詳見 ../../docs/airi-settings-authority-2026-11-02.md 。匯入檔案及硬件／瀏覽器專用偏好仍為裝置範圍。未開真人咪、播放、呼叫正式供應商或操作 EP；文件更新不另部署。
+
 # 2026-11-02 啟動畫面、數字人動作及內嵌控制台
 
 已部署並核對原網址，runtime `0b0d053c63a4a7a1cf102daf2123dfff1a390a57`／deploy `dep-dbjtv0142hec73e2fq1g`。frontend28 lint／typecheck／build、原生檔 byte 還原、隔離瀏覽器與真 HTTPS 程式／資料核對通過。8 個案、短號、controls、設定、MB842、33 期歷史額度及六份 EP 記錄保留。完整記錄見 ../../docs/ui-and-avatar-polish-2026-11-02.md 。此文件更新不需再次部署。機械人沿用平台管理登入，不另經 Google；雲端只轉送固定現場端點，原 EP 停止／租約及故障保護保留。Live2D 新增短暫點頭、側頭回應，不改保存姿勢或口型，不增加模型請求。啟動畫面由真實載入階段驅動；Free 主機在 HTML 送出前的冷啟動仍可能需等待。Gemma＋曉曼及資料／免費限制不變。
