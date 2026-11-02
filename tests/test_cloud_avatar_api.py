@@ -46,6 +46,7 @@ def test_upload_then_publish_then_independent_resident_fetch_and_rollback(models
     assert client.get(catalog, headers=staff).json()['items'][0]['id'] == identity
     assert client.get(download, headers=resident).status_code == 403
     assert client.get(download, headers=staff).content == content
+
     assert client.get(download).status_code == 401
     settings = client.get('/api/v1/service-desk/presentation', headers=staff).json()
     settings['expected_revision'] = settings.pop('revision')
@@ -73,3 +74,14 @@ def test_invalid_archive_or_hash_does_not_publish_or_remove_existing_model(model
         assert result.status_code == 422
     assert client.get(prefix, headers=staff).json()['items'] == []
     assert client.get('/api/v1/service-desk/presentation', headers=staff).json() == original
+
+
+def test_source_catalogue_is_staff_only_and_missing_cache_keeps_conversation_configuration(models_api):
+    client, staff, resident = models_api
+    path = '/api/v1/service-desk/model-gallery/catalogue'
+    before = client.get('/api/v1/service-desk/presentation', headers=staff).json()
+    assert client.get(path).status_code == 401
+    assert client.get(path, headers=resident).status_code == 403
+    result = client.get(path, headers=staff)
+    assert result.status_code == 200 and result.json()['cache_unavailable']
+    assert client.get('/api/v1/service-desk/presentation', headers=staff).json() == before

@@ -42,6 +42,8 @@ def package(source, output, verification):
     if len(entry) != 1 or len(sdk) != 1 or not css:
         raise ValueError('cloud_build_entry_requires_review')
     selected = []
+    catalogue = json.loads((Path(__file__).resolve().parents[1] / 'airi_overlay/cloud-model-gallery.json').read_text(encoding='utf-8'))
+    gallery_paths = {item['archive'].lstrip('/') for item in catalogue['models']}
     for path in source.rglob('*'):
         if not path.is_file():
             continue
@@ -53,7 +55,7 @@ def package(source, output, verification):
         elif relative.parts[0] == 'assets' and path.suffix in SUFFIX_TYPES:
             if path.suffix == '.wasm' and not path.name.startswith('ort-wasm-'):
                 continue
-            gallery = relative.as_posix() in {'assets/gallery/mark.zip', 'assets/gallery/wanko.zip', 'assets/gallery/haru.zip', 'assets/gallery/radium.zip', 'assets/gallery/puer.zip', 'assets/gallery/hiyori.zip', 'assets/gallery/mao.zip'}
+            gallery = relative.as_posix() in gallery_paths
             if path.suffix == '.zip' and not gallery and not path.name.startswith(('hiyori_free_zh-', 'hiyori_pro_zh-')):
                 continue
             selected.append(path)

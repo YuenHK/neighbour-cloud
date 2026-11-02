@@ -76,7 +76,7 @@ class CloudWebAssets:
                     raise ValueError('cloud_assets_digest_mismatch')
             seen.add(name)
             total += item['bytes']
-            if total > 200 * 1024 * 1024:
+            if total > 256 * 1024 * 1024:
                 raise ValueError('cloud_assets_too_large')
             if name == 'resident.html':
                 self.resident = path

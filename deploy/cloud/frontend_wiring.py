@@ -110,7 +110,11 @@ def cloud_model_gestures(source):
     binding = "    motionManagerUpdate.register(useMotionUpdatePluginLipSync(mouthOpenSize, nowSpeaking), 'final')"
     if source.count(anchor) != 1 or source.count(binding) != 1:
         raise ValueError('cloud_model_gesture_anchor_requires_review')
-    source = source.replace(anchor, "import { residentGesturePlugin } from '../../../cloud-gestures'\n" + anchor, 1)
+    source = source.replace(anchor, "import { residentGesturePlugin } from '../../../cloud-gestures'\nimport { galleryFraming, installGalleryMouthAlias } from '../../../gallery-fit.js'\n" + anchor, 1)
+    frame = '  const normalized = modelNormalizeParams.value'
+    if source.count(frame) != 1:
+        raise ValueError('cloud_gallery_framing_anchor_requires_review')
+    source = source.replace(frame, '  const normalized = galleryFraming(model.value, { width: props.width, height: props.height }, modelNormalizeParams.value)', 1)
     source = source.replace(binding, binding + "\n    motionManagerUpdate.register(residentGesturePlugin(), 'final')", 1)
     capture = "  try {\n    if (isUnmounted) {"
     setup = '    await Live2DFactory.setupLive2DModel(live2DModel, { url: modelSrcRef.value, id: props.modelId }, { autoInteract: false })'
@@ -120,7 +124,7 @@ def cloud_model_gestures(source):
     source = source.replace(setup, (
         '    await Live2DFactory.setupLive2DModel(live2DModel, { url: loadingModelSource, id: loadingModelId }, { autoInteract: false })\n'
         '    if (isUnmounted || !pixiApp.value?.stage || loadingModelId !== props.modelId || loadingModelSource !== modelSrcRef.value) {\n'
-        '      live2DModel.destroy()\n      return\n    }'), 1)
+        '      live2DModel.destroy()\n      return\n    }\n    installGalleryMouthAlias(live2DModel)'), 1)
     # These returns precede the try/finally that normally releases the mutex.
     for old in (
         "      componentState.value = 'mounted'\n      return\n    }\n  }\n\n  // REVIEW:",

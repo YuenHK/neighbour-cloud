@@ -2,7 +2,7 @@
 import { errorMessageFrom } from '@moeru/std'
 import { DisplayModelFormat, useDisplayModelsStore } from '@proj-airi/stage-ui/stores/display-models'
 import { useSettings } from '@proj-airi/stage-ui/stores/settings'
-import { ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 
 import gallery from './cloud-model-gallery.json'
 
@@ -18,6 +18,48 @@ const query = ref('')
 const searching = ref(false)
 const searchStatus = ref('搜尋官方及社群作者頁；未核對授權的模型不會自動轉存或發佈。')
 const results = ref<{ title: string, url: string, description: string }[]>([])
+interface SourceItem { title: string, url: string, author?: string, format: string, license_status: string }
+interface SourceIndex { source: string, items: SourceItem[], last_success_ms: number | null, error: string }
+const sourceIndexes = ref<SourceIndex[]>([])
+const discoverySource = ref('all')
+const discoveryFilter = ref('')
+const discoveryCount = ref(24)
+const discoveryStatus = ref('正在讀取已保存的圖庫目錄…')
+let discoveryTimer: ReturnType<typeof setTimeout> | undefined
+let discoveryClosed = false
+let discoveryPolls = 0
+const discovered = computed(() => sourceIndexes.value
+  .filter(index => discoverySource.value === 'all' || index.source === discoverySource.value)
+  .flatMap(index => index.items.map(item => ({ ...item, sourceName: index.source, reviewed: gallery.models.find(model => model.source.replace(/\/$/, '') === item.url.replace(/\/$/, '')) })))
+  .filter(item => `${item.title} ${item.author ?? ''}`.toLowerCase().includes(discoveryFilter.value.toLowerCase())))
+async function readSources() {
+  try {
+    const transport = Reflect.get(globalThis, '__NEIGHBOUR_CLOUD_TRANSPORT__')
+    const response = await transport.fetch('/api/v1/service-desk/model-gallery/catalogue')
+    if (!response.ok)
+      throw new Error('catalogue_unavailable')
+    const value = await response.json()
+    if (discoveryClosed)
+      return
+    sourceIndexes.value = value.sources ?? []
+    discoveryStatus.value = value.cache_unavailable
+      ? '外站目錄暫未準備好；上方已核對模型仍可使用。'
+      : value.refreshing
+        ? '先顯示已保存目錄，正在背景檢查新模型；不影響對話或消耗 AI 額度。'
+        : '啟動時自動檢查，外站讀取最多每六小時一次；失敗時保留上次目錄。'
+    if (value.refreshing && discoveryPolls++ < 8)
+      discoveryTimer = setTimeout(readSources, 6000)
+  }
+  catch {
+    if (!discoveryClosed)
+      discoveryStatus.value = '外站目錄未能更新；上方已核對模型不受影響。'
+  }
+}
+onMounted(readSources)
+onUnmounted(() => {
+  discoveryClosed = true
+  clearTimeout(discoveryTimer)
+})
 async function search() {
   if (searching.value)
     return
@@ -75,13 +117,56 @@ async function importModel(item: typeof gallery.models[number]) {
       </article>
     </div>
     <label class="gallery-agreement"><input v-model="accepted" type="checkbox">我已閱讀所選模型的來源、授權及使用條款，並確認本次用途適用。</label>
+    <details class="discovered-models">
+      <summary>自動更新的外站圖庫 · {{ sourceIndexes.reduce((sum, index) => sum + index.items.length, 0) }} 個條目</summary>
+      <p role="status">
+        {{ discoveryStatus }}
+      </p>
+      <p>已通過授權及實際顯示檢查的模型可直接匯入；新發現不等於已獲轉存授權，不會自動替居民換角色。</p>
+      <div class="gallery-source-filter">
+        <select v-model="discoverySource" aria-label="自動圖庫來源" @change="discoveryCount = 24">
+          <option value="all">
+            全部來源
+          </option><option value="live2d">
+            Live2D 官方
+          </option>
+          <option value="vtubernook">
+            VTuber Nook
+          </option><option value="aplaybox">
+            模之屋 Live2D
+          </option>
+        </select>
+        <input v-model="discoveryFilter" aria-label="篩選外站模型" placeholder="搜尋名稱或作者" @input="discoveryCount = 24">
+      </div>
+      <p v-for="index in sourceIndexes" :key="index.source" class="gallery-terms">
+        {{ index.source }} · {{ index.items.length }} 個 · {{ index.last_success_ms ? new Date(index.last_success_ms).toLocaleString('zh-HK') : '首次更新中' }}
+        {{ index.error ? '（更新未完成，保留上次目錄）' : '' }}
+      </p>
+      <div class="gallery-grid">
+        <article v-for="item in discovered.slice(0, discoveryCount)" :key="item.url">
+          <h3>{{ item.title }}</h3><p v-if="item.author">
+            {{ item.author }}
+          </p>
+          <p class="gallery-terms">
+            {{ item.sourceName }} · {{ item.format }} · {{ item.reviewed ? '已核對，可匯入' : item.license_status === 'redistribution_prohibited' ? '作者禁止平台轉存' : '授權／執行檔待核對' }}
+          </p>
+          <button v-if="item.reviewed" type="button" :disabled="!accepted || !!busy" @click="importModel(item.reviewed)">
+            一鍵匯入預覽
+          </button>
+          <a :href="item.url" target="_blank" rel="noopener noreferrer">查看來源與授權</a>
+        </article>
+      </div>
+      <button v-if="discovered.length > discoveryCount" type="button" @click="discoveryCount += 24">
+        顯示更多（共 {{ discovered.length }} 個）
+      </button>
+    </details>
     <p class="gallery-terms">
       官方免費素材有用途限制；機構正式對外使用前，請按條款核對適用資格。其他創作者的模型仍可用 AIRI 原有匯入功能加入。
     </p>
     <details>
       <summary>來源及版權</summary>
       <p>{{ gallery.notice }}</p>
-      <p>官方來源：Live2D / CubismWebSamples，移除附帶語音連結以保留曉曼。社群來源：puercatena / kenkipi（CC0），整理執行檔案並將 8K 貼圖縮為 4K，保留角色與授權。</p>
+      <p>官方來源：Live2D 官方樣本包及 CubismWebSamples，移除附帶語音連結以保留曉曼。社群來源：puercatena / kenkipi（CC0），整理執行檔案並將 8K 貼圖縮為 4K，保留角色與授權。</p>
     </details>
     <details class="gallery-community">
       <summary>其他官方示例（{{ gallery.official_catalogue.length }} 款）</summary>
@@ -136,4 +221,5 @@ async function importModel(item: typeof gallery.models[number]) {
 
 <style>
 .gallery-grid{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}.gallery-grid img{height:150px}.gallery-community summary{font-weight:600;cursor:pointer}.gallery-search{display:flex;align-items:end;flex-wrap:wrap;gap:12px;margin-block:16px}.gallery-search label{display:grid;gap:6px}.gallery-search input,.gallery-search select{padding:10px;border:1px solid #cadbd3;border-radius:8px;max-width:100%}.gallery-search button{padding:12px;border-radius:10px;background:#236c60;color:white}.gallery-results{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}.gallery-results article{padding:14px;background:white;border:1px solid #d5e5da;border-radius:12px}.gallery-results h3{font-weight:600}.gallery-results p{font-size:14px}.gallery-platforms{display:flex;flex-wrap:wrap;gap:16px;margin-block:16px}
+.gallery-source-filter{display:flex;gap:12px;flex-wrap:wrap;margin-block:14px}.gallery-source-filter input,.gallery-source-filter select{padding:10px;border:1px solid #cadbd3;border-radius:8px;max-width:100%}.discovered-models summary{font-weight:600;cursor:pointer}.discovered-models button{padding:10px;border-radius:10px;background:#236c60;color:white}
 </style>

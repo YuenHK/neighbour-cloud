@@ -23,6 +23,7 @@ from deploy.cloud.avatar_api import UPLOAD as AVATAR_UPLOAD
 from deploy.cloud.avatar_api import AvatarWork, avatar_router
 from deploy.cloud.avatar_assets import AvatarAssets
 from deploy.cloud.bootstrap import CloudServices
+from deploy.cloud.gallery_sources import SourceCatalogue, SourceStore, sources_router
 from deploy.cloud.google_identity import (
     GoogleIdentityVerifier,
     IdentityUnavailable,
@@ -264,18 +265,23 @@ def create_app(services, verifier, *, origin, model_client=None, voice_client=No
             app.state.resident_cloud_client = client
             app.state.resident_voice_client = voice
             app.state.quota_client = quota
+            app.state.gallery_client = httpx.AsyncClient(trust_env=False, follow_redirects=False,
+                limits=httpx.Limits(max_connections=2, max_keepalive_connections=2, keepalive_expiry=30))
+            cleanup.push_async_callback(app.state.gallery_client.aclose)
             app.state.robot_client = httpx.AsyncClient(trust_env=False, follow_redirects=False,
                 limits=httpx.Limits(max_connections=16, max_keepalive_connections=8, keepalive_expiry=30))
             cleanup.push_async_callback(app.state.robot_client.aclose)
             cleanup.push_async_callback(app.state.resident_transcription.close)
             cleanup.push_async_callback(app.state.avatar_work.close)
             cleanup.push_async_callback(app.state.model_discovery.close)
+            if app.state.gallery_catalogue is not None:
+                cleanup.push_async_callback(app.state.gallery_catalogue.close)
             if maintenance is not None:
                 maintenance.scheduled = True
 
                 def pending_work():
                     return [item['task'] for item in app.state.resident_transcription.entries.values()
-                            if not item['task'].done()] + list(services.residents.search_pending.values()) + list(app.state.avatar_work.pending) + list(app.state.model_discovery.tasks)
+                            if not item['task'].done()] + list(services.residents.search_pending.values()) + list(app.state.avatar_work.pending) + list(app.state.model_discovery.tasks) + (list(app.state.gallery_catalogue.tasks) if app.state.gallery_catalogue else [])
 
                 async def run_maintenance():
                     while not maintenance.gate.stopping:
@@ -313,6 +319,7 @@ def create_app(services, verifier, *, origin, model_client=None, voice_client=No
     app.state.browser_timings = BrowserTimings()
     app.state.resident_transcription = Transcription(lambda: app.state.resident_cloud_client)
     app.state.avatar_work = AvatarWork()
+    app.state.gallery_catalogue = None
     if presentation is not None:
         services.residents.runtime_settings = presentation.runtime
         def model_connection(readonly):
@@ -320,6 +327,8 @@ def create_app(services, verifier, *, origin, model_client=None, voice_client=No
                                             uri=True, timeout=20, check_same_thread=False)
         app.include_router(avatar_router(AvatarAssets(model_connection), presentation, require_staff, current_principal,
                                          app.state.avatar_work))
+        app.state.gallery_catalogue = SourceCatalogue(SourceStore(model_connection), lambda: app.state.gallery_client)
+        app.include_router(sources_router(require_staff, app.state.gallery_catalogue))
 
         @app.get('/api/v1/service-desk/airi-services')
         def airi_services():
@@ -411,10 +420,12 @@ def create_app(services, verifier, *, origin, model_client=None, voice_client=No
         return result
 
     @app.get('/api/v1/resident/readiness')
-    def resident_readiness():
+    async def resident_readiness():
         if current_principal() is None:
             raise HTTPException(401)
         from deploy.cloud.airi_runtime import catalog
+        if app.state.gallery_catalogue is not None:
+            app.state.gallery_catalogue.schedule()
         result = catalog()
         return {'configured': result['configured'], 'check': 'configuration_only',
                 'provider_requests': 0, 'site_hardware': False}
