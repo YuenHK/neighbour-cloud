@@ -23,7 +23,7 @@ jobs:
           node-version: '22'
       - run: pip install -r deploy/cloud/requirements.txt pytest==8.4.2 websockets==16.0 opencv-python-headless==4.13.0.92
       - run: npm install --prefix .acceptance-node --ignore-scripts @playwright/test@1.64.1 promptfoo@0.125.1
-      - run: .acceptance-node/node_modules/.bin/playwright install --with-deps chromium
+      - run: .acceptance-node/node_modules/.bin/playwright install --with-deps chromium webkit
       - name: Routing, media, permissions, transport faults and browser
         env:
           NODE_PATH: ${{ github.workspace }}/.acceptance-node/node_modules

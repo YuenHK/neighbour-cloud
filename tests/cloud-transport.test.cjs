@@ -86,7 +86,7 @@ test('coalesced auth is reused for allowed same-origin requests without changing
     assert.equal(request.options.redirect, 'error')
     assert.equal(request.options.mode, 'same-origin')
     assert.equal(request.options.cache, 'no-store')
-    assert.equal(request.options.referrerPolicy, 'no-referrer')
+    assert.equal(request.options.referrerPolicy, 'strict-origin')
   }
   assert.equal(requests[0].options.body, body)
   assert.equal(options.headers.Authorization, undefined)

@@ -281,6 +281,47 @@ class EventStore:
                                             [*parameters, limit, offset]).fetchall()
         return [self._from_row(row) for row in rows]
 
+    def browse(self, *, limit=100, offset=0, **filters):
+        """Staff search across the full store, excluding drills before pagination."""
+        from edge_hub.workbench_query import date_clauses, validate
+        if not _sqlite_int(limit, minimum=1, maximum=100) or not _sqlite_int(offset, maximum=1_000_000):
+            raise ValueError('invalid workbench query bounds')
+        selected = validate('events', **filters)
+        column = {'created': 'e.at_ms', 'completed': 'c.completed_at_ms'}[selected['date_field']]
+        clauses, args = date_clauses(column, selected)
+        if selected['state'] == 'open':
+            clauses.append("e.status IN ('pending','confirmed')")
+        elif selected['state'] != 'all':
+            clauses.append('e.status=?')
+            args.append(selected['state'])
+        if selected['live_only']:
+            clauses += ["COALESCE(json_extract(e.details_json,'$.is_test'),0)!=1",
+                        "COALESCE(json_extract(e.details_json,'$.source'),'')!='software_validation'",
+                        "substr(e.id,1,9)!='evt-demo-'"]
+        if selected['q']:
+            text = selected['q'].lower()
+            fields = ('e.id', 'e.zone', 'e.type', 'e.details_json')
+            search = ['instr(lower(' + field + '),?)>0' for field in fields]
+            args.extend([text] * len(fields))
+            for words, category in ((('垃圾',), 'litter_detected'), (('積水', '漏水', '水浸'), 'leak_detected'),
+                                    (('煙', '火'), 'smoke_fire_candidate'), (('電氣', '漏電'), 'electrical_visual_candidate'),
+                                    (('禁區', '人物'), 'access_candidate'), (('故障',), 'robot_fault')):
+                if any(word in text for word in words):
+                    search.append('e.type=?')
+                    args.append(category)
+            clauses.append('(' + ' OR '.join(search) + ')')
+        where = ' WHERE ' + ' AND '.join(clauses) if clauses else ''
+        order = {'created_desc': 'e.at_ms DESC', 'created_asc': 'e.at_ms ASC',
+                 'completed_desc': 'c.completed_at_ms DESC,e.at_ms DESC',
+                 'priority': "CASE e.severity WHEN 'critical' THEN 0 WHEN 'warning' THEN 1 ELSE 2 END,e.at_ms DESC"}[selected['sort']]
+        source = ' FROM events e LEFT JOIN event_completion c ON c.event_id=e.id'
+        with self._lock:
+            total = self._connection.execute('SELECT COUNT(*)' + source + where, args).fetchone()[0]
+            rows = self._connection.execute('SELECT e.*' + source + where + ' ORDER BY ' + order +
+                                            ',e.id DESC LIMIT ? OFFSET ?', [*args, limit, offset]).fetchall()
+        return {'events': [self._from_row(row) for row in rows], 'matched_total': total,
+                'has_more': offset + len(rows) < total, 'offset': offset}
+
     def latest_cursor(self):
         with self._lock:
             # MAX(seq) returns NULL after clear(), but AUTOINCREMENT keeps the

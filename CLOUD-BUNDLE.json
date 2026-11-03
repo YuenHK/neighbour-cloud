@@ -231,8 +231,8 @@
     },
     {
       "path": "airi_overlay/cloud-transport.js",
-      "bytes": 9665,
-      "sha256": "c7ef8d203e7b6a8b65cbc1e9430c423d81d90c559110213d05514cf4341fb965"
+      "bytes": 9895,
+      "sha256": "19117c645c5a43bc84356b98734bf60e25ba7574d3d5ffce94cf735f89e26159"
     },
     {
       "path": "airi_overlay/embedded-settings.ts",
@@ -391,8 +391,8 @@
     },
     {
       "path": "deploy/cloud/admin_assets.py",
-      "bytes": 7918,
-      "sha256": "47d88513270e949aa6fc84cf35da464cb63cde939224dfaa836349b76415a6d1"
+      "bytes": 7996,
+      "sha256": "3e55e10ccec88c511152d07653784a9c89bf41d178e4b85538bcc7ad34f8494a"
     },
     {
       "path": "deploy/cloud/airi_runtime.py",
@@ -596,8 +596,8 @@
     },
     {
       "path": "deploy/cloud/rollout.py",
-      "bytes": 8542,
-      "sha256": "4c163636c2316d6fe6d9bdaeaa043c231b22bf71cff7257be9095906baff1dcc"
+      "bytes": 8534,
+      "sha256": "16c38e9e40df06210875f6d1b05211f2516ce19f45c0c8f110b6fc2489d50c35"
     },
     {
       "path": "deploy/cloud/runtime_storage.py",
@@ -621,8 +621,8 @@
     },
     {
       "path": "deploy/cloud/staff_api.py",
-      "bytes": 8081,
-      "sha256": "6b134f62395ae6f991cec0c6d2ad86c36c34cba60982fb984a5d478074b9c565"
+      "bytes": 8374,
+      "sha256": "1d0912bb9caa8f486d69464859f42fee533bd356cc1d63501e96ab4f488f53c5"
     },
     {
       "path": "deploy/cloud/staff_push.py",
@@ -671,8 +671,8 @@
     },
     {
       "path": "deploy/cloud/web/admin-entry.js",
-      "bytes": 3626,
-      "sha256": "3bd431271e1ebc317acc7f7af904396d523010d2adb312959b935bd2d20c44ac"
+      "bytes": 3647,
+      "sha256": "42294ccfb748d0493157992dd41ac80797ec704f0603ac9c57886e4e72be89d2"
     },
     {
       "path": "deploy/cloud/web/admin-request.js",
@@ -801,8 +801,8 @@
     },
     {
       "path": "edge_hub/app.py",
-      "bytes": 30114,
-      "sha256": "1737e415559ac3363f18a7814452aef840e5ddd92d498510af56ce0a35b36fcb"
+      "bytes": 30534,
+      "sha256": "71565721c1b25fb1c9113491dc733d34b511008be209fbcaeb9961af5749e46e"
     },
     {
       "path": "edge_hub/approved_photo.py",
@@ -961,8 +961,8 @@
     },
     {
       "path": "edge_hub/events.py",
-      "bytes": 18513,
-      "sha256": "f847382af6fee4136d8f1cd35a00546146797e4ccad4ef9b196763fa61b46df2"
+      "bytes": 21408,
+      "sha256": "b8b4d288f24fd6f1ffabd183430d234a856482ddae6fe1644a2c150ed59cbff0"
     },
     {
       "path": "edge_hub/evidence.py",
@@ -1201,8 +1201,8 @@
     },
     {
       "path": "edge_hub/service_desk.py",
-      "bytes": 48700,
-      "sha256": "6b2e780c28baccc16cafcbf208378501cc8450cb17d6ffb92ee6433c95721b45"
+      "bytes": 51155,
+      "sha256": "e4e36667843d60cf327b3acb0aca55e2515130ef57cfa2532f109417e972e34c"
     },
     {
       "path": "edge_hub/service_identity.py",
@@ -1226,8 +1226,8 @@
     },
     {
       "path": "edge_hub/static/admin.html",
-      "bytes": 19921,
-      "sha256": "3b10c55c81b78472a2190c1ddf7c86962f13d5566205285f46d56c5560d4effe"
+      "bytes": 22038,
+      "sha256": "7da490a65be0affca0c344f98d8ff36008cd5b2267345a5beda0336c644b4e84"
     },
     {
       "path": "edge_hub/static/api-quota.js",
@@ -1366,8 +1366,8 @@
     },
     {
       "path": "edge_hub/static/service-shell.css",
-      "bytes": 26322,
-      "sha256": "d39216a11fb2df74cad4c88326cccc744373a69a620db9bbd512af2ae93c510c"
+      "bytes": 27892,
+      "sha256": "302ab87485ef78a9289f6d035315819d852859ea6fdf3d350412afe5a959dd25"
     },
     {
       "path": "edge_hub/static/service-shell.js",
@@ -1376,8 +1376,8 @@
     },
     {
       "path": "edge_hub/static/service-workbench.js",
-      "bytes": 16999,
-      "sha256": "3dd84120062a71157aa85877d09b7c554835dd20ad9a6dea7b70a21d4c5683eb"
+      "bytes": 18100,
+      "sha256": "1a6a8965f75303b2335a26c67ddc1129cb7ae3af35d1474c0a5acf392045bfa9"
     },
     {
       "path": "edge_hub/static/simulation-control.html",
@@ -1398,6 +1398,11 @@
       "path": "edge_hub/static/work-sections.js",
       "bytes": 803,
       "sha256": "934b21867104b8ba90530790ba917d0348cae99acc0dabbe1becbb34ab811995"
+    },
+    {
+      "path": "edge_hub/static/workbench-filters.js",
+      "bytes": 5081,
+      "sha256": "f2ccb5bce8482796f9e5765d7843f97e55dcdd79e1cfcc0cc32516f0c965a107"
     },
     {
       "path": "edge_hub/static/workspace-navigation.js",
@@ -1443,6 +1448,11 @@
       "path": "edge_hub/wifi_profile.py",
       "bytes": 4530,
       "sha256": "e795d2ab6e2e8fea76463d7ab368d4c28b5127a0a761c6240e9dda4d68fb5a20"
+    },
+    {
+      "path": "edge_hub/workbench_query.py",
+      "bytes": 2901,
+      "sha256": "b30d34c8be387b2f05a20b2342583372c9eeda2d20ee8472b59b91743ee1a64e"
     },
     {
       "path": "local_audio_gateway/__init__.py",
@@ -1516,8 +1526,8 @@
     },
     {
       "path": "tools/acceptance_gate.py",
-      "bytes": 4274,
-      "sha256": "a84d412c496153053033a8aac7a81c0063b18198b46452a50568b5c6b6dbb297"
+      "bytes": 4489,
+      "sha256": "7da9c840b2f8160e6067d3d1ef2e15eed212841136bc603cff1613c6f665c465"
     },
     {
       "path": "tools/check_release_gate.py",

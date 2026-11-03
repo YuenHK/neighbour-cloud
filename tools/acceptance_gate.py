@@ -17,7 +17,8 @@ TESTS = ['test_community_operations.py', 'test_cloud_http_app.py', 'test_cloud_s
          'test_resident_case_continuity.py', 'test_cantonese_routing_corpus.py',
          'test_cantonese_multiturn.py', 'test_azure_stream_arrival.py',
          'test_resident_pcm_stream.py', 'test_hardware_agent.py', 'test_patrol_schedule.py',
-         'test_ep_patrol.py', 'test_cloud_web_assets.py']
+         'test_ep_patrol.py', 'test_cloud_web_assets.py', 'test_workbench_filters.py',
+         'test_cloud_admin_assets.py', 'test_service_desk.py']
 
 
 def fingerprint(root):
@@ -46,12 +47,13 @@ def main():
            'PROMPTFOO_DISABLE_TELEMETRY': '1', 'PYTHONIOENCODING': 'utf-8', 'PROMPTFOO_PYTHON': sys.executable}
     commands = [['python', '-m', 'pytest', *['tests/' + name for name in TESTS],
                  '-q', '--junitxml=' + str(output / 'regression.xml')],
-                ['node', '--test', 'tests/resident-pcm.test.cjs', 'tests/staff-pwa.test.cjs']]
+                ['node', '--test', 'tests/resident-pcm.test.cjs', 'tests/staff-pwa.test.cjs',
+                 'tests/cloud-transport.test.cjs', 'tests/admin-request.test.cjs', 'tests/workbench-live.test.cjs']]
     commands[0][0] = sys.executable
     if args.network_faults:
         commands.append([sys.executable, 'tools/toxiproxy_acceptance.py', '--output', str(output / 'network.json')])
     if args.browser:
-        commands.append(['node', 'tests/acceptance/staff-pwa.browser.cjs'])
+        commands.append(['node', 'tests/acceptance/workbench-mobile.browser.cjs'])
     node_modules = Path(os.environ.get('NODE_PATH') or root / '.experiments/optimization-lab-20261029/node/node_modules')
     package = json.loads((node_modules / 'promptfoo/package.json').read_text(encoding='utf-8'))
     binary = package['bin']['promptfoo'] if isinstance(package['bin'], dict) else package['bin']

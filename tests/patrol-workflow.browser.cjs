@@ -2,10 +2,11 @@
 const assert=require('node:assert/strict')
 const fs=require('node:fs')
 const path=require('node:path')
-const {chromium}=require(path.resolve('.experiments/optimization-lab-20261029/node/node_modules/playwright'))
+let chromium
+try{({chromium}=require('@playwright/test'))}catch{({chromium}=require(path.resolve('.experiments/optimization-lab-20261029/node/node_modules/playwright')))}
 
 async function main(){
- const browser=await chromium.launch({headless:true,executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',args:['--mute-audio']})
+ const browser=await chromium.launch(process.platform==='win32'?{headless:true,executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',args:['--mute-audio']}:{headless:true})
  const context=await browser.newContext({serviceWorkers:'block',permissions:[]})
  const unexpected=[],writes=[],errors=[]
  let state='new',revision=1,note=''
@@ -24,7 +25,7 @@ async function main(){
      const file=path.join('edge_hub/static',path.basename(url.pathname))
      if(fs.existsSync(file))return route.fulfill({contentType:file.endsWith('.css')?'text/css':'text/javascript',body:fs.readFileSync(file)})
    }
-   if(url.pathname==='/api/v1/events'&&request.method()==='GET')return route.fulfill({json:[{id:eventId,type:'litter_detected',zone:'合成大堂',at_ms:1,severity:'notice',status:eventStatus(),evidence:'synthetic.jpg',details:{source:'ep_patrol_local',robot_sn:'SYNTHETIC'}}]})
+   if(url.pathname==='/api/v1/events/browse'&&request.method()==='GET')return route.fulfill({json:{events:[{id:eventId,type:'litter_detected',zone:'合成大堂',at_ms:1,severity:'notice',status:eventStatus(),evidence:'synthetic.jpg',details:{source:'ep_patrol_local',robot_sn:'SYNTHETIC'}}],matched_total:1,has_more:false,offset:0}})
    if(url.pathname==='/api/v1/event-stats')return route.fulfill({json:{total:1,pending:state==='new'?1:0,confirmed:state==='acknowledged'?1:0,resolved:state==='resolved'?1:0,false_positive:0}})
    if(url.pathname==='/api/v1/patrol/followups')return route.fulfill({json:{items:[{event_id:eventId,case_id:caseId,case_number:100001,revision,status:state,note,sync_pending:0}]}})
    if(url.pathname==='/api/v1/events/'+eventId&&request.method()==='PATCH'){
@@ -44,6 +45,7 @@ async function main(){
    if(url.pathname==='/api/v1/service-desk/summary')return route.fulfill({json:{counts:{new:state==='new'?1:0},pending_by_group:{requests:state==='new'?1:0,care:0},delivery_scope:'local_staff_workbench_only'}})
    if(url.pathname==='/api/v1/service-desk/quota')return route.fulfill({json:{overview:{rows:[]},chat:{}}})
    if(url.pathname==='/api/v1/service-desk/resources')return route.fulfill({json:{}})
+   if(url.pathname==='/api/v1/service-desk/readiness')return route.fulfill({json:{}})
    unexpected.push(url.pathname);return route.abort()
  })
  try{
@@ -55,12 +57,17 @@ async function main(){
    await page.waitForFunction(()=>document.querySelector('[data-event-id]').innerText.includes('已確認'))
    await report.getByRole('link',{name:/個案 100001/}).click()
    const card=page.locator('[data-case-id]')
+   await card.locator('.service-case-summary').getByText('跟進中',{exact:true}).waitFor()
+   await card.getByRole('button',{name:'查看及跟進',exact:true}).click()
    await card.getByText('巡查回報 · 職員跟進',{exact:true}).waitFor()
    await card.getByRole('textbox',{name:'跟進內容／回覆居民'}).fill('合成測試：已清理完成')
    await card.getByRole('button',{name:'標記完成',exact:true}).click()
+   await card.locator('dialog').waitFor({state:'hidden'})
+   await card.getByRole('button',{name:'查看及跟進',exact:true}).click()
    await card.getByText('最新跟進：合成測試：已清理完成',{exact:true}).waitFor()
    await card.getByRole('link',{name:'查看現場回報及相片'}).click()
    await page.waitForFunction(()=>document.querySelector('[data-event-id]').innerText.includes('已完成'))
+   await page.locator('#refreshEvents').click()
    assert.equal(await report.getByRole('button',{name:'核實並接手'}).isDisabled(),true)
    assert.equal(writes.length,2)
    assert.deepEqual(unexpected,[])

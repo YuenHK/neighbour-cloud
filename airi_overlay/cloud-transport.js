@@ -120,7 +120,7 @@ export function createCloudTransport({ origin, tokenProvider, fetcher = (...args
         || (init.body != null && ((!modelUpload && typeof init.body !== 'string') || ['GET', 'HEAD'].includes(method)))) {
         throw new Error('cloud_request_invalid')
       }
-      for (const [key, expected] of Object.entries({ cache: 'no-store', credentials: 'omit', redirect: 'error', mode: 'same-origin', referrerPolicy: 'no-referrer' })) {
+      for (const [key, expected] of Object.entries({ cache: 'no-store', credentials: 'omit', redirect: 'error', mode: 'same-origin', referrerPolicy: 'strict-origin' })) {
         if (Reflect.get(init, key) !== undefined && Reflect.get(init, key) !== expected)
           throw new Error('cloud_request_invalid')
       }
@@ -154,7 +154,10 @@ export function createCloudTransport({ origin, tokenProvider, fetcher = (...args
       const signal = options.signal ? AbortSignal.any([options.signal, scopeSignal]) : scopeSignal
       options.headers.set('Authorization', `Bearer ${token}`)
       try {
-        const response = await fetcher(options.url.href, { method: options.method, headers: options.headers, body: options.body, signal, credentials: 'omit', redirect: 'error', cache: 'no-store', mode: 'same-origin', referrerPolicy: 'no-referrer', ...(options.keepalive === undefined ? {} : { keepalive: options.keepalive }) })
+        // WebKit serializes Origin as "null" for same-origin POSTs with
+        // no-referrer. Keep an origin-only referrer so the strict server
+        // boundary can validate Safari, without sending a page path/query.
+        const response = await fetcher(options.url.href, { method: options.method, headers: options.headers, body: options.body, signal, credentials: 'omit', redirect: 'error', cache: 'no-store', mode: 'same-origin', referrerPolicy: 'strict-origin', ...(options.keepalive === undefined ? {} : { keepalive: options.keepalive }) })
         if (identity !== generation) {
           try {
             void response.body?.cancel().catch(() => undefined)

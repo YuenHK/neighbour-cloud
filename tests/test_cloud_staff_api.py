@@ -13,6 +13,49 @@ EVENT = test_cloud_photo_api.EVENT
 FOLLOW = f'/api/v1/patrol/events/{EVENT}/followup'
 
 
+def test_case_search_filters_are_staff_only_paged_and_do_not_change_alert_counts(api):
+    from edge_hub.service_desk import ResidentCase
+    for index in range(3):
+        item = api.services.cases.create(ResidentCase(submission_id=f'{900 + index:032x}',
+            kind='human_support' if index == 2 else 'water', message='合成漏水跟進', location='1樓1室', confirmed=True))
+        with api.services.cases.db:
+            api.services.cases.db.execute('UPDATE service_cases SET status=?,created_at_ms=? WHERE id=?',
+                ('resolved' if index == 0 else 'new', 1793635200000 + index, item['id']))
+    path = '/api/v1/service-desk/requests'
+    params = {'q': '一樓一室', 'state': 'new', 'group': 'requests', 'date_from': '2026-11-03',
+              'date_to': '2026-11-03', 'sort': 'created_asc', 'limit': 1}
+    assert api.client.get(path, params=params).status_code == 401
+    assert api.client.get(path, params=params, headers=api.resident).status_code == 403
+    reply = api.client.get(path, params=params, headers=api.staff)
+    assert reply.status_code == 200, reply.text
+    result = reply.json()
+    assert result['matched_total'] == 1 and len(result['items']) == 1 and not result['has_more']
+    assert result['counts']['resolved'] >= 1  # Global alerts remain independent of the search.
+    params['group'] = 'care'
+    assert api.client.get(path, params=params, headers=api.staff).json()['matched_total'] == 1
+    assert api.client.get(path, params={'date_from': '2026-02-30'}, headers=api.staff).status_code == 422
+    assert not api.calls and api.search.await_count == 0
+
+
+def test_report_snapshot_filters_before_pagination_and_validation_remains_closed(api):
+    from edge_hub.events import Event
+    for index in range(4):
+        api.services.events.add(Event(id=f'filter-{index}', type='litter_detected', zone='合成大堂',
+            at_ms=1793635200000 + index, severity='notice', details={'is_test': index < 2}))
+    path = '/api/v1/patrol/workbench'
+    params = {'q': '垃圾', 'live_only': 'true', 'limit': 1, 'offset': 1, 'state': 'pending',
+              'date_from': '2026-11-03', 'date_to': '2026-11-03'}
+    reply = api.client.get(path, params=params, headers=api.staff)
+    assert reply.status_code == 200, reply.text
+    result = reply.json()
+    assert result['matched_total'] == 2 and not result['has_more']
+    assert result['events'][0]['id'] == 'filter-2'
+    for invalid in ({'offset': -1}, {'limit': 101}, {'sort': 'private'}, {'q': 'x' * 121}):
+        assert api.client.get(path, params=invalid, headers=api.staff).status_code == 422
+    assert api.client.get(path, params=params, headers=api.resident).status_code == 403
+    assert not api.calls and api.search.await_count == 0
+
+
 def test_workbench_snapshot_is_staff_only_and_bulk_reads_links(photographs, monkeypatch):
     api, _, _ = photographs
     case = api.client.post(FOLLOW, headers=api.staff).json()

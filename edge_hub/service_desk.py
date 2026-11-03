@@ -7,11 +7,11 @@ import sqlite3
 import threading
 import time
 from pathlib import Path
-from typing import Literal
+from typing import Annotated, Literal
 from uuid import uuid4
 
 import httpx
-from fastapi import APIRouter, Header, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, StreamingResponse
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -22,6 +22,7 @@ from edge_hub.resident_care import care_plan
 from edge_hub.resident_cases import progress_query, routing_team, spoken_number, unit_reference
 from edge_hub.resident_crisis import PREFIX, crisis_plan, session_submission
 from edge_hub.ui_shell import service_shell
+from edge_hub.workbench_query import parameters as list_parameters
 
 
 class ServiceBodyLimitMiddleware(EventBodyLimitMiddleware):
@@ -232,16 +233,18 @@ class ServiceDeskStore:
         number = self.db.execute('SELECT ordinal FROM service_case_numbers WHERE case_id=?', (row['id'],)).fetchone()
         return number[0] if number else row['case_number']
 
-    def public(self, row):
+    def public(self, row, *, joined=False):
         result = {key: row[key] for key in ('id', 'kind', 'location', 'message', 'contact',
             'status', 'revision', 'created_at_ms', 'updated_at_ms', 'assignee', 'note', 'due_at_ms', 'case_number', 'team', 'unit')}
-        result['case_number'] = self.case_number(row)
+        result['case_number'] = row['public_number'] if joined else self.case_number(row)
         result['overdue'] = row['status'] != 'resolved' and 0 < row['due_at_ms'] < int(time.time()*1000)
         result['contact_preference'] = row['contact_preference']
         result['intake_mode'] = row['intake_mode']
         result['contact_available'] = bool(row['contact'] or row['unit'].endswith('室'))
         result['profile'] = row['profile']
-        link = self.db.execute('SELECT event_id,desired_status,sync_pending FROM patrol_case_links WHERE case_id=?', (row['id'],)).fetchone()
+        link = ({'event_id': row['patrol_event_id'], 'desired_status': row['patrol_state'], 'sync_pending': row['patrol_pending']}
+                if row['patrol_event_id'] else None) if joined else self.db.execute(
+                    'SELECT event_id,desired_status,sync_pending FROM patrol_case_links WHERE case_id=?', (row['id'],)).fetchone()
         if link:
             result.update(source_event_id=link['event_id'], patrol_status=link['desired_status'], patrol_sync_pending=bool(link['sync_pending']))
         return result
@@ -345,20 +348,50 @@ class ServiceDeskStore:
                     'contact_available': bool(values[2] or values[1].endswith('室')), 'replayed': True})
         return updated
 
-    def list(self, *, limit=50, offset=0, group=None):
-        where = {None: '', 'requests': " WHERE kind!='human_support' AND team!='住戶支援'",
-                 'care': " WHERE kind='human_support' OR team='住戶支援'"}[group]
+    def list(self, *, limit=50, offset=0, group=None, **filters):
+        from edge_hub.workbench_query import date_clauses, validate
+        selected = validate('cases', **filters)
+        group_clause = {None: '1=1', 'requests': "c.kind!='human_support' AND c.team!='住戶支援'",
+                        'care': "(c.kind='human_support' OR c.team='住戶支援')"}[group]
+        column = {'created': 'c.created_at_ms', 'updated': 'c.updated_at_ms', 'due': 'c.due_at_ms'}[selected['date_field']]
+        clauses, args = date_clauses(column, selected)
+        clauses.insert(0, '(' + group_clause + ')')
+        if selected['state'] == 'open':
+            clauses.append("c.status!='resolved'")
+        elif selected['state'] != 'all':
+            clauses.append('c.status=?')
+            args.append(selected['state'])
+        if selected['q']:
+            text = selected['q'].lower()
+            fields = ('c.message', 'c.location', 'c.unit', 'c.contact', 'c.team', 'c.profile', 'c.note')
+            search = ['instr(lower(' + field + '),?)>0' for field in fields]
+            args.extend([text] * len(fields))
+            search.append('CAST(COALESCE(n.ordinal,c.case_number) AS TEXT)=?')
+            args.append(text.removeprefix('#'))
+            unit = unit_reference(selected['q'])
+            if unit.endswith('室'):
+                search.append('c.unit=?')
+                args.append(unit)
+            clauses.append('(' + ' OR '.join(search) + ')')
+        where = ' WHERE ' + ' AND '.join(clauses)
+        order = {'created_desc': 'c.created_at_ms DESC', 'created_asc': 'c.created_at_ms ASC',
+                 'updated_desc': 'c.updated_at_ms DESC',
+                 'due_asc': '(c.due_at_ms<=0) ASC,c.due_at_ms ASC',
+                 'priority': "CASE c.status WHEN 'new' THEN 0 WHEN 'acknowledged' THEN 1 ELSE 2 END, "
+                    "CASE WHEN c.kind='human_support' AND c.message LIKE '【需即時關懷】%' THEN 0 ELSE 1 END,c.created_at_ms DESC"}[selected['sort']]
+        source = (' FROM service_cases c LEFT JOIN service_case_numbers n ON n.case_id=c.id '
+                  'LEFT JOIN patrol_case_links l ON l.case_id=c.id')
         with self.lock:
-            rows = self.db.execute('SELECT * FROM service_cases'+where+' ORDER BY '
-                "CASE status WHEN 'new' THEN 0 WHEN 'acknowledged' THEN 1 ELSE 2 END, "
-                "CASE WHEN kind='human_support' AND message LIKE '【需即時關懷】%' THEN 0 ELSE 1 END, created_at_ms DESC,case_number DESC,id DESC LIMIT ? OFFSET ?",
-                (limit, offset)).fetchall()
-            counts = dict(self.db.execute('SELECT status,COUNT(*) FROM service_cases'+where+' GROUP BY status').fetchall())
-            return {'items': [self.public(row) for row in rows], 'counts': counts,
+            rows = self.db.execute('SELECT c.*,COALESCE(n.ordinal,c.case_number) AS public_number,'
+                'l.event_id AS patrol_event_id,l.desired_status AS patrol_state,l.sync_pending AS patrol_pending' +
+                source + where + ' ORDER BY ' + order + ',c.id DESC LIMIT ? OFFSET ?', [*args, limit, offset]).fetchall()
+            total = self.db.execute('SELECT COUNT(*)' + source + where, args).fetchone()[0]
+            counts = dict(self.db.execute('SELECT c.status,COUNT(*) FROM service_cases c WHERE ' + group_clause + ' GROUP BY c.status').fetchall())
+            latest = self.db.execute('SELECT MAX(created_at_ms),MAX(case_number) FROM service_cases').fetchone()
+            return {'items': [self.public(row, joined=True) for row in rows], 'counts': counts,
                     'delivery_scope': 'local_staff_workbench_only', 'offset': offset,
-                    'latest_created_at_ms': self.db.execute('SELECT MAX(created_at_ms) FROM service_cases').fetchone()[0],
-                    'latest_case_number': self.db.execute('SELECT MAX(case_number) FROM service_cases').fetchone()[0],
-                    'has_more': offset+len(rows) < sum(counts.values())}
+                    'latest_created_at_ms': latest[0], 'latest_case_number': latest[1],
+                    'matched_total': total, 'has_more': offset+len(rows) < total}
 
     def summary(self):
         with self.lock:
@@ -509,7 +542,7 @@ def service_desk_router(store, authorize, static_root, chat, services=None, *, r
               'service-workbench.js': 'text/javascript', 'service-shell.js': 'text/javascript', 'ep-background.js': 'text/javascript',
               'service-mark.svg': 'image/svg+xml', 'estate-management.js': 'text/javascript',
               'workspace-navigation.js': 'text/javascript', 'api-quota.js': 'text/javascript',
-              'work-sections.js': 'text/javascript', 'voice-control.js': 'text/javascript',
+              'work-sections.js': 'text/javascript', 'workbench-filters.js': 'text/javascript', 'voice-control.js': 'text/javascript',
               'photo-privacy.js': 'text/javascript', 'latest-photo.js': 'text/javascript', 'governance.js': 'text/javascript'}
 
     @router.get('/assets/service/{name}')
@@ -530,11 +563,11 @@ def service_desk_router(store, authorize, static_root, chat, services=None, *, r
                             headers={'Cache-Control': 'no-store'})
 
     @router.get('/api/v1/service-desk/requests')
-    def cases(x_operator_key: str | None = Header(default=None),
+    def cases(filters: Annotated[dict, Depends(list_parameters)], x_operator_key: str | None = Header(default=None),
               offset: int = Query(default=0, ge=0), limit: int = Query(default=50, ge=1, le=100),
               group: Literal['requests', 'care'] | None = Query(default=None)):
         authorize(x_operator_key)
-        return JSONResponse(store.list(limit=limit, offset=offset, group=group), headers={'Cache-Control': 'no-store'})
+        return JSONResponse(store.list(limit=limit, offset=offset, group=group, **filters), headers={'Cache-Control': 'no-store'})
 
     @router.get('/api/v1/service-desk/summary')
     def summary(x_operator_key: str | None = Header(default=None)):

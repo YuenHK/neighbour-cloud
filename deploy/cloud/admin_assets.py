@@ -8,7 +8,7 @@ from pathlib import Path
 
 STATIC = Path(__file__).resolve().parents[2] / 'edge_hub/static'
 WEB = Path(__file__).with_name('web')
-SCRIPTS = ('photo-privacy.js', 'latest-photo.js', 'work-sections.js', 'service-workbench.js',
+SCRIPTS = ('photo-privacy.js', 'latest-photo.js', 'work-sections.js', 'workbench-filters.js', 'service-workbench.js',
            'api-quota.js', 'estate-management.js', 'workspace-navigation.js')
 
 
@@ -50,13 +50,13 @@ class CloudAdminAssets:
         html = html.replace('<section id="panel-avatar"', (WEB / 'robots.html').read_text(encoding='utf-8') + '<section id="panel-avatar"', 1)
         runtime = "import { cloudFetch as fetch } from '/cloud/admin-request.js'\n" + inline[0]
         runtime = runtime.replace('timeoutMs = 3000', 'timeoutMs = 12000')
-        start = '        const [events, stats] = await Promise.all(['
+        start = '        const [eventPage, stats] = await Promise.all(['
         end = '        if (!Array.isArray(followupData.items)'
         if runtime.count(start) != 1 or runtime.count(end) != 1:
             raise ValueError('cloud_event_snapshot_anchor_requires_review')
         before, rest = runtime.split(start, 1)
-        runtime = before + ("        const { events, stats, followups: followupData } = "
-            "await ZhiweiAdminRequest.json('/api/v1/patrol/workbench')\n") + end + rest.split(end, 1)[1]
+        runtime = before + ("        const eventPage = await ZhiweiAdminRequest.json('/api/v1/patrol/workbench?' + eventQuery)\n"
+            "        const { events, stats, followups: followupData } = eventPage\n") + end + rest.split(end, 1)[1]
         runtime = runtime.replace("link.href = '/admin#work'", "link.href = '/cloud/admin#work'")
         self.responses = {'/cloud/admin': (html.encode(), 'text/html'),
             '/cloud/admin/runtime.js': (runtime.encode(), 'text/javascript'),

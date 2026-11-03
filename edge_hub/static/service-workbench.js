@@ -13,6 +13,10 @@
   const drafts = new Map()
   const corrections = new Map()
   let group = globalThis.ZhiweiWorkSection === 'care' ? 'care' : 'requests'
+  const filters = globalThis.ZhiweiWorkFilters?.create(node('caseFilters'), { onChange() {
+    offset = 0; generation++; void load()
+  } })
+  filters?.scope(group)
   async function enableSound() {
     try {
       const Context = globalThis.AudioContext || globalThis.webkitAudioContext
@@ -115,7 +119,10 @@
         append(content, 'small', row.patrol_status === 'false_positive' ? '巡查回報 · 職員已核實為誤報' : row.status === 'new' ? '巡查候選 · 請先查看三張相片核實' : '巡查回報 · 職員跟進')
         const source = append(content, 'a', '查看現場回報及相片')
         source.href = '/admin#reports'
-        source.addEventListener('click', () => { try { sessionStorage.setItem('neighbourPatrolEvent', row.source_event_id) } catch {} })
+        source.addEventListener('click', () => {
+          try { sessionStorage.setItem('neighbourPatrolEvent', row.source_event_id) } catch {}
+          source.closest('dialog')?.close()
+        })
         if (row.patrol_sync_pending)
           append(content, 'small', '進度已保存，現場回報同步中。')
       }
@@ -204,6 +211,9 @@
         : row.message.replace(/^【[^】]*】/, '')
       append(summary, 'p', quote, 'service-case-preview')
       append(summary, 'small', `${row.unit || row.location || '待補充位置'} · ${row.team || labels[row.kind]}`)
+      append(summary, 'small', `建立：${new Date(row.created_at_ms).toLocaleString('zh-HK', { timeZone: 'Asia/Hong_Kong', hour12: false })}`)
+      if (row.updated_at_ms && row.updated_at_ms !== row.created_at_ms)
+        append(summary, 'small', `最近更新：${new Date(row.updated_at_ms).toLocaleString('zh-HK', { timeZone: 'Asia/Hong_Kong', hour12: false })}`)
       if (row.due_at_ms) append(summary, 'small', `${row.overdue ? '已過跟進期限' : '跟進期限'}：${new Date(row.due_at_ms).toLocaleString('zh-HK', { hour12: false })}`)
       const open = append(card, 'button', '查看及跟進', 'service-case-open')
       open.type = 'button'
@@ -226,10 +236,10 @@
       if (container.children[index] !== card) container.insertBefore(card, container.children[index] || null)
     })
     if (!cards.length)
-      append(container, 'p', group === 'care' ? '暫時沒有需要關懷跟進的個案。' : '暫時沒有居民求助；有新回報會自動出現。', 'service-empty')
+      append(container, 'p', filters ? '沒有符合條件的個案；可以清除篩選再查看全部。' : group === 'care' ? '暫時沒有需要關懷跟進的個案。' : '暫時沒有居民求助；有新回報會自動出現。', 'service-empty')
     node('caseStatus').textContent = group === 'care' ? '關懷清單已更新。' : '求助單已更新；正在查看的職員請接手跟進。'
     if (deferredEdit) node('caseStatus').textContent += ' 正編輯的個案另有更新，離開輸入欄後會顯示；草稿保留。'
-    node('casesPage').textContent = `第 ${offset / 50 + 1} 頁`
+    node('casesPage').textContent = `第 ${offset / 50 + 1} 頁${Number.isSafeInteger(data.matched_total) ? ` · 共 ${data.matched_total} 項符合條件` : ''}`
     node('casesPrevious').disabled = offset === 0
     node('casesNext').disabled = !data.has_more
   }
@@ -241,7 +251,12 @@
     const version = generation
     reading = (async () => {
       try {
-        const data = await request(`?offset=${offset}&limit=50&group=${group}`)
+        const data = await request(`?offset=${offset}&limit=50&group=${group}${filters ? '&' + filters.query() : ''}`)
+        if (version === generation && !data.items?.length && offset > 0 && Number.isSafeInteger(data.matched_total)) {
+          offset = Math.max(0, Math.ceil(data.matched_total / 50) - 1) * 50
+          generation++
+          return
+        }
         if (version === generation)
           render(data)
       }
@@ -314,6 +329,7 @@
     if (!['requests', 'care'].includes(event.detail) || group === event.detail)
       return
     group = event.detail
+    filters?.scope(group)
     offset = 0
     generation++
     void load()

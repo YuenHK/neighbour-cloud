@@ -1,4 +1,4 @@
-<!doctype html><html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>鄰伴 · 管理工作台</title><link rel="stylesheet" href="/assets/service-shell.css"><link rel="icon" href="/assets/service/service-mark.svg" type="image/svg+xml"></head>
+<!doctype html><html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>鄰伴 · 管理工作台</title><link rel="stylesheet" href="/assets/service-shell.css"><link rel="icon" href="/assets/service/service-mark.svg" type="image/svg+xml"><script src="/assets/service/workbench-filters.js"></script></head>
 <body class="service-theme" data-service-area="admin">__SERVICE_SHELL__
 <main id="main-content"><header class="service-heading-row"><div><h1>管理工作台</h1><p class="service-lead">查看居民求助、更新進度及整理屋苑資料。</p></div></header>
 <input id="operatorKey" type="hidden" value="__LOCAL_OPERATOR_TOKEN__">
@@ -6,7 +6,7 @@
 <section id="panel-work" role="tabpanel" aria-labelledby="tab-work"><div id="caseWorkspace">
 <div class="service-kpis"><div class="service-kpi"><strong id="caseNewCount">—</strong><span>等待接手</span></div><div class="service-kpi"><strong id="caseActiveCount">—</strong><span>跟進中</span></div><div class="service-kpi"><strong id="caseClosedCount">—</strong><span>已完成</span></div></div>
 <p id="caseAlert" role="status">新個案會自動更新並提示。</p>
-<section class="service-card" aria-labelledby="caseHeading"><div class="service-heading-row"><div><p class="service-eyebrow">居民服務</p><h2 id="caseHeading">求助查詢</h2><p class="service-muted">數字人已分流的居民需要；接手、更新進度，居民即可在對話查詢。</p></div></div><p id="caseStatus" role="status">正在載入求助單…</p><div id="serviceCases"></div><div class="service-actions"><button id="casesPrevious" type="button" disabled>上一頁</button><span id="casesPage">第 1 頁</span><button id="casesNext" type="button" disabled>下一頁</button></div></section></div><section id="eventsPanel" class="service-card" role="region" aria-labelledby="reportsHeading" hidden><h2 id="reportsHeading">現場回報</h2><section id="eventManagement"><p class="service-muted">回報由職員核實後處理，歷史演練紀錄另有標示。</p><p id="stats">正在載入統計…</p><button id="refreshEvents" type="button">更新回報</button><p id="eventStatus" role="status">正在載入現場回報…</p><div class="service-table-wrap"><table><thead><tr><th>時間</th><th>事件</th><th>位置</th><th>級別</th><th>進度</th><th>影像</th><th>操作</th></tr></thead><tbody id="events"></tbody></table></div></section></section></section><section id="panel-knowledge" role="tabpanel" aria-labelledby="tab-knowledge"><details class="service-card" open><summary>屋苑資料管理</summary><p>填好並啟用後，居民可直接向數字人查詢；舊版本會保留。</p><select id="knowledgeList" aria-label="選擇屋苑資料"><option value="">新增資料</option></select><form id="knowledgeForm"><label>題目<input id="knowledgeTitle" maxlength="120" required placeholder="例如：管理處開放時間"></label><label>居民常用講法／關鍵字<input id="knowledgeKeywords" maxlength="1500" required placeholder="管理處幾點、辦公時間、開放時間"></label><label>已確認答案<textarea id="knowledgeAnswer" rows="4" maxlength="4000" placeholder="填寫真實資料，未確認可先停用"></textarea></label><label><input id="knowledgeEnabled" type="checkbox" checked>啟用此項資料</label><button id="saveKnowledge" type="submit">儲存資料</button></form><p id="knowledgeStatus" role="status"></p></details><details class="service-card"><summary>居民保存的偏好</summary><p>只查看居民明確交代數字人記住的資料。</p><form id="residentMemoriesForm"><label>居民使用的稱呼<input id="residentMemoryProfile" maxlength="64" required></label><button type="submit">查看記憶</button></form><p id="residentMemoryStatus" role="status"></p><div id="residentMemoryItems"></div></details></section><section id="panel-avatar" role="tabpanel" aria-labelledby="tab-avatar" hidden><section class="service-card airi-settings-card"><iframe id="airiSettingsFrame" title="AIRI 數字人設定" data-src="http://127.0.0.1:4173/ui/estate-settings-entry.html" allow="microphone 'none'; camera 'none'; autoplay 'none'" referrerpolicy="no-referrer"></iframe></section></section><section id="panel-usage" role="tabpanel" aria-labelledby="tab-usage"><section class="service-card"><h2>服務狀態</h2><p id="serviceReadiness" role="status">正在檢查服務…</p><p class="service-muted">只檢查本機服務及設定，不會試用或扣除 AI 額度；實際對話仍受平台狀態及免費額度影響。</p></section><section class="service-card" aria-labelledby="quotaHeading">
+<section class="service-card" aria-labelledby="caseHeading"><div class="service-heading-row"><div><p class="service-eyebrow">居民服務</p><h2 id="caseHeading">求助查詢</h2><p class="service-muted">數字人已分流的居民需要；接手、更新進度，居民即可在對話查詢。</p></div></div><div id="caseFilters"></div><p id="caseStatus" role="status">正在載入求助單…</p><div id="serviceCases"></div><div class="service-actions"><button id="casesPrevious" type="button" disabled>上一頁</button><span id="casesPage">第 1 頁</span><button id="casesNext" type="button" disabled>下一頁</button></div></section></div><section id="eventsPanel" class="service-card" role="region" aria-labelledby="reportsHeading" hidden><h2 id="reportsHeading">現場回報</h2><section id="eventManagement"><p class="service-muted">回報由職員核實後處理，歷史演練紀錄另有標示。</p><div id="eventFilters"></div><p id="stats">正在載入統計…</p><button id="refreshEvents" type="button">更新回報</button><p id="eventStatus" role="status">正在載入現場回報…</p><div class="service-table-wrap"><table><thead><tr><th>回報日期</th><th>事件</th><th>位置</th><th>級別</th><th>進度</th><th>影像</th><th>操作</th></tr></thead><tbody id="events"></tbody></table></div><div class="service-actions"><button id="eventsPrevious" type="button" disabled>上一頁</button><span id="eventsPage">第 1 頁</span><button id="eventsNext" type="button" disabled>下一頁</button></div></section></section></section><section id="panel-knowledge" role="tabpanel" aria-labelledby="tab-knowledge"><details class="service-card" open><summary>屋苑資料管理</summary><p>填好並啟用後，居民可直接向數字人查詢；舊版本會保留。</p><select id="knowledgeList" aria-label="選擇屋苑資料"><option value="">新增資料</option></select><form id="knowledgeForm"><label>題目<input id="knowledgeTitle" maxlength="120" required placeholder="例如：管理處開放時間"></label><label>居民常用講法／關鍵字<input id="knowledgeKeywords" maxlength="1500" required placeholder="管理處幾點、辦公時間、開放時間"></label><label>已確認答案<textarea id="knowledgeAnswer" rows="4" maxlength="4000" placeholder="填寫真實資料，未確認可先停用"></textarea></label><label><input id="knowledgeEnabled" type="checkbox" checked>啟用此項資料</label><button id="saveKnowledge" type="submit">儲存資料</button></form><p id="knowledgeStatus" role="status"></p></details><details class="service-card"><summary>居民保存的偏好</summary><p>只查看居民明確交代數字人記住的資料。</p><form id="residentMemoriesForm"><label>居民使用的稱呼<input id="residentMemoryProfile" maxlength="64" required></label><button type="submit">查看記憶</button></form><p id="residentMemoryStatus" role="status"></p><div id="residentMemoryItems"></div></details></section><section id="panel-avatar" role="tabpanel" aria-labelledby="tab-avatar" hidden><section class="service-card airi-settings-card"><iframe id="airiSettingsFrame" title="AIRI 數字人設定" data-src="http://127.0.0.1:4173/ui/estate-settings-entry.html" allow="microphone 'none'; camera 'none'; autoplay 'none'" referrerpolicy="no-referrer"></iframe></section></section><section id="panel-usage" role="tabpanel" aria-labelledby="tab-usage"><section class="service-card"><h2>服務狀態</h2><p id="serviceReadiness" role="status">正在檢查服務…</p><p class="service-muted">只檢查本機服務及設定，不會試用或扣除 AI 額度；實際對話仍受平台狀態及免費額度影響。</p></section><section class="service-card" aria-labelledby="quotaHeading">
 <div class="service-heading-row"><div><h2 id="quotaHeading">AI 服務與免費額度</h2></div><button id="refreshQuota" type="button">更新額度</button></div>
 <p id="quotaStatus" role="status">正在核對各平台用量…</p><p class="service-muted">只列目前居民服務使用的平台；進度條表示剩餘比例，官方餘額與本機保守限制分開顯示。</p>
 <div class="service-quota-scroll"><table class="service-quota-table"><caption class="service-muted">對話、語音及資料查詢的可用額度</caption><thead><tr><th scope="col">服務與用途</th><th scope="col">官方免費額度</th><th scope="col">本機可用量</th><th scope="col">重設時間與狀態</th></tr></thead><tbody id="apiQuotaRows"></tbody></table></div>
@@ -62,6 +62,11 @@
     }
 
     let eventsLoading = false
+    let eventOffset = 0
+    let eventGeneration = 0
+    const eventFilters = globalThis.ZhiweiWorkFilters?.create(document.querySelector('#eventFilters'), { events: true, onChange() {
+      eventOffset = 0; eventGeneration++; void loadEvents()
+    } })
     async function loadEvents() {
       const panel = document.querySelector('#eventsPanel')
       if (panel && (panel.hidden || document.querySelector('#panel-work')?.hidden))
@@ -69,15 +74,23 @@
       if (eventsLoading)
         return
       eventsLoading = true
+      const version = eventGeneration
       try {
-        const [events, stats] = await Promise.all([
-          ZhiweiAdminRequest.json('/api/v1/events?limit=100'),
+        const eventQuery = `offset=${eventOffset}&limit=100&${eventFilters?.query() || 'live_only=true'}`
+        const [eventPage, stats] = await Promise.all([
+          ZhiweiAdminRequest.json('/api/v1/events/browse?' + eventQuery),
           ZhiweiAdminRequest.json('/api/v1/event-stats'),
         ])
+        const events = eventPage.events
         const ids = Array.isArray(events) ? events.filter(item => item?.details?.source === 'ep_patrol_local' && /^[a-f0-9]{32}$/.test(item.id)).slice(0, 100).map(item => item.id) : []
         const followupData = ids.length ? await ZhiweiAdminRequest.json('/api/v1/patrol/followups?ids='+ids.join(','), { headers: operatorHeaders() }) : {items:[]}
         if (!Array.isArray(followupData.items) || followupData.items.length > 100)
           throw new Error('invalid_patrol_followups')
+        if (version !== eventGeneration) return
+        if (!events.length && eventOffset > 0 && Number.isSafeInteger(eventPage.matched_total)) {
+          eventOffset = Math.max(0, Math.ceil(eventPage.matched_total / 100) - 1) * 100
+          eventGeneration++; return
+        }
         const followups = new Map(followupData.items.map(item => [item.event_id, item]))
         if (!Array.isArray(events) || events.length > 100
           || events.some(item => !item || typeof item.id !== 'string')
@@ -213,15 +226,22 @@
             selected.focus({preventScroll:true})
           }
         } catch { /* The normal list remains usable without session storage. */ }
-        eventStatus.textContent = `目前顯示 ${liveEvents.length} 項現場回報`
+        eventStatus.textContent = `本頁顯示 ${liveEvents.length} 項現場回報${Number.isSafeInteger(eventPage.matched_total) ? `，共 ${eventPage.matched_total} 項符合條件` : ''}`
+        document.querySelector('#eventsPage').textContent = `第 ${Math.floor(eventOffset / 100) + 1} 頁`
+        document.querySelector('#eventsPrevious').disabled = eventOffset === 0
+        document.querySelector('#eventsNext').disabled = eventPage.has_more !== true
         statsText.textContent = '最近載入的回報；歷史演練已收起，原紀錄仍保留。'
       }
       catch {
+        if (version !== eventGeneration) return
+        document.querySelector('#eventsPrevious').disabled = true
+        document.querySelector('#eventsNext').disabled = true
         eventStatus.textContent = '事件載入失敗或逾時；目前列表不可視為最新，請稍後重新整理。'
         statsText.textContent = '事件統計未能核對；不是零事件。'
       }
       finally {
         eventsLoading = false
+        if (version !== eventGeneration) void loadEvents()
       }
     }
 
@@ -239,6 +259,12 @@
       }
     }
 
+    document.querySelector('#eventsPrevious').addEventListener('click', () => {
+      if (!eventsLoading && eventOffset >= 100) { eventOffset -= 100; eventGeneration++; void loadEvents() }
+    })
+    document.querySelector('#eventsNext').addEventListener('click', () => {
+      if (!eventsLoading && !document.querySelector('#eventsNext').disabled) { eventOffset += 100; eventGeneration++; void loadEvents() }
+    })
     document.querySelector('#refreshEvents').addEventListener('click', loadEvents)
     loadEvents()
     document.addEventListener?.('worksectionchange', () => { void Promise.resolve().then(loadEvents) })

@@ -2,9 +2,10 @@
 const assert=require('node:assert/strict')
 const fs=require('node:fs')
 const path=require('node:path')
-const {chromium}=require(path.resolve('.experiments/optimization-lab-20261029/node/node_modules/playwright'))
+let chromium
+try{({chromium}=require('@playwright/test'))}catch{({chromium}=require(path.resolve('.experiments/optimization-lab-20261029/node/node_modules/playwright')))}
 async function main(){
- const browser=await chromium.launch({headless:true,executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',args:['--mute-audio']})
+ const browser=await chromium.launch(process.platform==='win32'?{headless:true,executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',args:['--mute-audio']}:{headless:true})
  const context=await browser.newContext({serviceWorkers:'block',permissions:[]})
  const unexpected=[],synthesis=[]
  await context.route('**/*',route=>{

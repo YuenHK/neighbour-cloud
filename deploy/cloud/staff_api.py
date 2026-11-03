@@ -1,13 +1,14 @@
 """Staff-only event/follow-up adapters; no hardware or native app imports."""
 import re
 import sqlite3
-from typing import Literal
+from typing import Annotated, Literal
 
-from fastapi import APIRouter, HTTPException, Path, Query
+from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from pydantic import BaseModel, ConfigDict, Field
 
 from deploy.cloud.photo_api import PhotoUnavailable, StaffPhotos
 from edge_hub.patrol_followup import PatrolFollowup
+from edge_hub.workbench_query import parameters as list_parameters
 
 EVENT_ID = r'^[A-Za-z0-9_-]{1,120}$'
 PATCH_PATH = re.compile(r'/api/v1/events/[A-Za-z0-9_-]{1,120}')
@@ -106,12 +107,14 @@ def staff_router(services, authorize):
     manager = CloudFollowup(services)
 
     @router.get('/api/v1/patrol/workbench')
-    def workbench():
+    def workbench(filters: Annotated[dict, Depends(list_parameters)], limit: int = Query(default=100, ge=1, le=100),
+                  offset: int = Query(default=0, ge=0, le=1_000_000)):
         authorize()
-        events = services.events.query(limit=100, offset=0)
+        page = services.events.browse(limit=limit, offset=offset, **filters)
+        events = page['events']
         ids = [event.id for event in events if event.details.get('source') == 'ep_patrol_local'
                and re.fullmatch('[a-f0-9]{32}', event.id)]
-        return {'events': events, 'stats': services.events.stats(),
+        return {**page, 'stats': services.events.stats(),
                 'followups': {'items': manager.snapshot(ids) if ids else []}}
 
     @router.get('/api/v1/events')

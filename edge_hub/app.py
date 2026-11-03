@@ -3,10 +3,11 @@ import os
 import secrets
 import sqlite3
 from pathlib import Path
-from typing import Literal
+from typing import Annotated, Literal
 
 import httpx
 from fastapi import (
+    Depends,
     FastAPI,
     Header,
     HTTPException,
@@ -75,6 +76,7 @@ from edge_hub.service_readiness import readiness_router
 from edge_hub.siliconflow import CHAT_MODEL as SILICONFLOW_CHAT_MODEL
 from edge_hub.system_status import local_system_status
 from edge_hub.vision_runtime import VisionRuntime, configured_vision_enabled
+from edge_hub.workbench_query import parameters as list_parameters
 
 assert_native_writes_allowed(Path(__file__).resolve().parents[1])
 app = FastAPI(title="鄰伴智慧社區平台")
@@ -372,6 +374,12 @@ def list_events(since_ms: int | None = Query(default=None, ge=0, le=2**53 - 1),
                 limit: int = Query(default=1000, ge=1, le=1000),
                 offset: int = Query(default=0, ge=0, le=1_000_000)) -> list[Event]:
     return store.query(since_ms=since_ms, limit=limit, offset=offset)
+
+
+@app.get('/api/v1/events/browse', response_model_exclude_none=True)
+def browse_events(filters: Annotated[dict, Depends(list_parameters)], limit: int = Query(default=100, ge=1, le=100),
+                  offset: int = Query(default=0, ge=0, le=1_000_000)):
+    return store.browse(limit=limit, offset=offset, **filters)
 
 
 @app.get('/api/v1/events/cursor')

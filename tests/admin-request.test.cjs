@@ -66,7 +66,7 @@ function pageHarness(request, eventsOpen = true, pageSource = html) {
       })
       return nodes.get(selector)
     },
-    createElement() { return { textContent: '', appendChild() {}, addEventListener() {} } },
+    createElement() { return { textContent: '', dataset: {}, children: [], appendChild(item) { this.children.push(item) }, append(...items) { this.children.push(...items) }, addEventListener() {} } },
   }
   const page = vm.createContext({ AbortController, setTimeout, clearTimeout, document,
     setInterval() {}, fetch: request, performance: { now: () => 0 } })
@@ -113,16 +113,16 @@ test('report section does not poll until staff select it', async () => {
 test('overlapping event polls are coalesced while an earlier snapshot is pending', async () => {
   const pending = []
   const { page, nodes } = pageHarness(async path => {
-    if (path === '/api/v1/events?limit=100' || path === '/api/v1/event-stats')
+    if (path.startsWith('/api/v1/events/browse?') || path === '/api/v1/event-stats')
       return new Promise(resolve => pending.push(() => resolve({ ok: true,
-        json: async () => path.endsWith('event-stats') ? emptyStats : [] })))
+        json: async () => path.endsWith('event-stats') ? emptyStats : {events:[],matched_total:0,has_more:false} })))
     return { ok: false, status: 503 }
   })
   await page.loadEvents()
   assert.equal(pending.length, 2)
   pending.forEach(resolve => resolve())
   await flush()
-  assert.match(nodes.get('#eventStatus').textContent, /目前顯示 0 項現場回報/)
+  assert.match(nodes.get('#eventStatus').textContent, /本頁顯示 0 項現場回報/)
 })
 
 test('simulation event creation is explicitly marked as software validation', async () => {
@@ -143,7 +143,7 @@ test('live workbench hides historical software demonstrations without deleting r
     { id: 'real-report', details: {}, type: 'leak_detected', severity: 'warning', status: 'pending' },
     { id: 'demo-report', details: { is_test: true }, type: 'litter_detected', severity: 'notice', status: 'pending' },
   ]
-  const { nodes } = pageHarness(async path => ({ ok: true, json: async () => path.endsWith('event-stats') ? { ...emptyStats, total: 2, pending: 2 } : rows }))
+  const { nodes } = pageHarness(async path => ({ ok: true, json: async () => path.endsWith('event-stats') ? { ...emptyStats, total: 2, pending: 2 } : {events:rows,matched_total:1,has_more:false} }))
   await flush()
   assert.equal(nodes.get('#events').rows.length, 1)
   assert.match(nodes.get('#eventStatus').textContent, /1 項現場回報/)
