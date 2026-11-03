@@ -211,7 +211,7 @@ test('actual cloud panel without a native speech host keeps three-turn context, 
   assert.equal(input.body.session_id,oldSession)
   sandbox.panel.draft.value = '未送出的舊居民內容'
   now.value += 180000; sandbox.panel.checkIdle()
-  assert.deepEqual(visitorEvents, ['estate:resident-session-ended'])
+  assert.deepEqual(visitorEvents, ['resident-conversation-ready', 'estate:resident-session-ended'])
   assert.equal(input.signal.aborted,true)
   finishInput(new Response(JSON.stringify({text:'不屬於新居民的辨識',engine:'cloudflare-whisper-free',model:'@cf/openai/whisper-large-v3-turbo'})))
   await assert.rejects(oldInput)
@@ -393,7 +393,7 @@ test('actual resident panel expires draft, profile and pending speech without re
   const nativeCalls = []
   const nativeSelection = { activeProvider: 'native-test', activeModel: 'native-model' }
   const sandbox = vm.createContext({
-    AbortController, AbortSignal, crypto: require('node:crypto').webcrypto,
+    AbortController, AbortSignal, Event, crypto: require('node:crypto').webcrypto,
     Date: { now: () => now.value },
     setTimeout: (callback, delay) => { const id = ++sequence; timers.set(id, { callback, due: now.value + delay }); return id },
     clearTimeout: id => timers.delete(id), ref: value => ({ value }),
@@ -413,7 +413,7 @@ test('actual resident panel expires draft, profile and pending speech without re
     useProvidersStore: () => ({ getProviderConfig: () => ({ baseUrl: 'http://127.0.0.1:8765/v1/' }), getProviderInstance: async id => ({ id }) }),
     useSpeechRuntimeStore: () => ({ isHost: () => true, openIntent: () => ({ cancel: () => cancelled++, writeLiteral() {}, end() {} }) }),
     useSpeechOutputControlStore: () => ({ requestStopSpeaking() {} }),
-    window: { addEventListener() {}, removeEventListener() {}, parent: { postMessage() {} } },
+    window: { addEventListener() {}, removeEventListener() {}, dispatchEvent() {}, parent: { postMessage() {} } },
     document: { addEventListener() {}, removeEventListener() {} },
     fetch: async (url, options) => url.includes('8765/health')
       ? { ok: true, json: async () => ({ tts_cloud_last_error: { at_ms: now.value, reason: 'rate_limited' } }) }

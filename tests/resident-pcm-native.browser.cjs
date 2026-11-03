@@ -13,7 +13,8 @@ async function main(){
   if(url.href==='http://127.0.0.1:8765/v1/audio/resident-stream'){
    const headers={'Access-Control-Allow-Origin':'http://127.0.0.1:4173','Access-Control-Allow-Methods':'POST,OPTIONS','Access-Control-Allow-Headers':'content-type'}
    if(request.method()==='OPTIONS')return route.fulfill({status:204,headers})
-   synthesis.push(request.postDataJSON())
+   const body=request.postDataJSON();synthesis.push(body)
+   if(!body.input.trim())return route.fulfill({status:400,headers,contentType:'application/json',body:'{}'})
    return route.fulfill({headers,contentType:'text/event-stream',body:'data: '+JSON.stringify({audio:Buffer.alloc(4096).toString('base64')})+'\n\ndata: {"done":true}\n\n'})
   }
   unexpected.push(url.href);return route.abort()
@@ -29,12 +30,13 @@ async function main(){
     createBuffer:(channels,count,rate)=>({duration:count/rate,getChannelData:()=>new Float32Array(count)}),
     createBufferSource:()=>{const node={connect(){},disconnect(){},start(){},stop(){node.stopped=true}};nodes.push(node);return node}}
    const player=new ResidentPcm({context:audio,started:()=>started++,failed:()=>failed++})
-   player.write('公開虛構句子');player.end();await player.chain
+   player.write('公開虛構句子');player.write('\n\n');player.write('  \t ');player.write('下一段仍然朗讀。');player.end();await player.chain
    player.cancel()
-   return {started,failed,stopped:nodes[0]?.stopped===true}
+   return {started,failed,stopped:nodes.every(node=>node.stopped===true),scheduled:nodes.length}
   },fs.readFileSync('airi_overlay/resident-pcm.js','utf8'))
-  assert.deepEqual(result,{started:1,failed:0,stopped:true})
-  assert.equal(synthesis.length,1)
+  assert.deepEqual(result,{started:1,failed:0,stopped:true,scheduled:2})
+  assert.equal(synthesis.length,2)
+  assert.ok(synthesis.every(body=>body.input.trim()))
   assert.equal(synthesis[0].voice,'zh-HK-HiuMaanNeural')
   assert.deepEqual(unexpected,[])
   console.log(JSON.stringify({native_browser_fetch:true,pcm_scheduled:true,cancelled:true,voice:'zh-HK-HiuMaanNeural',outside_requests:0,actual_synthesis:0,playback:0}))

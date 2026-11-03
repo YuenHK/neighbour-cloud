@@ -316,8 +316,8 @@
     },
     {
       "path": "airi_overlay/resident-pcm.js",
-      "bytes": 7211,
-      "sha256": "6d9fa1df55846b56d74b4e597b4285dbde5d8b727a0b4025cc836576be31b4f8"
+      "bytes": 7378,
+      "sha256": "5d76743d08ccde353316bb52d0994d637a3ba71911f8db459d634a12a4a748ee"
     },
     {
       "path": "airi_overlay/resident-recovery.js",
@@ -596,8 +596,8 @@
     },
     {
       "path": "deploy/cloud/rollout.py",
-      "bytes": 8548,
-      "sha256": "13c5d09ddbbdbe0783e4ba50fc34eb9a4d9d703cabe6d6e0117a6eb9d45ab92a"
+      "bytes": 8542,
+      "sha256": "4c163636c2316d6fe6d9bdaeaa043c231b22bf71cff7257be9095906baff1dcc"
     },
     {
       "path": "deploy/cloud/runtime_storage.py",

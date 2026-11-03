@@ -19,7 +19,9 @@ export class ResidentPcm {
   }
 
   write(text) {
-    if (this.controller.signal.aborted)
+    // Model sentence streams also carry paragraph breaks and stripped markup.
+    // They remain in the transcript, but are not synthesis requests.
+    if (this.controller.signal.aborted || !text.trim())
       return
     if (++this.queued > 12) {
       this.cancel()

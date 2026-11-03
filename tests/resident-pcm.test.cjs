@@ -5,6 +5,25 @@ const modulePromise=import('data:text/javascript;base64,'+Buffer.from(fs.readFil
 const flush=()=>new Promise(resolve=>setImmediate(resolve))
 function context(){return {state:'running',currentTime:0,destination:{},nodes:[],resume:async()=>{},close:async()=>{},createBuffer(c,n,r){return {duration:n/r,getChannelData:()=>new Float32Array(n)}},createBufferSource(){const n={connect(){},disconnect(){},start(){n.started=true},stop(){n.stopped=true}};this.nodes.push(n);return n}}}
 
+test('paragraph breaks and formatting-only deltas preserve text without empty synthesis or cancelling later speech',async()=>{
+ const {ResidentPcm}=await modulePromise
+ const {readResidentReply,residentSpeechText}=await import('data:text/javascript;base64,'+Buffer.from(fs.readFileSync('airi_overlay/resident-response.js','utf8')).toString('base64'))
+ const ctx=context(),inputs=[];let failed=0
+ const player=new ResidentPcm({context:ctx,failed:()=>failed++,fetcher:async(_url,init)=>{
+  const {input}=JSON.parse(init.body);inputs.push(input)
+  if(!input.trim())return new Response('{}',{status:400})
+  return new Response('data: '+JSON.stringify({audio:Buffer.alloc(512).toString('base64')})+'\n\ndata: {"done":true}\n\n')
+ }})
+ const parts=['回收物可以分類。','\n','\n',' ** ','一般垃圾另行處理。']
+ const response=new Response(parts.map(content=>'data: '+JSON.stringify({choices:[{delta:{content}}]})+'\n\n').join('')+'data: [DONE]\n\n',{headers:{'Content-Type':'text/event-stream'}})
+ const answer=await readResidentReply(response,delta=>player.write(residentSpeechText(delta)),new AbortController().signal)
+ player.end();await player.chain
+ assert.equal(answer,parts.join(''));assert.equal(failed,0)
+ assert.deepEqual(inputs,['回收物可以分類。','一般垃圾另行處理。'])
+ assert.equal(ctx.nodes.length,2);assert.equal(player.controller.signal.aborted,false)
+ player.cancel()
+})
+
 test('voice retries only a confirmed pre-synthesis busy response, not an unknown provider failure',async()=>{
  const {ResidentPcm}=await modulePromise
  const ctx=context();let calls=0,failed=0
