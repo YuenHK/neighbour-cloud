@@ -1,4 +1,4 @@
-"""Immutable shared Live2D archives in the existing durable estate database.
+"""Immutable shared Live2D archives and VRM files in the durable estate database.
 
 Schema installation is an explicit stopped-writer operation. Importing this
 module or opening an HTTP route never migrates, publishes or deletes a model.
@@ -21,7 +21,7 @@ from PIL import Image
 MAX_ARCHIVE = 32 * 1024 * 1024
 MAX_TOTAL = 64 * 1024 * 1024
 CHUNK = 256 * 1024
-MODEL_ID = re.compile(r'cloud-live2d-([a-f0-9]{64})$')
+MODEL_ID = re.compile(r'cloud-(?:live2d|vrm)-([a-f0-9]{64})$')
 TABLES = {'cloud_avatar_models', 'cloud_avatar_model_chunks'}
 
 
@@ -151,14 +151,16 @@ class AvatarAssets:
 
     @staticmethod
     def metadata(row):
-        return {'id': 'cloud-live2d-' + row[0], 'sha256': row[0], 'name': row[1], 'bytes': row[2],
-                'format': 'live2d-zip', 'uploaded_ms': row[4], 'entrypoint': row[5]}
+        vrm = row[5] == 'model.vrm'
+        return {'id': ('cloud-vrm-' if vrm else 'cloud-live2d-') + row[0], 'sha256': row[0], 'name': row[1], 'bytes': row[2],
+                'format': 'vrm' if vrm else 'live2d-zip', 'uploaded_ms': row[4], 'entrypoint': row[5]}
 
     def put(self, identity, name, content):
         digest = model_digest(identity)
         if hashlib.sha256(content).hexdigest() != digest:
             raise ValueError('上載內容摘要不一致；沒有發佈。')
-        entrypoint = validate_archive(content)
+        from deploy.cloud.avatar_vrm import validate_vrm
+        entrypoint = validate_vrm(content) if identity.startswith('cloud-vrm-') else validate_archive(content)
         name = name.strip()
         if not 1 <= len(name) <= 100 or any(ord(char) < 32 for char in name):
             raise ValueError('模型名稱不正確。')
@@ -167,7 +169,7 @@ class AvatarAssets:
             db.execute('BEGIN IMMEDIATE')
             old = db.execute('SELECT digest,name,bytes,parts,uploaded_ms,entrypoint FROM cloud_avatar_models WHERE digest=?', (digest,)).fetchone()
             if old:
-                if old[2] != len(content) or old[3] != parts:
+                if old[2] != len(content) or old[3] != parts or self.metadata(old)['id'] != identity:
                     raise ValueError('已保存的模型資料需要核對。')
                 return self.metadata(old)
             used, count = db.execute('SELECT COALESCE(SUM(bytes),0),COUNT(*) FROM cloud_avatar_models').fetchone()
@@ -184,12 +186,14 @@ class AvatarAssets:
     def get(self, identity):
         digest = model_digest(identity)
         with self.cache_lock:
-            if digest in self.cache:
-                self.cache.move_to_end(digest)
-                return self.cache[digest]
+            if identity in self.cache:
+                self.cache.move_to_end(identity)
+                return self.cache[identity]
         with closing(self.connect(True)) as db:
-            row = db.execute('SELECT bytes,parts FROM cloud_avatar_models WHERE digest=?', (digest,)).fetchone()
+            row = db.execute('SELECT bytes,parts,entrypoint FROM cloud_avatar_models WHERE digest=?', (digest,)).fetchone()
             if row is None:
+                return None
+            if (row[2] == 'model.vrm') != identity.startswith('cloud-vrm-'):
                 return None
             if not 0 < row[0] <= MAX_ARCHIVE or row[1] != (row[0] + CHUNK - 1) // CHUNK:
                 raise ValueError('model_inventory_requires_review')
@@ -204,7 +208,7 @@ class AvatarAssets:
         if len(content) != row[0] or hashlib.sha256(content).hexdigest() != digest:
             raise ValueError('model_digest_mismatch')
         with self.cache_lock:
-            self.cache[digest] = content
+            self.cache[identity] = content
             while sum(len(value) for value in self.cache.values()) > MAX_TOTAL:
                 self.cache.popitem(last=False)
         return content

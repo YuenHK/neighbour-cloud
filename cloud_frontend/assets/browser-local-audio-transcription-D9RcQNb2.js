@@ -1,2 +1,0 @@
-import{C as e,Nt as t,X as n,j as r}from"./vue.runtime.esm-bundler-BpXz90Lz.js";import{R as i}from"./components-omHiCXgb.js";import{t as a}from"./route-block-DBhJxsjT.js";var o=r({__name:`browser-local-audio-transcription`,setup(r){return(r,a)=>(n(),e(t(i)))}});typeof a==`function`&&a(o);var s=o;export{s as default};
-//# sourceMappingURL=browser-local-audio-transcription-D9RcQNb2.js.map

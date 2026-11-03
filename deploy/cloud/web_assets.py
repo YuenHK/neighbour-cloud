@@ -151,7 +151,7 @@ class CloudWebAssets:
             headers.update({'Permissions-Policy': 'microphone=(self), camera=(), autoplay=(self)',
                 'Content-Security-Policy': "default-src 'self'; script-src 'self' blob: 'wasm-unsafe-eval'; "
                     "style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; "
-                    "connect-src 'self' data: blob: https://huggingface.co https://*.hf.co; worker-src 'self' blob:; "
+                    "connect-src 'self' data: blob: https://huggingface.co https://*.hf.co https://arweave.net https://*.arweave.net; worker-src 'self' blob:; "
                     "media-src 'self' blob:; frame-src 'none'; frame-ancestors 'self'; base-uri 'none'"})
             return HTMLResponse(self.resident.read_bytes(), headers=headers)
         source = self.files.get(path)

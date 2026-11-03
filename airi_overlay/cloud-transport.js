@@ -3,7 +3,7 @@
 const photoPath = /^\/api\/v1\/patrol\/events\/[\w-]{1,120}\/photo$/
 const staffEventPath = /^\/api\/v1\/events\/[\w-]{1,120}$/
 const followupPath = /^\/api\/v1\/patrol\/events\/[a-f0-9]{32}\/followup$/
-const modelUploadPath = /^\/api\/v1\/service-desk\/airi-models\/cloud-live2d-[a-f0-9]{64}$/
+const modelUploadPath = /^\/api\/v1\/service-desk\/airi-models\/cloud-(?:live2d|vrm)-[a-f0-9]{64}$/
 const robotPath = /^\/api\/v1\/robot\/ep\/(?:fleet|qr|connection|connect|disconnect|cancel-pairing|lease|stop|prepare-control|command|reset-stop|discovery|devices\/[A-Za-z0-9_-]{1,60}(?:\/(?:frame\.jpg|connection|video-frame|connect|disconnect|prepare-control|lease|stop|command|video-start|video-stop|gimbal-start|gimbal-follow|gimbal-target|gimbal-stop|speed|manual-warning|infrared-warning|check-stop|reset-stop|patrol))?)$/
 const allowedHeaders = new Set(['content-type', 'accept', 'x-resident-session', 'x-resident-turn'])
 const allowedOptions = new Set(['method', 'body', 'headers', 'signal', 'cache', 'credentials', 'redirect', 'mode', 'referrerPolicy', 'keepalive'])

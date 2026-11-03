@@ -347,7 +347,7 @@ def cloud_display_models(source):
     """Resolve immutable shared IDs before native missing-file fallback."""
     old = '  async function getDisplayModel(id: string) {\n    await until(displayModelsFromIndexedDBLoading).toBe(false)'
     new = old + """
-    if (Reflect.get(globalThis, '__NEIGHBOUR_CLOUD__') === true && /^cloud-live2d-[a-f0-9]{64}$/.test(id)) {
+    if (Reflect.get(globalThis, '__NEIGHBOUR_CLOUD__') === true && /^cloud-(?:live2d|vrm)-[a-f0-9]{64}$/.test(id)) {
       try {
         const loader = Reflect.get(globalThis, '__NEIGHBOUR_LOAD_SHARED_MODEL__')
         if (typeof loader !== 'function')

@@ -176,13 +176,13 @@
     },
     {
       "path": "airi_overlay/cloud-model-gallery.json",
-      "bytes": 21735,
-      "sha256": "06b332467b209e782658dda8ef5c6ca12447fd7d3e803f1511bc52327534a56d"
+      "bytes": 138717,
+      "sha256": "9ed1d037eac368a4c0e1709d053adfd85338104c87f66d9bc31d7adfdf4f422c"
     },
     {
       "path": "airi_overlay/cloud-model-gallery.vue",
-      "bytes": 13078,
-      "sha256": "89a35eac78cf849ce2363e3d9979cef97bca66442f64dbef6d66e46872592829"
+      "bytes": 14945,
+      "sha256": "fc96a7b46897f5b1e6982b2b5d9d4ed788d5a922b2b68322f2c40cae522d0350"
     },
     {
       "path": "airi_overlay/cloud-model-library.vue",
@@ -201,8 +201,8 @@
     },
     {
       "path": "airi_overlay/cloud-profile-bootstrap.ts",
-      "bytes": 3880,
-      "sha256": "2986f8b37586a55d120fd69f237d90590d74d0607aa3685db40f1cc79f31dc34"
+      "bytes": 3888,
+      "sha256": "072ed706db610bc364ed092241d6c1a5a83b83b3b8e5b16a29b49a365fa4819f"
     },
     {
       "path": "airi_overlay/cloud-readiness.js",
@@ -211,8 +211,8 @@
     },
     {
       "path": "airi_overlay/cloud-resident.css",
-      "bytes": 2455,
-      "sha256": "93c7559e723e28bd9f4648e47a9aee77f89fe40602acdc8279f8340ccd1a2f08"
+      "bytes": 2158,
+      "sha256": "d054e6baf750e8a72e8b45a398bbf5a4686d7417172929285fa632f0f35b5ee5"
     },
     {
       "path": "airi_overlay/cloud-session.js",
@@ -221,18 +221,18 @@
     },
     {
       "path": "airi_overlay/cloud-settings.vue",
-      "bytes": 14500,
-      "sha256": "5c43ad0fd1d2b064331bcc98e59025b2c9b90a67c720b7da11052167d5f4a93a"
+      "bytes": 14535,
+      "sha256": "599dd4073d42f5ba65950a7f1431dca28eb7ffc6b09106ebdcc170c6c2472b2e"
     },
     {
       "path": "airi_overlay/cloud-shared-models.ts",
-      "bytes": 4949,
-      "sha256": "bd726fb4fc4e2b2ba4926a8453eafe5277132c23bdbbe298789694a761f7f352"
+      "bytes": 5332,
+      "sha256": "853bdfc7ed3342ecdf40caf8e8ddde96b253f4132c8680c51c589d9fd02fb377"
     },
     {
       "path": "airi_overlay/cloud-transport.js",
-      "bytes": 9895,
-      "sha256": "19117c645c5a43bc84356b98734bf60e25ba7574d3d5ffce94cf735f89e26159"
+      "bytes": 9903,
+      "sha256": "e5015528a90b21c7502829f3be15719d94136c41243895e0e665ee5616808710"
     },
     {
       "path": "airi_overlay/embedded-settings.ts",
@@ -376,8 +376,8 @@
     },
     {
       "path": "deploy/cloud/README.zh-Hant.md",
-      "bytes": 72456,
-      "sha256": "4eb7329bf6c64bc23cc13e007a9f6e966e0072dbdfc04dd0867fc8bb03afdd6b"
+      "bytes": 73741,
+      "sha256": "0c88bbedb51deaed393317043e592e139f19beb75f4aadd215c2d7985073a5c6"
     },
     {
       "path": "deploy/cloud/REPAIR-2026-10-31.zh-Hant.md",
@@ -401,18 +401,23 @@
     },
     {
       "path": "deploy/cloud/avatar_api.py",
-      "bytes": 7143,
-      "sha256": "4add6ec7a0d8950aaea24f14c288582dbb585f3f8ed8d64ecf0efeb82764cac9"
+      "bytes": 7391,
+      "sha256": "c5dea86b813601a341e1f484f25ec18f45e321130987b7d67b908203882adf08"
     },
     {
       "path": "deploy/cloud/avatar_assets.py",
-      "bytes": 11345,
-      "sha256": "6f1c641440f4ff27107e4d492ce7be5d027808ee9523c4df2080ae6df59826d0"
+      "bytes": 11728,
+      "sha256": "966ab044aa0cc6391826744cb890c67e5baa296d6b8b27c3d2fdc3ccf07b5ef0"
     },
     {
       "path": "deploy/cloud/avatar_prepare.py",
       "bytes": 7998,
       "sha256": "82bfe4c6e2703d33e0220b0c26f4554a9f44be5c35a6e2dcba701b6a331d475d"
+    },
+    {
+      "path": "deploy/cloud/avatar_vrm.py",
+      "bytes": 6394,
+      "sha256": "8581d9dde2629a70dd2b775b5bc980cb21d9301b19d11da36050f9d613320e97"
     },
     {
       "path": "deploy/cloud/backup_store.py",
@@ -456,8 +461,8 @@
     },
     {
       "path": "deploy/cloud/frontend_wiring.py",
-      "bytes": 21772,
-      "sha256": "17ddb8342b282f3312a1e3a55c9f89bf0772de99c8b9cb052ac8591d42595724"
+      "bytes": 21780,
+      "sha256": "b81bcdfe9f9ee05ceb5c935b322fd028282000d8a1e3307cf021721edd766b34"
     },
     {
       "path": "deploy/cloud/gallery_sources.py",
@@ -556,8 +561,8 @@
     },
     {
       "path": "deploy/cloud/presentation.py",
-      "bytes": 6733,
-      "sha256": "1514cafbbad606171315c20d1bfd37cad79b57a06b58fac3d25de9bb34bec62f"
+      "bytes": 6960,
+      "sha256": "8e03b55718c3e854c92c9a5e8933977912832f645dbc4ab7faecff833cab3263"
     },
     {
       "path": "deploy/cloud/quota_api.py",
@@ -596,8 +601,8 @@
     },
     {
       "path": "deploy/cloud/rollout.py",
-      "bytes": 8534,
-      "sha256": "16c38e9e40df06210875f6d1b05211f2516ce19f45c0c8f110b6fc2489d50c35"
+      "bytes": 8532,
+      "sha256": "a9a1b090739cf0e04148b29657c97467ec8b86ae12410648d8ac373bb03ed231"
     },
     {
       "path": "deploy/cloud/runtime_storage.py",
@@ -786,8 +791,8 @@
     },
     {
       "path": "deploy/cloud/web_assets.py",
-      "bytes": 10638,
-      "sha256": "72a45fdfadc1baa34cf404413fd6038c243f65fce0351dcde31f791f35f2880f"
+      "bytes": 10680,
+      "sha256": "a2591f94e11374b0c44ebfe7c2c5fb80d8a030e84f5e2f6d7cd08c66ad9bbd84"
     },
     {
       "path": "edge_hub/__init__.py",
@@ -1526,8 +1531,8 @@
     },
     {
       "path": "tools/acceptance_gate.py",
-      "bytes": 4489,
-      "sha256": "7da9c840b2f8160e6067d3d1ef2e15eed212841136bc603cff1613c6f665c465"
+      "bytes": 4657,
+      "sha256": "4f3e5036057ff65ad7831f012ee6c072683627b5a8d4cfe64f7e2d14cfb1d58d"
     },
     {
       "path": "tools/check_release_gate.py",
@@ -1566,8 +1571,8 @@
     },
     {
       "path": "tools/toxiproxy_acceptance.py",
-      "bytes": 5776,
-      "sha256": "161394ae605c5906ef2c0e7821bb96d328c100101187f4beea8b6ddc9a0a02b1"
+      "bytes": 6392,
+      "sha256": "b912e812c9776a1283caaefd6df96a7f8fdae6d6aea37de873459f27f19af987"
     },
     {
       "path": "tools/vision_anomaly_lab.py",

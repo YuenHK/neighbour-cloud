@@ -18,7 +18,9 @@ TESTS = ['test_community_operations.py', 'test_cloud_http_app.py', 'test_cloud_s
          'test_cantonese_multiturn.py', 'test_azure_stream_arrival.py',
          'test_resident_pcm_stream.py', 'test_hardware_agent.py', 'test_patrol_schedule.py',
          'test_ep_patrol.py', 'test_cloud_web_assets.py', 'test_workbench_filters.py',
-         'test_cloud_admin_assets.py', 'test_service_desk.py']
+         'test_cloud_admin_assets.py', 'test_service_desk.py', 'test_cloud_avatar_vrm.py',
+         'test_cloud_avatar_assets.py', 'test_cloud_avatar_api.py', 'test_cloud_presentation.py',
+         'test_cloud_gallery_catalog.py']
 
 
 def fingerprint(root):

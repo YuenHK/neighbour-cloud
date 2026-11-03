@@ -152,8 +152,8 @@ async function save() {
   const builtin = ['preset-live2d-1', 'preset-live2d-2', 'preset-vrm-1', 'preset-vrm-2'].includes(selected)
   const localModel = !builtin && !sharedModelPattern.test(selected) ? await display.getDisplayModel(selected) : undefined
   if (!builtin && !sharedModelPattern.test(selected)
-    && (!localModel || localModel.type !== 'file' || localModel.format !== DisplayModelFormat.Live2dZip)) {
-    status.value = '目前共享匯入支援 Live2D ZIP；其他格式的原檔仍保存在此裝置。'
+    && (!localModel || localModel.type !== 'file' || ![DisplayModelFormat.Live2dZip, DisplayModelFormat.VRM].includes(localModel.format))) {
+    status.value = '共享匯入支援 Live2D ZIP 及 VRM；其他格式的原檔仍保存在此裝置。'
     return
   }
   const background = current.extensions?.airi?.modules?.activeBackgroundId ?? scene.value

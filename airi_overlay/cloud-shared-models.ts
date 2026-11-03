@@ -4,7 +4,7 @@ import localforage from 'localforage'
 
 import { DisplayModelFormat } from '@proj-airi/stage-ui/stores/display-models'
 
-export const sharedModelPattern = /^cloud-live2d-[a-f0-9]{64}$/
+export const sharedModelPattern = /^cloud-(?:live2d|vrm)-[a-f0-9]{64}$/
 export const maxModelBytes = 32 * 1024 * 1024
 const pending = new Map<string, Promise<DisplayModelFile>>()
 const ready = new Map<string, DisplayModelFile>()
@@ -23,7 +23,7 @@ export async function sharedModels() {
     throw new Error('未能載入平台模型清單，原有模型保留。')
   return response.json()
 }
-export async function loadSharedModel(id: string, name = '平台 Live2D 模型.zip'): Promise<DisplayModelFile> {
+export async function loadSharedModel(id: string, name?: string): Promise<DisplayModelFile> {
   if (!sharedModelPattern.test(id))
     throw new Error('shared_model_id_invalid')
   if (ready.has(id))
@@ -31,14 +31,17 @@ export async function loadSharedModel(id: string, name = '平台 Live2D 模型.z
   if (pending.has(id))
     return pending.get(id)!
   const task = (async () => {
-    const key = `neighbour-cloud-model-${id.slice(13)}`
+    const vrm = id.startsWith('cloud-vrm-')
+    const digest = id.slice(vrm ? 10 : 13)
+    const mime = vrm ? 'model/gltf-binary' : 'application/zip'
+    const key = `neighbour-cloud-model-${digest}`
     let cached: Blob | null = null
     try {
       cached = await localforage.getItem<Blob>(key)
     }
     catch { /* Browser cache is optional; never authority. */ }
     let blob: Blob
-    if (cached instanceof Blob && cached.size > 0 && cached.size <= maxModelBytes && await modelHash(cached) === id.slice(13)) {
+    if (cached instanceof Blob && cached.size > 0 && cached.size <= maxModelBytes && await modelHash(cached) === digest) {
       blob = cached
     }
     else {
@@ -69,16 +72,17 @@ export async function loadSharedModel(id: string, name = '平台 Live2D 模型.z
         bytes.set(part, offset)
         offset += part.length
       }
-      blob = new Blob([bytes], { type: 'application/zip' })
-      if (!length || await modelHash(blob) !== id.slice(13))
+      blob = new Blob([bytes], { type: mime })
+      if (!length || await modelHash(blob) !== digest)
         throw new Error('共享模型未能核對完整內容，沒有切換角色。')
       try {
         await localforage.setItem(key, blob)
       }
       catch { /* Keep this verified in-memory copy if device storage is full. */ }
     }
-    const file = new File([blob], name, { type: 'application/zip' })
-    const model: DisplayModelFile = { id, format: DisplayModelFormat.Live2dZip, type: 'file', file, name, importedAt: Date.now() }
+    const filename = name || (vrm ? '平台 VRM 模型.vrm' : '平台 Live2D 模型.zip')
+    const file = new File([blob], filename, { type: mime })
+    const model: DisplayModelFile = { id, format: vrm ? DisplayModelFormat.VRM : DisplayModelFormat.Live2dZip, type: 'file', file, name: filename, importedAt: Date.now() }
     ready.set(id, model)
     return model
   })().finally(() => pending.delete(id))
@@ -90,13 +94,14 @@ export function installSharedModelLoader() {
 }
 export class ModelUploadRejected extends Error {}
 export async function uploadSharedModel(file: File) {
-  if (!file.size || file.size > maxModelBytes || !file.name.toLowerCase().endsWith('.zip'))
-    throw new ModelUploadRejected('共享發佈只接納不超過 32 MB 的 Live2D ZIP；原檔保留。')
+  const vrm = file.name.toLowerCase().endsWith('.vrm')
+  if (!file.size || file.size > maxModelBytes || (!vrm && !file.name.toLowerCase().endsWith('.zip')))
+    throw new ModelUploadRejected('共享發佈接納不超過 32 MB 的 Live2D ZIP 或 VRM；原檔保留。')
   const digest = await modelHash(file)
-  const id = `cloud-live2d-${digest}`
+  const id = `${vrm ? 'cloud-vrm' : 'cloud-live2d'}-${digest}`
   const response = await transport().fetch(`/api/v1/service-desk/airi-models/${id}?name=${encodeURIComponent(file.name.slice(0, 100))}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/zip' },
+    headers: { 'Content-Type': vrm ? 'model/gltf-binary' : 'application/zip' },
     body: file,
     signal: AbortSignal.timeout(180000),
   })
@@ -109,6 +114,6 @@ export async function uploadSharedModel(file: File) {
   const result = await response.json()
   if (result.id !== id || result.sha256 !== digest || result.bytes !== file.size)
     throw new Error('model_upload_acknowledgement_unknown')
-  ready.set(id, { id, format: DisplayModelFormat.Live2dZip, type: 'file', file, name: result.name, importedAt: Date.now() })
+  ready.set(id, { id, format: vrm ? DisplayModelFormat.VRM : DisplayModelFormat.Live2dZip, type: 'file', file, name: result.name, importedAt: Date.now() })
   return result
 }

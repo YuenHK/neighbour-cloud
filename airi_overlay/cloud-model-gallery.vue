@@ -15,6 +15,7 @@ const notify = inject<(message: string) => void>('neighbour-model-status', () =>
 const display = useDisplayModelsStore()
 const query = ref('')
 const platform = ref('all')
+const format = ref('all')
 const accepted = inject('neighbour-model-license-accepted', ref(false))
 const busy = ref('')
 const message = ref('選擇後先預覽；按「儲存至平台」才套用到所有裝置。')
@@ -25,21 +26,22 @@ const ownFile = ref<File>()
 const ownRights = ref(false)
 const ownModels = ref<string[]>([])
 const ownEntry = ref('')
-type GalleryModel = typeof gallery.models[number]
-interface Choice { id: string, name: string, platform: string, image?: string, bytes?: number, model?: DisplayModel, gallery?: GalleryModel, sharedId?: string }
+interface GalleryModel { id: string, name: string, source: string, archive: string, image: string, bytes: number, sha256: string, license: string, terms: string, individual_terms: string, format?: string, platform?: string }
+interface Choice { id: string, name: string, platform: string, format: string, image?: string, bytes?: number, model?: DisplayModel, gallery?: GalleryModel, sharedId?: string }
 const choices = computed(() => {
-  const rows: Choice[] = gallery.models.map(item => ({ id: `gallery:${item.id}`, name: item.name, platform: item.source.includes('live2d.com') ? 'Live2D 官方' : '社群 CC0', image: item.image, bytes: item.bytes, gallery: item }))
+  const rows: Choice[] = (gallery.models as GalleryModel[]).map(item => ({ id: `gallery:${item.id}`, name: item.name, platform: item.platform || (item.source.includes('live2d.com') ? 'Live2D 官方' : '社群 CC0'), format: item.format || 'live2d-zip', image: item.image, bytes: item.bytes, gallery: item }))
   for (const item of shared.value)
-    rows.push({ id: item.id, name: item.name, platform: '平台共享', bytes: item.bytes, sharedId: item.id })
+    rows.push({ id: item.id, name: item.name, platform: '平台共享', format: item.id.startsWith('cloud-vrm-') ? 'vrm' : 'live2d-zip', bytes: item.bytes, sharedId: item.id })
   for (const item of display.displayModels) {
-    if (rows.some(row => row.id === item.id) || (item.format !== DisplayModelFormat.Live2dZip && !item.id.startsWith('preset-vrm-')))
+    if (rows.some(row => row.id === item.id) || ![DisplayModelFormat.Live2dZip, DisplayModelFormat.VRM].includes(item.format))
       continue
-    rows.push({ id: item.id, name: item.name, image: item.previewImage, model: item, platform: item.id.startsWith('preset-') ? 'AIRI 內建' : '此裝置' })
+    rows.push({ id: item.id, name: item.name, format: item.format, image: item.previewImage, model: item, platform: item.id.startsWith('preset-') ? 'AIRI 內建' : '此裝置' })
   }
   return rows.filter(row => !failed.value.has(row.id))
 })
 const platforms = computed(() => [...new Set(choices.value.map(row => row.platform))])
 const filtered = computed(() => choices.value.filter(row => (platform.value === 'all' || row.platform === platform.value)
+  && (format.value === 'all' || row.format === format.value)
   && `${row.name} ${row.platform}`.toLocaleLowerCase().includes(query.value.trim().toLocaleLowerCase())))
 function status(value: string) {
   message.value = value
@@ -66,13 +68,36 @@ async function choose(row: Choice) {
     let model = row.model
     if (row.gallery) {
       const item = row.gallery
-      const response = await fetch(item.archive, { credentials: 'omit', redirect: 'error', signal: AbortSignal.timeout(60000) })
-      if (!response.ok)
+      const remote = item.format === 'vrm'
+      if (remote && !/^https:\/\/arweave\.net\/[\w-]{43}$/.test(item.archive))
+        throw new Error('圖庫來源未能核對。')
+      const response = await fetch(item.archive, { credentials: 'omit', redirect: remote ? 'follow' : 'error', mode: remote ? 'cors' : 'same-origin', referrerPolicy: 'no-referrer', signal: AbortSignal.timeout(60000) })
+      if (!response.ok || !response.body)
         throw new Error('模型暫時未能下載。')
-      const content = await response.blob()
+      if (remote && !/^https:\/\/(?:[a-z0-9]+\.)?arweave\.net\//.test(response.url))
+        throw new Error('模型下載來源不正確。')
+      const reader = response.body.getReader()
+      const chunks: Uint8Array[] = []
+      let size = 0
+      try {
+        while (true) {
+          const part = await reader.read()
+          if (part.done)
+            break
+          size += part.value.byteLength
+          if (size > item.bytes || size > 32 * 1024 * 1024)
+            throw new Error('模型下載超過已核對大小。')
+          chunks.push(part.value)
+        }
+      }
+      finally {
+        await reader.cancel().catch(() => {})
+        reader.releaseLock()
+      }
+      const content = new Blob(chunks as BlobPart[])
       if (content.size !== item.bytes || await modelHash(content) !== item.sha256)
         throw new Error('模型檔案核對未通過，沒有更換原角色。')
-      model = await display.addDisplayModel(DisplayModelFormat.Live2dZip, new File([content], `${item.id}-Live2D.zip`, { type: 'application/zip' }))
+      model = await display.addDisplayModel(remote ? DisplayModelFormat.VRM : DisplayModelFormat.Live2dZip, new File([content], remote ? `${item.id}.vrm` : `${item.id}-Live2D.zip`, { type: remote ? 'model/gltf-binary' : 'application/zip' }))
     }
     else if (row.sharedId) {
       model = await loadSharedModel(row.sharedId, row.name)
@@ -145,6 +170,17 @@ async function prepareOwnArchive() {
           {{ name }}
         </option>
       </select>
+      <select v-model="format" aria-label="模型格式">
+        <option value="all">
+          所有格式
+        </option>
+        <option value="live2d-zip">
+          Live2D · 2D
+        </option>
+        <option value="vrm">
+          VRM · 3D
+        </option>
+      </select>
     </div>
     <label class="model-picker-license"><input v-model="accepted" type="checkbox">我已閱讀所選圖庫模型的授權及署名要求，只作非商業學習使用。</label>
     <p class="model-picker-message" role="status">
@@ -155,7 +191,7 @@ async function prepareOwnArchive() {
         <button type="button" :disabled="!!busy || !!row.gallery && !accepted" :aria-label="`選擇 ${row.name}`" @click="choose(row)">
           <img v-if="row.image && !imagesFailed.has(row.id)" :src="row.image" :alt="row.name" loading="lazy" @error="imagesFailed.add(row.id)">
           <span v-else class="model-picker-placeholder" aria-hidden="true">♧</span>
-          <strong>{{ row.name }}</strong><span class="model-picker-tag">{{ row.platform }}</span>
+          <strong>{{ row.name }}</strong><span class="model-picker-tag">{{ row.platform }}{{ row.format === 'vrm' ? ' · 3D' : '' }}</span>
           <small>{{ busy === row.id ? '準備中…' : props.selectedModel?.id === row.id ? '目前選擇' : '選擇預覽' }}</small>
         </button>
         <details v-if="row.gallery" class="model-picker-terms">

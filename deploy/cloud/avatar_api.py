@@ -7,14 +7,14 @@ import threading
 from fastapi import APIRouter, HTTPException, Request
 from starlette.concurrency import run_in_threadpool
 
-from deploy.cloud.avatar_assets import MAX_ARCHIVE, MAX_TOTAL, MODEL_ID
+from deploy.cloud.avatar_assets import MAX_ARCHIVE, MAX_TOTAL, MODEL_ID, model_digest
 from deploy.cloud.avatar_prepare import prepare_archive
 from local_audio_gateway.resident_stream import OwnedStreamResponse
 
 STAFF = '/api/v1/service-desk/airi-models'
 RESIDENT = '/api/v1/resident/airi-models'
 PREPARE = STAFF + '/prepare'
-UPLOAD = re.compile(r'^' + STAFF + r'/cloud-live2d-[a-f0-9]{64}$')
+UPLOAD = re.compile(r'^' + STAFF + r'/cloud-(?:live2d|vrm)-[a-f0-9]{64}$')
 
 
 class AvatarWork:
@@ -111,8 +111,9 @@ def avatar_router(assets, presentation, require_staff, principal, work):
         require_staff()
         if MODEL_ID.fullmatch(identity) is None or len(name) > 100:
             raise HTTPException(400, '模型名稱或摘要不正確。')
-        if request.headers.get('content-type') != 'application/zip':
-            raise HTTPException(415, '請使用 Live2D ZIP 模型。')
+        vrm = identity.startswith('cloud-vrm-')
+        if request.headers.get('content-type') != ('model/gltf-binary' if vrm else 'application/zip'):
+            raise HTTPException(415, '請使用 Live2D ZIP 或 VRM 模型。')
         if upload_lock.locked() or preparation.locked() or work.pending:
             raise HTTPException(429, '另一個模型正在上載，請等候完成；沒有自動重送。')
         async with upload_lock:
@@ -152,8 +153,9 @@ def avatar_router(assets, presentation, require_staff, principal, work):
         except BaseException:
             downloads.release()
             raise
-        return OwnedStreamResponse(ModelBytes(content, downloads.release), media_type='application/zip', headers={
+        vrm = identity.startswith('cloud-vrm-')
+        return OwnedStreamResponse(ModelBytes(content, downloads.release), media_type='model/gltf-binary' if vrm else 'application/zip', headers={
             'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff',
-            'Content-Disposition': 'attachment; filename="model.zip"', 'X-Model-SHA256': identity[13:],
+            'Content-Disposition': 'attachment; filename="model.vrm"' if vrm else 'attachment; filename="model.zip"', 'X-Model-SHA256': model_digest(identity),
             'Content-Length': str(len(content))})
     return router

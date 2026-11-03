@@ -1,3 +1,11 @@
+# 2026-11-03 背景及 141 款模型候選版（尚未部署）
+
+最新正式版仍是 `.runtime/workbench-filters-20261103/HANDOFF.json` 所記錄的 `4bc169bee8a3f9a75df20f1bbcd944e4071251ed`，包括 iPhone Origin 修復及三類清單檢索；真人手機重測待回覆。不要在測試期間另行部署。
+
+本輪候選版見 `.runtime/avatar-library-20261103/HANDOFF.json`：居民與 AIRI 預覽共用原版波浪／十字背景；保留 23 款 Live2D，新增 118 款已逐檔及實際渲染核對的 CC0 VRM，共 141 款。VRM 來源是 ToxSam/open-source-avatars 的 100Avatars 原創系列，固定來源版本及 SHA256；選擇時才從原 Arweave 公開網址下載，不會啟動時下載所有模型。原三來源的背景檢查及未核授權隔離規則保留。
+
+選擇只作預覽，按「儲存至平台」才用既有模型表保存原檔並發佈；其他裝置在新進入／交接時更新，不打斷本輪對話。Live2D ZIP 與 VRM 共用原 32 MiB 單檔、64 MiB 已儲存版本總預留及 100 個版本上限；圖庫款數不等於全部已佔永久儲存。毋須 DDL、重新匯入、金鑰或計費變更；Gemma、曉曼及 EP 保持原樣。新 barrier15 必須獨立取得舊 writer 退出及單一新版本的證據後才放行。
+
 # 2026-11-02 闊屏／就緒狀態／七款圖庫已部署
 
 先讀 `.runtime/wide-readiness-gallery-20261102/HANDOFF.json` 及 `docs/wide-readiness-gallery-2026-11-02.md`。runtime `0e9714671394f64523799c381454d81584f55beb`／deploy `dep-dbk2fletlv9c73el7fk0`，原網址及Free單實例不變。官方28入口＝5一鍵＋23原站原因；2款CC0共7真預覽。柔和背景、實際啟動檢查及原版設定預載已部署。barrier7獨立交接後放行，不可重用批准。原資料／計數／旗標／模型保留。文件不再部署。

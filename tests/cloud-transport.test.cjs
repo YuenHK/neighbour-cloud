@@ -3,6 +3,21 @@ const assert = require('node:assert/strict')
 const fs = require('node:fs')
 const load = path => import('data:text/javascript;base64,' + Buffer.from(fs.readFileSync(path, 'utf8')).toString('base64'))
 const transportModule = () => load('airi_overlay/cloud-transport.js')
+
+test('bounded VRM upload uses the same origin guard without permitting binary chat bodies', async () => {
+  const {createCloudTransport} = await transportModule()
+  const calls=[]
+  const transport=createCloudTransport({origin:'https://neighbour.example',tokenProvider:()=>({token:'header.public.signature',expiresAtMs:Date.now()+3600000}),
+    fetcher:async(url,init)=>{calls.push({url,init});return new Response('{}')}})
+  const body=new Blob(['public model fixture'],{type:'model/gltf-binary'})
+  await transport.fetch('/api/v1/service-desk/airi-models/cloud-vrm-'+'a'.repeat(64),{method:'PUT',headers:{'Content-Type':'model/gltf-binary'},body})
+  assert.equal(calls.length,1)
+  assert.equal(calls[0].init.referrerPolicy,'strict-origin')
+  assert.equal(calls[0].init.mode,'same-origin')
+  assert.equal(calls[0].init.credentials,'omit')
+  await assert.rejects(transport.fetch('/api/v1/resident/chat',{method:'POST',body}))
+  assert.equal(calls.length,1)
+})
 const origin = 'https://neighbour.example'
 const flush = () => new Promise(resolve => setImmediate(resolve))
 const deferred = () => { let resolve; const promise = new Promise(done => { resolve = done }); return {promise, resolve} }

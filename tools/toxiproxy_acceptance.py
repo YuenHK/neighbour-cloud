@@ -19,6 +19,11 @@ from pathlib import Path
 import httpx
 
 VERSION = '2.13.0'
+# Recorded from this fixed official release's SHA256 asset digest. Reusing a
+# verified tool must not depend on a fresh GitHub metadata request every run.
+REVIEWED_DIGESTS = {
+    'toxiproxy-server-windows-amd64.exe': '04b710eefd7690c89f7cc67289e3e14618f1ff3c26e4a5f752a34a879b895bab',
+}
 
 
 def free_port():
@@ -32,27 +37,32 @@ def binary(root):
     if platform.machine().lower() not in ('amd64', 'x86_64'):
         raise ValueError('unsupported_test_architecture')
     filename = f'toxiproxy-server-{system}-amd64' + ('.exe' if system == 'windows' else '')
-    request = urllib.request.Request(f'https://api.github.com/repos/Shopify/toxiproxy/releases/tags/v{VERSION}', headers={'User-Agent': 'neighbour-isolated-acceptance'})
-    with urllib.request.urlopen(request, timeout=20) as response:
-        release = json.load(response)
-    asset = next(item for item in release['assets'] if item['name'] == filename)
-    digest = asset.get('digest', '')
-    if not digest.startswith('sha256:') or len(digest) != 71:
-        raise ValueError('official_asset_digest_required')
+    release_url = f'https://github.com/Shopify/toxiproxy/releases/tag/v{VERSION}'
+    digest = REVIEWED_DIGESTS.get(filename)
+    download_url = f'https://github.com/Shopify/toxiproxy/releases/download/v{VERSION}/{filename}'
+    if digest is None:
+        request = urllib.request.Request(f'https://api.github.com/repos/Shopify/toxiproxy/releases/tags/v{VERSION}', headers={'User-Agent': 'neighbour-isolated-acceptance'})
+        with urllib.request.urlopen(request, timeout=20) as response:
+            release = json.load(response)
+        asset = next(item for item in release['assets'] if item['name'] == filename)
+        advertised = asset.get('digest', '')
+        if not advertised.startswith('sha256:') or len(advertised) != 71:
+            raise ValueError('official_asset_digest_required')
+        digest, download_url = advertised[7:], asset['browser_download_url']
     destination = root / filename
     root.mkdir(parents=True, exist_ok=True)
     if not destination.exists():
-        with urllib.request.urlopen(asset['browser_download_url'], timeout=60) as response:
+        with urllib.request.urlopen(download_url, timeout=60) as response:
             data = response.read(30_000_001)
-        if len(data) > 30_000_000 or hashlib.sha256(data).hexdigest() != digest[7:]:
+        if len(data) > 30_000_000 or hashlib.sha256(data).hexdigest() != digest:
             raise ValueError('toxiproxy_digest_mismatch')
         destination.write_bytes(data)
-    if hashlib.sha256(destination.read_bytes()).hexdigest() != digest[7:]:
+    if hashlib.sha256(destination.read_bytes()).hexdigest() != digest:
         raise ValueError('toxiproxy_digest_mismatch')
     if os.name != 'nt':
         destination.chmod(0o700)
-    (root / 'SOURCE.json').write_text(json.dumps({'repository': release['html_url'], 'version': VERSION,
-        'asset': filename, 'sha256': digest[7:], 'license': 'MIT'}, indent=2))
+    (root / 'SOURCE.json').write_text(json.dumps({'repository': release_url, 'version': VERSION,
+        'asset': filename, 'sha256': digest, 'license': 'MIT'}, indent=2))
     return destination
 
 
