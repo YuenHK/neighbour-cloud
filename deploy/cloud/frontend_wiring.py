@@ -364,7 +364,24 @@ def cloud_display_models(source):
     normal = source.replace('\r\n', '\n')
     if normal.count(old) != 1:
         raise ValueError('cloud_display_model_anchor_requires_review')
-    return normal.replace(old, new)
+    normal = normal.replace(old, new)
+    import_anchor = "import localforage from 'localforage'"
+    add_anchor = "    const newDisplayModel: DisplayModelFile = { id: `display-model-${nanoid()}`, format, type: 'file', file, name: file.name, importedAt: Date.now() }"
+    insert_anchor = '    displayModels.value.unshift(newDisplayModel)'
+    if any(normal.count(anchor) != 1 for anchor in (import_anchor, add_anchor, insert_anchor)):
+        raise ValueError('cloud_model_import_dedup_anchor_requires_review')
+    normal = normal.replace(import_anchor, import_anchor + "\nimport { fileDigest, findSameModel } from './model-dedup.js'")
+    normal = normal.replace(add_anchor, """    const cloud = Reflect.get(globalThis, '__NEIGHBOUR_CLOUD__') === true
+    let contentId: string | undefined
+    if (cloud) {
+      const digest = await fileDigest(file)
+      const existing = await findSameModel(displayModels.value, format, file, digest)
+      if (existing)
+        return existing
+      contentId = `display-model-sha256-${format}-${digest}`
+    }
+    const newDisplayModel: DisplayModelFile = { id: contentId || `display-model-${nanoid()}`, format, type: 'file', file, name: file.name, importedAt: Date.now() }""")
+    return normal.replace(insert_anchor, "    if (cloud)\n      displayModels.value = displayModels.value.filter(item => item.id !== newDisplayModel.id)\n" + insert_anchor)
 
 
 def cloud_model_selector(source):

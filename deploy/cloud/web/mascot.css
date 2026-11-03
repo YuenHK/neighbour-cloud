@@ -11,3 +11,24 @@ header>strong { display:flex; align-items:center; gap:8px; }
 @keyframes mascot-hello { 0%,55%,100% { transform:translateX(-50%) translateY(0) rotate(0); } 70% { transform:translateX(-50%) translateY(-6px) rotate(-2deg); } 85% { transform:translateX(-50%) translateY(-2px) rotate(2deg); } }
 @media(max-width:520px) { .launch-mascot { width:128px; height:128px; bottom:6px; } .brand-mark { width:28px; height:28px; } }
 @media(prefers-reduced-motion:reduce) { .launch-mascot,.home { animation:none!important; } }
+
+/* A tiny game-like journey: transforms/opacity only, never a fake progress timer. */
+.launch-journey{position:absolute;inset:8px -20px 0;pointer-events:none;overflow:hidden;isolation:isolate;border-radius:24px}
+.launch-journey::before{content:'';position:absolute;width:230px;height:230px;left:50%;top:40%;margin:-115px;border:1px solid #efc98a75;border-radius:50%;box-shadow:0 0 0 22px #fff5dc55,0 0 0 45px #bcdcc72e;transform:rotateX(60deg);animation:journey-orbit 10s linear infinite}
+.launch-journey::after{content:'';position:absolute;bottom:9px;left:-40%;width:180%;height:25px;background:repeating-linear-gradient(90deg,transparent 0 25px,#e8bb7080 25px 46px,transparent 46px 75px);clip-path:polygon(0 45%,100% 45%,100% 55%,0 55%);animation:journey-road 3s linear infinite}
+.launch-journey i{position:absolute;width:7px;height:7px;border-radius:50%;background:#edbb6d;left:14%;top:65%;animation:journey-mote 4.8s ease-in-out infinite}
+.launch-journey i:nth-child(2){left:83%;top:50%;background:#7eb8a6;animation-delay:-1.2s}.launch-journey i:nth-child(3){left:26%;top:22%;background:#e9a18c;animation-delay:-2.4s}.launch-journey i:nth-child(4){left:72%;top:15%;background:#9bafd5;animation-delay:-3.6s}.launch-journey i:nth-child(5){left:45%;top:10%;width:4px;height:4px;animation-delay:-.6s}.launch-journey i:nth-child(6){left:92%;top:78%;width:4px;height:4px;animation-delay:-3s}
+.launch-portal{overflow:visible;background:linear-gradient(145deg,#fffdf7ef,#f0f9f2ed);box-shadow:0 20px 65px #276b5724,0 0 0 8px #ffffff80,0 0 60px #ffd49330}
+.launch-mascot{--journey-x:-28px;animation:mascot-adventure 1.9s ease-in-out infinite;filter:drop-shadow(0 8px 7px #654a2924);transition:left .65s ease,filter .5s ease}
+#launchScreen[data-phase=interface] .launch-mascot{left:54%;--journey-x:0px}
+#launchScreen[data-phase=avatar] .launch-mascot{left:61%;--journey-x:18px}
+#launchScreen[data-state=handoff] .launch-mascot{animation:mascot-arrive .56s ease-out both}
+.launch-modules [data-state=loaded]{animation:journey-chip .5s ease-out both}.launch-house-roof{fill:#e9a569}
+.home{isolation:isolate;animation:mascot-boot-hop 2s ease-in-out infinite}
+.home .launch-journey{z-index:-1;inset:-25px -70px -20px;overflow:visible}.home img{filter:drop-shadow(0 9px 8px #654a2924)}
+#launchScreen[data-state=failed] .launch-journey,#launchScreen[data-state=failed] .launch-journey::before,#launchScreen[data-state=failed] .launch-journey::after,#launchScreen[data-state=failed] .launch-journey i{animation-play-state:paused}
+@keyframes mascot-adventure{0%,100%{transform:translateX(calc(-50% + var(--journey-x))) translateY(0) rotate(-3deg) scaleX(1.015)}25%{transform:translateX(calc(-50% + var(--journey-x))) translateY(-10px) rotate(2deg) scaleX(.99)}50%{transform:translateX(calc(-50% + var(--journey-x))) translateY(0) rotate(3deg) scaleX(1.015)}75%{transform:translateX(calc(-50% + var(--journey-x))) translateY(-7px) rotate(-2deg) scaleX(.99)}}
+@keyframes mascot-arrive{0%{transform:translateX(-50%) translateY(0) scale(1)}45%{transform:translateX(-50%) translateY(-13px) rotate(-3deg) scale(1.06)}100%{transform:translateX(-50%) translateY(0) rotate(2deg) scale(1.12)}}
+@keyframes journey-road{to{transform:translateX(-75px)}}@keyframes journey-orbit{to{transform:rotateX(60deg) rotate(360deg)}}@keyframes journey-mote{0%,100%{transform:translateY(6px) scale(.7);opacity:.3}50%{transform:translateY(-13px) scale(1.1);opacity:.9}}@keyframes journey-chip{0%{transform:translateY(3px) scale(.96)}60%{transform:translateY(-3px) scale(1.025)}100%{transform:none}}@keyframes mascot-boot-hop{0%,50%,100%{transform:translateY(0) rotate(-3deg)}25%{transform:translateY(-11px) rotate(3deg)}75%{transform:translateY(-7px) rotate(2deg)}}
+@media(max-width:520px){.launch-journey{inset:6px -6px 0}.launch-mascot{--journey-x:-17px}#launchScreen[data-phase=avatar] .launch-mascot{left:57%;--journey-x:8px}.launch-journey::before{width:180px;height:180px;margin:-90px}.home .launch-journey{inset:-12px -35px -15px}}
+@media(prefers-reduced-motion:reduce){.launch-journey,.launch-journey::before,.launch-journey::after,.launch-journey i,.launch-mascot,.home,.launch-modules [data-state=loaded]{animation:none!important;transition:none!important}.launch-mascot{left:50%!important;transform:translateX(-50%)!important}.launch-journey i{opacity:.6}}

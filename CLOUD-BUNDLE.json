@@ -176,13 +176,13 @@
     },
     {
       "path": "airi_overlay/cloud-model-gallery.json",
-      "bytes": 141545,
-      "sha256": "e2dab481e1118489e3f5a154960f5170d298310a3b5ffa0cf1edae0804f32802"
+      "bytes": 33346,
+      "sha256": "8288d1e319dfeb077a66243288a3c625b9e7fe05c6286abfecbe3f7959ba163f"
     },
     {
       "path": "airi_overlay/cloud-model-gallery.vue",
-      "bytes": 15520,
-      "sha256": "6e721f704846281f8b3469a2d5ae00e0a7f99590e6ce781202d8582fc90ac88f"
+      "bytes": 16868,
+      "sha256": "753855502d52e1aaee61e7b51e0a7b09c9ee78d846646ee4266eb7e342cfab4e"
     },
     {
       "path": "airi_overlay/cloud-model-library.vue",
@@ -253,6 +253,11 @@
       "path": "airi_overlay/local-profile-bootstrap.ts",
       "bytes": 12390,
       "sha256": "8f5e1f195c873688ccaa253137cacf30adbfbce6631a8b2543326dfa723c3625"
+    },
+    {
+      "path": "airi_overlay/model-dedup.js",
+      "bytes": 1530,
+      "sha256": "7f1fbabb531c83fd2bd800658f9c82f57fc7c18f90ae2b07a4fc169c9d405bf8"
     },
     {
       "path": "airi_overlay/model-settings-page.vue",
@@ -466,8 +471,8 @@
     },
     {
       "path": "deploy/cloud/frontend_wiring.py",
-      "bytes": 21780,
-      "sha256": "b81bcdfe9f9ee05ceb5c935b322fd028282000d8a1e3307cf021721edd766b34"
+      "bytes": 23151,
+      "sha256": "7a148605af85e207d94d3ed4373e7db52293ce659cec9ad38ad64135a140ad5e"
     },
     {
       "path": "deploy/cloud/gallery_sources.py",
@@ -606,8 +611,8 @@
     },
     {
       "path": "deploy/cloud/rollout.py",
-      "bytes": 8837,
-      "sha256": "ad4925de789ef698960e2f60f10d3bdf28b9e8080550342d563952f791130a15"
+      "bytes": 8838,
+      "sha256": "008b9b291d1ccf46ca790b8a66fa3ba5f19871dc96e5a808708f53ee88c00b6f"
     },
     {
       "path": "deploy/cloud/runtime_storage.py",
@@ -696,8 +701,8 @@
     },
     {
       "path": "deploy/cloud/web/boot-wait.html",
-      "bytes": 979,
-      "sha256": "5362e35cafe6f2774866b9e4266b97231a831449a73b15560181b8597fd44960"
+      "bytes": 1077,
+      "sha256": "b9e21e68943ac7b3776df9d9803becbf3fa9d1df93db6a19bf4f5e8e6f0e86b5"
     },
     {
       "path": "deploy/cloud/web/boot-wait.js",
@@ -741,8 +746,8 @@
     },
     {
       "path": "deploy/cloud/web/index.html",
-      "bytes": 7266,
-      "sha256": "ebe89a27e267002aaef9987b0059e03609b0c1c99ef237a4d47117c5b44816ba"
+      "bytes": 7361,
+      "sha256": "1a157a83806f5a1ec7a01daad15093552a7a8feef10debe312049aadc43e0673"
     },
     {
       "path": "deploy/cloud/web/launch-screen.css",
@@ -756,8 +761,8 @@
     },
     {
       "path": "deploy/cloud/web/mascot.css",
-      "bytes": 1217,
-      "sha256": "fc7c95be74e7ed679f951b675af5c8d2ad17733c9e60e060fa82384b874815f9"
+      "bytes": 5545,
+      "sha256": "5774ee5577e7c2764420b6727f62a59260a7e15fa2fdb38fd0a8c35e26ede50d"
     },
     {
       "path": "deploy/cloud/web/module-loading.css",
@@ -1571,8 +1576,8 @@
     },
     {
       "path": "tools/acceptance_gate.py",
-      "bytes": 4657,
-      "sha256": "4f3e5036057ff65ad7831f012ee6c072683627b5a8d4cfe64f7e2d14cfb1d58d"
+      "bytes": 4687,
+      "sha256": "43878888feae560d65471c155613c1b0eadd44c004f89ce5bdf87d7356a6c59b"
     },
     {
       "path": "tools/check_release_gate.py",

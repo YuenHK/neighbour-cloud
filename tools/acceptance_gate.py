@@ -50,7 +50,7 @@ def main():
     commands = [['python', '-m', 'pytest', *['tests/' + name for name in TESTS],
                  '-q', '--junitxml=' + str(output / 'regression.xml')],
                 ['node', '--test', 'tests/resident-pcm.test.cjs', 'tests/staff-pwa.test.cjs',
-                 'tests/cloud-transport.test.cjs', 'tests/admin-request.test.cjs', 'tests/workbench-live.test.cjs']]
+                 'tests/cloud-transport.test.cjs', 'tests/admin-request.test.cjs', 'tests/workbench-live.test.cjs', 'tests/model-dedup.test.cjs']]
     commands[0][0] = sys.executable
     if args.network_faults:
         commands.append([sys.executable, 'tools/toxiproxy_acceptance.py', '--output', str(output / 'network.json')])

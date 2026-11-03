@@ -1,2 +1,0 @@
-import{C as e,Nt as t,X as n,j as r}from"./vue.runtime.esm-bundler-BpXz90Lz.js";import{F as i}from"./components-D_YEWH48.js";import{t as a}from"./route-block-DBhJxsjT.js";var o=r({__name:`messaging-discord`,setup(r){return(r,a)=>(n(),e(t(i)))}});typeof a==`function`&&a(o);var s=o;export{s as default};
-//# sourceMappingURL=messaging-discord-C5chn6K5.js.map

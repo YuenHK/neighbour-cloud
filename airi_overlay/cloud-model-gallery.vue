@@ -8,6 +8,7 @@ import { computed, inject, onMounted, ref } from 'vue'
 import gallery from './cloud-model-gallery.json'
 
 import { loadSharedModel, modelHash, sharedModels } from './cloud-shared-models'
+import { fileDigest, mergeModelChoices } from './model-dedup'
 
 const props = defineProps<{ selectedModel?: DisplayModel }>()
 const emit = defineEmits<{ pick: [model: DisplayModel], close: [], status: [message: string] }>()
@@ -26,27 +27,34 @@ const ownFile = ref<File>()
 const ownRights = ref(false)
 const ownModels = ref<string[]>([])
 const ownEntry = ref('')
+const localDigests = ref<Record<string, string>>({})
+const localReady = ref(false)
 interface GalleryModel { id: string, name: string, source: string, archive: string, image: string, bytes: number, sha256: string, license: string, terms: string, individual_terms: string, format?: string, platform?: string }
-interface Choice { id: string, name: string, platform: string, format: string, image?: string, bytes?: number, model?: DisplayModel, gallery?: GalleryModel, sharedId?: string }
+interface Choice { id: string, name: string, platform: string, format: string, sha256?: string, platforms?: string[], aliases?: string[], image?: string, bytes?: number, model?: DisplayModel, gallery?: GalleryModel, sharedId?: string }
 const choices = computed(() => {
-  const rows: Choice[] = (gallery.models as GalleryModel[]).map(item => ({ id: `gallery:${item.id}`, name: item.name, platform: item.platform || (item.source.includes('live2d.com') ? 'Live2D 官方' : '社群 CC0'), format: item.format || 'live2d-zip', image: item.image, bytes: item.bytes, gallery: item }))
+  const rows: Choice[] = (gallery.models as GalleryModel[]).map(item => ({ id: `gallery:${item.id}`, name: item.name, platform: item.platform || (item.source.includes('live2d.com') ? 'Live2D 官方' : '社群 CC0'), format: item.format || 'live2d-zip', sha256: item.sha256, image: item.image, bytes: item.bytes, gallery: item }))
   for (const item of shared.value) {
     const digest = item.id.replace(/^cloud-(?:live2d|vrm)-/, '')
     const reviewed = (gallery.models as GalleryModel[]).find(model => model.sha256 === digest)
     const local = display.displayModels.find(model => model.id === item.id)
-    rows.push({ id: item.id, name: item.name, platform: '平台共享', format: item.id.startsWith('cloud-vrm-') ? 'vrm' : 'live2d-zip', image: local?.previewImage || reviewed?.image, bytes: item.bytes, sharedId: item.id })
+    rows.push({ id: item.id, name: item.name, platform: '平台共享', sha256: digest, format: item.id.startsWith('cloud-vrm-') ? 'vrm' : 'live2d-zip', image: local?.previewImage || reviewed?.image, bytes: item.bytes, sharedId: item.id, model: local })
   }
   for (const item of display.displayModels) {
     if (rows.some(row => row.id === item.id) || ![DisplayModelFormat.Live2dZip, DisplayModelFormat.VRM].includes(item.format))
       continue
-    rows.push({ id: item.id, name: item.name, format: item.format, image: item.previewImage, model: item, platform: item.id.startsWith('preset-') ? 'AIRI 內建' : '此裝置' })
+    if (item.type === 'file' && !localReady.value)
+      continue
+    const digest = /(?:^cloud-(?:live2d|vrm)-|^display-model-sha256-(?:live2d-zip|vrm)-)([a-f0-9]{64})$/.exec(item.id)?.[1] || localDigests.value[item.id]
+    rows.push({ id: item.id, name: item.name, format: item.format, sha256: digest, image: item.previewImage, model: item, platform: item.id.startsWith('preset-') ? 'AIRI 內建' : '此裝置' })
   }
-  return rows.filter(row => !failed.value.has(row.id))
+  const excluded = new Set(gallery.excluded_sha256 || [])
+  return (mergeModelChoices(rows, props.selectedModel?.id) as Choice[]).filter(row => !failed.value.has(row.id)
+    && (!row.sha256 || !excluded.has(row.sha256) || row.id === props.selectedModel?.id))
 })
-const platforms = computed(() => [...new Set(choices.value.map(row => row.platform))])
-const filtered = computed(() => choices.value.filter(row => (platform.value === 'all' || row.platform === platform.value)
+const platforms = computed(() => [...new Set(choices.value.flatMap(row => row.platforms || [row.platform]))])
+const filtered = computed(() => choices.value.filter(row => (platform.value === 'all' || row.platforms?.includes(platform.value))
   && (format.value === 'all' || row.format === format.value)
-  && `${row.name} ${row.platform}`.toLocaleLowerCase().includes(query.value.trim().toLocaleLowerCase())))
+  && `${row.aliases?.join(' ')} ${row.name} ${row.platforms?.join(' ')}`.toLocaleLowerCase().includes(query.value.trim().toLocaleLowerCase())))
 function status(value: string) {
   message.value = value
   notify(value)
@@ -58,6 +66,20 @@ function picked(model: DisplayModel) {
   emit('close')
 }
 onMounted(async () => {
+  void (async () => {
+    const found: Record<string, string> = {}
+    // Hash one file at a time, cached by Blob identity; no startup mass reads.
+    for (const model of display.displayModels) {
+      if (model.type === 'file') {
+        try {
+          found[model.id] = await fileDigest(model.file)
+        }
+        catch { /* An unreadable original remains separate, never deleted. */ }
+      }
+    }
+    localDigests.value = found
+    localReady.value = true
+  })()
   try {
     shared.value = (await sharedModels()).items
   }
@@ -70,7 +92,12 @@ async function choose(row: Choice) {
   status(`正在準備 ${row.name}…`)
   try {
     let model = row.model
-    if (row.gallery) {
+    if (!model && row.sharedId) {
+      model = await loadSharedModel(row.sharedId, row.name)
+      if (!display.displayModels.some(item => item.id === model!.id))
+        display.displayModels.push(model)
+    }
+    else if (!model && row.gallery) {
       const item = row.gallery
       const remote = item.format === 'vrm'
       const arweave = /^https:\/\/arweave\.net\/[\w-]{43}$/.test(item.archive)
@@ -104,11 +131,6 @@ async function choose(row: Choice) {
       if (content.size !== item.bytes || await modelHash(content) !== item.sha256)
         throw new Error('模型檔案核對未通過，沒有更換原角色。')
       model = await display.addDisplayModel(remote ? DisplayModelFormat.VRM : DisplayModelFormat.Live2dZip, new File([content], remote ? `${item.id}.vrm` : `${item.id}-Live2D.zip`, { type: remote ? 'model/gltf-binary' : 'application/zip' }))
-    }
-    else if (row.sharedId) {
-      model = await loadSharedModel(row.sharedId, row.name)
-      if (!display.displayModels.some(item => item.id === model!.id))
-        display.displayModels.push(model)
     }
     if (!model)
       throw new Error('模型未準備好。')
@@ -190,7 +212,7 @@ async function prepareOwnArchive() {
     </div>
     <label class="model-picker-license"><input v-model="accepted" type="checkbox">我已閱讀所選圖庫模型的授權及署名要求，只作非商業學習使用。</label>
     <p class="model-picker-message" role="status">
-      {{ message }}
+      {{ localReady ? message : '正在整理此裝置模型，避免重複顯示…' }}
     </p>
     <div class="model-picker-grid">
       <article v-for="row in filtered" :key="row.id" :class="{ current: props.selectedModel?.id === row.id }">

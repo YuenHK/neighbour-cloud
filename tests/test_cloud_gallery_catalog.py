@@ -3,9 +3,13 @@ import re
 from pathlib import Path
 
 
-def test_reviewed_gallery_has_at_least_one_hundred_distinct_direct_imports():
-    rows = json.loads((Path(__file__).resolve().parents[1] / 'airi_overlay/cloud-model-gallery.json').read_text(encoding='utf-8'))['models']
-    assert len(rows) >= 100
+def test_reviewed_gallery_keeps_distinct_usable_imports_and_excludes_removed_series():
+    catalogue = json.loads((Path(__file__).resolve().parents[1] / 'airi_overlay/cloud-model-gallery.json').read_text(encoding='utf-8'))
+    rows = catalogue['models']
+    assert len(rows) >= 26
+    assert len(catalogue['excluded_sha256']) == 118
+    assert not {row['sha256'] for row in rows}.intersection(catalogue['excluded_sha256'])
+    assert not any('/100avatars-' in row['source'] for row in rows)
     assert len({row['id'] for row in rows}) == len(rows)
     assert len({row['sha256'] for row in rows}) == len(rows)
     assert sum(row.get('format', 'live2d-zip') == 'live2d-zip' for row in rows) >= 23
