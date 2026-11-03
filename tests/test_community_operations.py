@@ -156,8 +156,8 @@ def subscription():
 
 def test_push_generic_cursor_and_encrypted_subscription_retry_then_remove(system):
     statuses, calls, now = [503, 201, 410], [], [100]
-    def sender(sub, private, origin):
-        calls.append((sub, private, origin))
+    def sender(sub, private, origin, notification_id, test):
+        calls.append((sub, private, origin, notification_id, test))
         return statuses.pop(0)
     push = StaffPush(system.ops, system.services.cases, 'https://neighbour.example', sender=sender, clock=lambda: now[0])
     sub = subscription()
@@ -170,11 +170,58 @@ def test_push_generic_cursor_and_encrypted_subscription_retry_then_remove(system
     now[0] = 200
     push.tick(); push.tick()
     assert len(calls) == 2
+    assert calls[0][3] == calls[1][3] and len(calls[0][3]) == 64
     stored = repr(system.ops.items('push-subscription'))
     assert 'fcm.googleapis.com' not in stored and sub['keys']['auth'] not in stored
     system.services.cases.create(ResidentCase(submission_id='c'*32, kind='water', message='OTHER PRIVATE', confirmed=True))
     push.tick()
     assert len(calls) == 3 and system.ops.items('push-subscription') == []
+
+
+def test_manual_push_test_is_durable_limited_and_does_not_consume_case_progress(system):
+    calls, now = [], [100]
+    push = StaffPush(system.ops, system.services.cases, 'https://neighbour.example',
+        sender=lambda *args: calls.append(args) or 201, clock=lambda: now[0])
+    identity = push.subscribe(subscription())
+    before = system.ops.get('push-subscription', identity)
+    cases = system.services.cases.summary()
+    result = push.test_subscription(identity)
+    assert result['accepted'] and result['device_delivery_confirmed'] is False
+    assert len(calls) == 1 and system.services.cases.summary() == cases
+    after = system.ops.get('push-subscription', identity)
+    assert all(before[key] == after[key] for key in ('cursor', 'updated', 'next', 'failures', 'sealed'))
+    system.services.cases.create(ResidentCase(submission_id='d'*32, kind='water', message='SYNTHETIC PENDING', confirmed=True))
+    reopened = StaffPush(system.ops, system.services.cases, 'https://neighbour.example',
+        sender=lambda *_: pytest.fail('must not retry'), clock=lambda: now[0])
+    assert reopened.test_subscription(identity)['state'] == 'cooldown'
+    status = reopened.subscription_status(identity)
+    assert status['test_retry_after_seconds'] == 60 and 'sealed' not in status
+    assert len(calls) == 1
+    # A browser reconnect must not reset the server cooldown.
+    push.subscribe(subscription_same := subscription())
+    other = hashlib.sha256(subscription_same['endpoint'].encode()).hexdigest()
+    assert other == identity and push.test_subscription(identity)['state'] == 'cooldown'
+    assert system.ops.get('push-subscription', identity)['cursor'] == before['cursor']
+    now[0] += 61
+    assert push.test_subscription(identity)['accepted'] and len(calls) == 2
+    push.tick()
+    assert len(calls) == 3 and calls[-1][-1] is False  # Pending normal work was not skipped.
+
+
+def test_manual_push_test_unknown_response_is_not_retried_and_expired_subscription_removed(system):
+    now = [100]
+    def failed(*_):
+        raise OSError('synthetic capability not to expose')
+    push = StaffPush(system.ops, system.services.cases, 'https://neighbour.example',
+                     sender=failed, clock=lambda: now[0])
+    identity = push.subscribe(subscription())
+    assert push.test_subscription(identity)['state'] == 'not_accepted'
+    assert push.test_subscription(identity)['state'] == 'cooldown'
+    now[0] += 61
+    push.sender = lambda *_: 410
+    assert push.test_subscription(identity)['state'] == 'expired'
+    assert push.subscription_status(identity) == {'registered': False}
+    assert push.test_subscription(identity)['state'] == 'not_registered'
 
 
 @pytest.mark.parametrize('endpoint', ['http://fcm.googleapis.com/a', 'https://127.0.0.1/a',
@@ -215,6 +262,14 @@ def test_machine_capability_is_ingest_only_and_staff_push_is_private(system, key
         assert receipt.status_code == 200 and receipt.json()['completed_ms'] is None
         assert client.get('/api/v1/service-desk/notifications', headers=resident).status_code == 403
         assert client.get('/api/v1/service-desk/notifications', headers=staff).json()['public_key']
+        status_path = '/api/v1/service-desk/notifications/' + 'a'*64
+        assert client.get(status_path + '/status', headers=resident).status_code == 403
+        assert client.post(status_path + '/test', headers=resident).status_code == 403
+        assert client.post(status_path + '/test').status_code == 403  # Missing same-origin proof.
+        assert client.post(status_path + '/test', headers={'Origin': origin}).status_code == 401
+        assert client.get(status_path + '/status', headers=staff).json() == {'registered': False}
+        assert client.post(status_path + '/test', headers=staff).json()['state'] == 'not_registered'
+        assert client.post('/api/v1/service-desk/notifications/invalid/test', headers=staff).status_code == 422
         assert client.post('/api/v1/patrol/delivery', headers=token, content=b'x'*1_450_001).status_code == 413
 
 
@@ -231,8 +286,8 @@ def test_sender_uses_in_memory_vapid_and_generic_payload_without_redirect(monkey
         calls.append(kwargs)
         return SimpleNamespace(status_code=201)
     monkeypatch.setattr(pywebpush, 'webpush', fake)
-    assert send_push(subscription(), private, 'https://neighbour.example') == 201
-    assert json.loads(calls[0]['data']) == {'type': 'staff-update', 'tag': 'neighbour-workbench'}
+    assert send_push(subscription(), private, 'https://neighbour.example', 'a'*64) == 201
+    assert json.loads(calls[0]['data']) == {'type': 'staff-update', 'notification_id': 'a'*64}
     assert calls[0]['timeout'] == 8 and calls[0]['ttl'] == 300
 
 

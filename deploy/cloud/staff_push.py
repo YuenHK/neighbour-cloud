@@ -5,6 +5,7 @@ Delivery is at least once (stable tag collapses duplicates), not guaranteed by O
 """
 import base64
 import hashlib
+import hmac
 import json
 import re
 import threading
@@ -42,7 +43,7 @@ def valid_subscription(value):
     return {'endpoint': value['endpoint'], 'keys': keys}
 
 
-def send_push(subscription, private_key, origin):
+def send_push(subscription, private_key, origin, notification_id, test=False):
     import requests
     from py_vapid import Vapid
     from pywebpush import WebPushException, webpush
@@ -57,7 +58,8 @@ def send_push(subscription, private_key, origin):
         session.trust_env = False
         try:
             result = webpush(subscription_info=subscription,
-                data=json.dumps({'type': 'staff-update', 'tag': 'neighbour-workbench'}),
+                data=json.dumps({'type': 'staff-test' if test else 'staff-update',
+                                 'notification_id': notification_id}),
                 vapid_private_key=Vapid.from_pem(private_key.encode()), vapid_claims={'sub': origin},
                 ttl=300, timeout=8, requests_session=session)
             return result.status_code
@@ -95,10 +97,58 @@ class StaffPush:
             if old is None and len(self.ops.items('push-subscription')) >= 32:
                 raise ValueError('push_subscription_capacity')
             # New consent starts now; never notify about historical residents.
-            record = {'sealed': self.ops.seal('push-subscription', identity, subscription),
-                      'cursor': self.latest(), 'updated': self.clock(), 'next': 0, 'failures': 0}
+            record = dict(old) if old is not None else {'cursor': self.latest(), 'next': 0, 'failures': 0}
+            # Reconfirming an existing subscription must not skip pending work
+            # or reset a persisted test cooldown after reload/network recovery.
+            record.update(sealed=self.ops.seal('push-subscription', identity, subscription),
+                          updated=self.clock())
             self.ops.put('push-subscription', identity, record)
         return identity
+
+    def _send(self, identity, record, kind, version):
+        key = self.keys()
+        private = self.ops.open('push-config', 'vapid', key['sealed'])
+        notification_id = hmac.new(private.encode(), f'{identity}:{kind}:{version}'.encode(),
+                                   hashlib.sha256).hexdigest()
+        return self.sender(self.ops.open('push-subscription', identity, record['sealed']),
+                           private, self.origin, notification_id, kind == 'test')
+
+    def subscription_status(self, identity):
+        with self.lock:
+            record = self.ops.get('push-subscription', identity)
+            if record is None or self.clock() - record['updated'] > 90 * 86400:
+                return {'registered': False}
+            return {'registered': True,
+                    'test_retry_after_seconds': max(0, int(record.get('test_next', 0) - self.clock() + .999)),
+                    'last_test': record.get('test_result', 'not_tested'),
+                    'device_delivery_confirmed': False}
+
+    def test_subscription(self, identity):
+        """User-triggered generic notification, without creating a case or moving its cursor."""
+        with self.lock:
+            record = self.ops.get('push-subscription', identity)
+            if record is None or self.clock() - record['updated'] > 90 * 86400:
+                return {'state': 'not_registered', 'accepted': False}
+            now = self.clock()
+            if now < record.get('test_next', 0):
+                return {'state': 'cooldown', 'accepted': False,
+                        'retry_after_seconds': max(1, int(record['test_next'] - now + .999))}
+            # Durable reservation before network activity; an unknown response
+            # must not cause repeated messages or an unbounded retry loop.
+            record.update(test_next=now + 60, test_result='unknown')
+            self.ops.put('push-subscription', identity, record)
+            try:
+                status = self._send(identity, record, 'test', now)
+            except Exception:  # noqa: BLE001 -- no capabilities/exception text in response
+                status = 503
+            if status in (404, 410):
+                self.ops.delete('push-subscription', identity)
+                return {'state': 'expired', 'accepted': False}
+            accepted = 200 <= status < 300
+            record['test_result'] = 'push_service_accepted' if accepted else 'not_accepted'
+            self.ops.put('push-subscription', identity, record)
+            return {'state': record['test_result'], 'accepted': accepted,
+                    'retry_after_seconds': 60, 'device_delivery_confirmed': False}
 
     def tick(self):
         with self.lock:
@@ -115,10 +165,8 @@ class StaffPush:
                     continue
                 if record['cursor'] >= latest or now < record['next']:
                     continue
-                key = self.keys()
                 try:
-                    status = self.sender(self.ops.open('push-subscription', identity, record['sealed']),
-                                         self.ops.open('push-config', 'vapid', key['sealed']), self.origin)
+                    status = self._send(identity, record, 'work', latest)
                 except Exception:  # noqa: BLE001 -- capability/exception text must never enter logs
                     status = 503
                 if status in (404, 410):
@@ -159,4 +207,18 @@ def push_router(service, authorize):
             raise HTTPException(422)
         service.ops.delete('push-subscription', identity)
         return {'removed': True}
+
+    @router.get(PREFIX + '/{identity}/status')
+    def status(identity: str):
+        authorize()
+        if not re.fullmatch('[a-f0-9]{64}', identity):
+            raise HTTPException(422)
+        return service.subscription_status(identity)
+
+    @router.post(PREFIX + '/{identity}/test')
+    def test(identity: str):
+        authorize()
+        if not re.fullmatch('[a-f0-9]{64}', identity):
+            raise HTTPException(422)
+        return service.test_subscription(identity)
     return router

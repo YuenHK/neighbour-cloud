@@ -7,7 +7,7 @@ catch { ({ chromium } = require(path.resolve('.experiments/optimization-lab-2026
   const browser = await chromium.launch(process.platform === 'win32'
     ? { executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe', headless: true } : { headless: true })
   const context = await browser.newContext()
-  const unexpected = [], errors = []
+  const unexpected = [], errors = [], testRequests = []
   const page = await context.newPage()
   page.on('pageerror', error => errors.push(error.message))
   await context.route('**/*', async route => {
@@ -18,6 +18,11 @@ catch { ({ chromium } = require(path.resolve('.experiments/optimization-lab-2026
     if (url.pathname === '/cloud/admin/staff-notifications.js') return route.fulfill({ contentType: 'text/javascript', body: fs.readFileSync('deploy/cloud/web/staff-notifications.js', 'utf8') })
     if (url.pathname === '/api/v1/service-desk/notifications') return route.fulfill({ json: route.request().method() === 'GET' ? { public_key: Buffer.alloc(65, 4).toString('base64url') } : { subscription_id: 'a'.repeat(64) } })
     if (url.pathname === '/api/v1/service-desk/notifications/' + 'a'.repeat(64)) return route.fulfill({ json: { removed: true } })
+    if (url.pathname === '/api/v1/service-desk/notifications/' + 'a'.repeat(64) + '/test') {
+      testRequests.push(route.request().method())
+      return route.fulfill({ json: { accepted: true, state: 'push_service_accepted', retry_after_seconds: 60, device_delivery_confirmed: false } })
+    }
+    if (url.pathname.endsWith('/status')) return route.fulfill({ json: { registered: true, test_retry_after_seconds: 60 } })
     unexpected.push(url.pathname); return route.abort()
   })
   await context.addInitScript(() => {
@@ -37,9 +42,18 @@ catch { ({ chromium } = require(path.resolve('.experiments/optimization-lab-2026
   await button.click()
   await page.getByRole('button', { name: '關閉工作提示' }).waitFor()
   assert.equal(await page.evaluate(() => window.mockRequests), 1)
+  const testButton = page.getByRole('button', { name: '測試工作提示' })
+  await testButton.click()
+  await page.getByRole('status').filter({ hasText: '未代表手機已收到' }).waitFor()
+  assert.equal(await testButton.isDisabled(), true)
+  assert.deepEqual(testRequests, ['POST'])
+  await page.reload()
+  await page.getByRole('button', { name: '關閉工作提示' }).waitFor()
+  await page.waitForFunction(() => document.querySelector('[data-push-test]')?.disabled === true)
+  assert.deepEqual(testRequests, ['POST']) // No automatic re-test on reload.
   await page.getByRole('button', { name: '關閉工作提示' }).click()
   await button.waitFor()
   assert.deepEqual(unexpected, []); assert.deepEqual(errors, [])
-  console.log(JSON.stringify({ passed: true, opt_in_only: true, unsubscribe: true, real_notifications: false }))
+  console.log(JSON.stringify({ passed: true, opt_in_only: true, unsubscribe: true, manual_test_once_and_reload_cooldown: true, real_notifications: false }))
   await browser.close()
 })().catch(error => { console.error(error); process.exitCode = 1 })

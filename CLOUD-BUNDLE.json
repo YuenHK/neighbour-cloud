@@ -606,8 +606,8 @@
     },
     {
       "path": "deploy/cloud/rollout.py",
-      "bytes": 8832,
-      "sha256": "8553fc757033164a9c47f013d9549fee8e846913248ccd7d0b90e858eb8db1ff"
+      "bytes": 8835,
+      "sha256": "a5e55d300473b9ae547ddcc548c525597808b0bbe916ff475e4577a419cf01e0"
     },
     {
       "path": "deploy/cloud/runtime_storage.py",
@@ -636,8 +636,8 @@
     },
     {
       "path": "deploy/cloud/staff_push.py",
-      "bytes": 7436,
-      "sha256": "a07c30061eba0838901721acd1468985b17a5bc0d6c7d988d1a7acbdc2139fe4"
+      "bytes": 10721,
+      "sha256": "d04f28814a82e1a107ba67d0adc5ad7fca1875dc52e9b10e617bb321730c714a"
     },
     {
       "path": "deploy/cloud/stage-login/index.html",
@@ -816,13 +816,13 @@
     },
     {
       "path": "deploy/cloud/web/staff-notifications.js",
-      "bytes": 3011,
-      "sha256": "5e06991135365f2b271dab2d8437417ec9cd7fe1a0435ea04510bf9ea356301d"
+      "bytes": 5304,
+      "sha256": "de3230e674374a1e4f2e883f03c65c5be8d31def2cfe85d113299cf19b354a6d"
     },
     {
       "path": "deploy/cloud/web/staff-sw.js",
-      "bytes": 689,
-      "sha256": "2ed190ba55f5ff550c529ba9228de170b7dbd7fd3ef3df3898c9648349c5903d"
+      "bytes": 2908,
+      "sha256": "94b1a989da139f576d595cad289fb0100af4b3c7052166eacbca003f883ed38b"
     },
     {
       "path": "deploy/cloud/web/staff.webmanifest",
