@@ -26,3 +26,14 @@ test('staff PWA does not use an offline data cache', () => {
   assert.equal(manifest.start_url, '/?workspace=staff')
   assert.equal(manifest.display, 'standalone')
 })
+
+test('notification worker updates immediately without fetching or caching staff data', async () => {
+  const listeners = {}, calls = [], pending = []
+  const self = { addEventListener: (name, handler) => { listeners[name] = handler },
+    skipWaiting: async () => calls.push('skipWaiting'), clients: { claim: async () => calls.push('claim') } }
+  vm.runInNewContext(fs.readFileSync('deploy/cloud/web/staff-sw.js', 'utf8'), { self })
+  for (const name of ['install', 'activate']) listeners[name]({ waitUntil: promise => pending.push(promise) })
+  await Promise.all(pending)
+  assert.deepEqual(calls, ['skipWaiting', 'claim'])
+  assert.equal(listeners.fetch, undefined)
+})

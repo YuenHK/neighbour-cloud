@@ -6,10 +6,13 @@ matching cloud receipt. A lost response is retried with the same immutable ID.
 import base64
 import hashlib
 import json
+import math
 import os
+import re
 import threading
 import time
 from pathlib import Path
+from uuid import uuid4
 
 import httpx
 
@@ -17,7 +20,7 @@ from edge_hub.cloud_credentials import _crypt
 
 
 class PatrolDelivery:
-    def __init__(self, root, origin, credential, *, client=None, clock=time.monotonic):
+    def __init__(self, root, origin, credential, *, client=None, clock=time.time):
         from urllib.parse import urlsplit
         if (urlsplit(origin).scheme != 'https' or urlsplit(origin).netloc != 'neighbour-yuenhk-live.onrender.com'
                 or urlsplit(origin).path or set(credential) != {'site', 'token'}):
@@ -26,6 +29,7 @@ class PatrolDelivery:
         self.client = client or httpx.Client(trust_env=False, follow_redirects=False, timeout=20)
         self.owned = client is None
         self.clock, self.retries, self.lock = clock, {}, threading.Lock()
+        self.retry_digests = {}
         self.last = {'state': 'ready', 'pending': 0}
         self.next_cleanup = 0
         self.cleanup_offset = 0
@@ -47,9 +51,59 @@ class PatrolDelivery:
                 or len(list(folder.glob('*.pending.json'))) >= 200):
             raise ValueError('patrol_outbox_full_keep_existing_evidence')
 
+    def retry_path(self, identity):
+        if not re.fullmatch('[a-f0-9]{32}', identity):
+            raise ValueError('invalid_outbox_identity')
+        path = self.root / 'events/ep-patrol' / (identity + '.retry.json')
+        if path.is_symlink() or not path.resolve().is_relative_to(self.root / 'events/ep-patrol'):
+            raise ValueError('invalid_outbox_retry_path')
+        return path
+
+    def retry_state(self, event, digest):
+        if event.id in self.retries:
+            if self.retry_digests[event.id] != digest:
+                raise ValueError('outbox_retry_identity_changed')
+            return self.retries[event.id]
+        path = self.retry_path(event.id)
+        if not path.exists():
+            return 0, 0
+        if not path.is_file() or path.stat().st_size > 1024:
+            raise ValueError('invalid_outbox_retry_state')
+        value = json.loads(path.read_text(encoding='utf-8'))
+        if (not isinstance(value, dict) or set(value) != {'event', 'digest', 'count', 'next_at'}
+                or value['event'] != event.id or value['digest'] != digest
+                or type(value['count']) is not int or not 1 <= value['count'] <= 32
+                or type(value['next_at']) not in (int, float)
+                or not 0 <= value['next_at'] <= 10**12 or not math.isfinite(value['next_at'])):
+            raise ValueError('invalid_outbox_retry_state')
+        # Wall-clock deadlines survive a reboot; a clock adjustment cannot
+        # strand evidence indefinitely. Maximum remaining wait is five minutes.
+        state = value['count'], min(value['next_at'], self.clock() + 300)
+        self.retries[event.id] = state
+        self.retry_digests[event.id] = digest
+        return state
+
+    def reserve_retry(self, event, digest, count):
+        count = min(count + 1, 32)
+        delay = min(300, 5 * 2**min(count, 6))
+        deadline = self.clock() + delay
+        value = {'event': event.id, 'digest': digest, 'count': count, 'next_at': deadline}
+        path = self.retry_path(event.id)
+        temporary = path.with_name(path.name + '.' + uuid4().hex + '.tmp')
+        with temporary.open('x', encoding='utf-8') as output:
+            json.dump(value, output, separators=(',', ':'))
+            output.flush()
+            os.fsync(output.fileno())
+        temporary.replace(path)
+        self.retries[event.id] = count, deadline
+        self.retry_digests[event.id] = digest
+        return delay
+
     def add(self, event):
         with self.lock:
-            count, next_at = self.retries.get(event.id, (0, 0))
+            digest = hashlib.sha256(json.dumps(event.model_dump(), sort_keys=True,
+                       separators=(',', ':'), ensure_ascii=True).encode()).hexdigest()
+            count, next_at = self.retry_state(event, digest)
             if self.clock() < next_at:
                 raise RuntimeError('delivery_backoff')
             images = {}
@@ -62,6 +116,9 @@ class PatrolDelivery:
                 if hashlib.sha256(raw).hexdigest() != photo['sha256']:
                     raise ValueError('outbox_photo_changed')
                 images[photo['side']] = base64.b64encode(raw).decode()
+            # Reserve durably BEFORE transmission, including unknown replies
+            # and process termination between remote commit and local receipt.
+            delay = self.reserve_retry(event, digest, count)
             try:
                 response = self.client.post(self.origin + '/api/v1/patrol/delivery',
                     headers={'Authorization': 'Bearer ' + self.credential['token'], 'Origin': self.origin},
@@ -69,8 +126,7 @@ class PatrolDelivery:
                 response.raise_for_status()
                 receipt = response.json()
                 if (receipt.get('delivered') is not True or receipt.get('event_id') != event.id
-                        or receipt.get('digest') != hashlib.sha256(json.dumps(event.model_dump(), sort_keys=True,
-                            separators=(',', ':'), ensure_ascii=True).encode()).hexdigest()
+                        or receipt.get('digest') != digest
                         or not isinstance(receipt.get('case_number'), int)):
                     raise ValueError('invalid_delivery_receipt')
                 receipt_path = self.root / 'events/ep-patrol' / (event.id + '.receipt.json')
@@ -81,13 +137,13 @@ class PatrolDelivery:
                     output.flush()
                     os.fsync(output.fileno())
                 temporary.replace(receipt_path)
+                self.retry_path(event.id).unlink()
                 self.retries.pop(event.id, None)
+                self.retry_digests.pop(event.id, None)
                 self.last = {'state': 'delivered', 'case_number': receipt['case_number']}
                 return event
-            except (httpx.HTTPError, ValueError, KeyError):
-                count += 1
-                self.retries[event.id] = count, self.clock() + min(300, 5 * 2**min(count, 6))
-                self.last = {'state': 'queued', 'retry_after_seconds': min(300, 5 * 2**min(count, 6))}
+            except (httpx.HTTPError, OSError, ValueError, KeyError):
+                self.last = {'state': 'queued', 'retry_after_seconds': delay}
                 raise RuntimeError('delivery_unconfirmed_retained') from None
 
     def status(self):

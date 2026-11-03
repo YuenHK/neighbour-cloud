@@ -7,7 +7,7 @@ catch { ({ chromium } = require(path.resolve('.experiments/optimization-lab-2026
   const browser = await chromium.launch(process.platform === 'win32'
     ? { executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe', headless: true } : { headless: true })
   const context = await browser.newContext()
-  const unexpected = [], errors = [], testRequests = []
+  const unexpected = [], errors = [], testRequests = [], subscriptions = []
   const page = await context.newPage()
   page.on('pageerror', error => errors.push(error.message))
   await context.route('**/*', async route => {
@@ -16,13 +16,16 @@ catch { ({ chromium } = require(path.resolve('.experiments/optimization-lab-2026
     if (url.pathname === '/') return route.fulfill({ contentType: 'text/html', body: '<section id="panel-usage"></section><script type="module" src="/cloud/admin/staff-notifications.js"></script>' })
     if (url.pathname === '/cloud/admin-request.js') return route.fulfill({ contentType: 'text/javascript', body: 'export const cloudFetch = (...a) => fetch(...a)' })
     if (url.pathname === '/cloud/admin/staff-notifications.js') return route.fulfill({ contentType: 'text/javascript', body: fs.readFileSync('deploy/cloud/web/staff-notifications.js', 'utf8') })
-    if (url.pathname === '/api/v1/service-desk/notifications') return route.fulfill({ json: route.request().method() === 'GET' ? { public_key: Buffer.alloc(65, 4).toString('base64url') } : { subscription_id: 'a'.repeat(64) } })
+    if (url.pathname === '/api/v1/service-desk/notifications') {
+      if (route.request().method() === 'POST') subscriptions.push('subscribed')
+      return route.fulfill({ json: route.request().method() === 'GET' ? { public_key: Buffer.alloc(65, 4).toString('base64url') } : { subscription_id: 'a'.repeat(64) } })
+    }
     if (url.pathname === '/api/v1/service-desk/notifications/' + 'a'.repeat(64)) return route.fulfill({ json: { removed: true } })
     if (url.pathname === '/api/v1/service-desk/notifications/' + 'a'.repeat(64) + '/test') {
       testRequests.push(route.request().method())
       return route.fulfill({ json: { accepted: true, state: 'push_service_accepted', retry_after_seconds: 60, device_delivery_confirmed: false } })
     }
-    if (url.pathname.endsWith('/status')) return route.fulfill({ json: { registered: true, test_retry_after_seconds: 60 } })
+    if (url.pathname.endsWith('/status')) return route.fulfill({ json: { registered: true, test_retry_after_seconds: testRequests.length ? 60 : 0 } })
     unexpected.push(url.pathname); return route.abort()
   })
   await context.addInitScript(() => {
@@ -33,7 +36,7 @@ catch { ({ chromium } = require(path.resolve('.experiments/optimization-lab-2026
       subscribe: async () => { current = subscription; return subscription } } }
     Object.defineProperty(navigator, 'serviceWorker', { value: { register: async () => registration, ready: Promise.resolve(registration) } })
     window.PushManager = class {}
-    Object.defineProperty(window, 'Notification', { value: { requestPermission: async () => { window.mockRequests++; return 'granted' } } })
+    Object.defineProperty(window, 'Notification', { value: { permission: location.search.includes('alreadyGranted') ? 'granted' : 'default', requestPermission: async () => { window.mockRequests++; return 'granted' } } })
   })
   await page.goto('https://staff-fixture.test/')
   const button = page.getByRole('button', { name: '開啟工作提示' })
@@ -53,7 +56,20 @@ catch { ({ chromium } = require(path.resolve('.experiments/optimization-lab-2026
   assert.deepEqual(testRequests, ['POST']) // No automatic re-test on reload.
   await page.getByRole('button', { name: '關閉工作提示' }).click()
   await button.waitFor()
+  await page.reload()
+  await page.getByRole('button', { name: '開啟工作提示' }).waitFor()
+  assert.equal(subscriptions.length, 1)
+  await page.evaluate(() => localStorage.clear()) // Only this isolated fixture origin.
+  await page.goto('https://staff-fixture.test/?alreadyGranted=1')
+  await page.getByRole('button', { name: '關閉工作提示' }).waitFor()
+  assert.equal(await page.evaluate(() => window.mockRequests), 0)
+  assert.equal(subscriptions.length, 2) // Default-on restores an already granted OS permission.
+  await page.getByRole('button', { name: '關閉工作提示' }).click()
+  await page.getByRole('button', { name: '開啟工作提示' }).waitFor()
+  await page.reload()
+  await page.getByRole('button', { name: '開啟工作提示' }).waitFor()
+  assert.equal(subscriptions.length, 2) // Explicit opt-out survives even with OS permission granted.
   assert.deepEqual(unexpected, []); assert.deepEqual(errors, [])
-  console.log(JSON.stringify({ passed: true, opt_in_only: true, unsubscribe: true, manual_test_once_and_reload_cooldown: true, real_notifications: false }))
+  console.log(JSON.stringify({ passed: true, first_permission_click_only: true, default_restore_if_granted: true, explicit_opt_out_preserved: true, unsubscribe: true, manual_test_once_and_reload_cooldown: true, real_notifications: false }))
   await browser.close()
 })().catch(error => { console.error(error); process.exitCode = 1 })

@@ -14,8 +14,15 @@ def test_reviewed_gallery_has_at_least_one_hundred_distinct_direct_imports():
         assert row['source'].startswith('https://') and row['license'].startswith('https://')
         assert row['image'].startswith('/assets/gallery/')
         if row.get('format') == 'vrm':
-            assert re.fullmatch(r'https://arweave\.net/[A-Za-z0-9_-]{43}', row['archive'])
             assert row['license'] == 'https://creativecommons.org/publicdomain/zero/1.0/'
-            assert '/100avatars-r2.json' in row['source'] or '/100avatars-r3.json' in row['source']
+            if row['id'] in {'vroid-fumiriya', 'vroid-shino'}:
+                assert re.fullmatch(r'https://raw\.githubusercontent\.com/madjin/vrm-samples/e16eb187100149a315ad92c3c9968f1d5baa6c7d/vroid/beta/(Sakurada_Fumiriya|Sendagaya_Shino)\.vrm', row['archive'])
+                assert row['source'] in {
+                    'https://vroid.pixiv.help/hc/en-us/articles/360014788554-Sakurada-Fumiriya',
+                    'https://vroid.pixiv.help/hc/en-us/articles/360013482714-Sendagaya-Shino',
+                }
+            else:
+                assert re.fullmatch(r'https://arweave\.net/[A-Za-z0-9_-]{43}', row['archive'])
+                assert '/100avatars-r2.json' in row['source'] or '/100avatars-r3.json' in row['source']
         else:
             assert row['archive'].startswith('/assets/gallery/') and row['archive'].endswith('.zip')

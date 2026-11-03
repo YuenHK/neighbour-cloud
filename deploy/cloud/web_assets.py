@@ -158,7 +158,7 @@ class CloudWebAssets:
             headers.update({'Permissions-Policy': 'microphone=(self), camera=(), autoplay=(self)',
                 'Content-Security-Policy': "default-src 'self'; script-src 'self' blob: 'wasm-unsafe-eval'; "
                     "style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; "
-                    "connect-src 'self' data: blob: https://huggingface.co https://*.hf.co https://arweave.net https://*.arweave.net; worker-src 'self' blob:; "
+                    "connect-src 'self' data: blob: https://huggingface.co https://*.hf.co https://arweave.net https://*.arweave.net https://raw.githubusercontent.com; worker-src 'self' blob:; "
                     "media-src 'self' blob:; frame-src 'none'; frame-ancestors 'self'; base-uri 'none'"})
             data = self.resident.read_bytes().replace(
                 b'</head>', b'<link rel="stylesheet" href="/cloud/resident-panel.css"></head>', 1)

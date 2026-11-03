@@ -2367,6 +2367,51 @@
       "format": "vrm",
       "platform": "100Avatars CC0",
       "community": true
+    },
+    {
+      "id": "arch-chan",
+      "name": "Arch Chan · 企鵝連帽女孩",
+      "platform": "社群 CC0 · Live2D",
+      "source": "https://github.com/LunaTheFoxgirl/archlive2d/tree/31664b6e5dbdb32fddb7c253b1b559259ed483d2",
+      "archive": "/assets/gallery/arch-chan.zip",
+      "image": "/assets/gallery/arch-chan.webp",
+      "bytes": 1691035,
+      "sha256": "63b2f78cc9ff84fe2cdb2545ad0bf36ecc93172217c7e5f251190a9d4fad0d1c",
+      "license": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "terms": "https://github.com/LunaTheFoxgirl/archlive2d/blob/31664b6e5dbdb32fddb7c253b1b559259ed483d2/LICENSE.md",
+      "individual_terms": "LunaTheFoxgirl 作者以 CC0 發佈。保留作者來源；僅整理封裝及引用路徑，模型與貼圖未更改。",
+      "copyright": "LunaTheFoxgirl",
+      "format": "live2d-zip"
+    },
+    {
+      "id": "vroid-fumiriya",
+      "name": "櫻田文理也 · VRoid 官方",
+      "platform": "VRoid 官方樣本",
+      "format": "vrm",
+      "source": "https://vroid.pixiv.help/hc/en-us/articles/360014788554-Sakurada-Fumiriya",
+      "archive": "https://raw.githubusercontent.com/madjin/vrm-samples/e16eb187100149a315ad92c3c9968f1d5baa6c7d/vroid/beta/Sakurada_Fumiriya.vrm",
+      "image": "/assets/gallery/vroid-fumiriya.webp",
+      "bytes": 19342280,
+      "sha256": "d8fb05f33e377df028cb6b9d58c441ce68326c41fa23f6c735d40c65ae3dc710",
+      "copyright": "pixiv Inc.",
+      "license": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "terms": "https://vroid.pixiv.help/hc/en-us/articles/360014788554-Sakurada-Fumiriya",
+      "individual_terms": "pixiv 官方樣本條款明示 CC0。檔案由固定版本公開鏡像按需下載，已逐檔核對 Git 雜湊、內置 CC0 metadata 及 AIRI 原生預覽；不是 VRoid Hub 全站整合。"
+    },
+    {
+      "id": "vroid-shino",
+      "name": "千駄谷篠 · VRoid 官方",
+      "platform": "VRoid 官方樣本",
+      "format": "vrm",
+      "source": "https://vroid.pixiv.help/hc/en-us/articles/360013482714-Sendagaya-Shino",
+      "archive": "https://raw.githubusercontent.com/madjin/vrm-samples/e16eb187100149a315ad92c3c9968f1d5baa6c7d/vroid/beta/Sendagaya_Shino.vrm",
+      "image": "/assets/gallery/vroid-shino.webp",
+      "bytes": 15074328,
+      "sha256": "1e177c1a7b14f783a9c48395831db8616260d3bddd4154cb2784b779adca49b5",
+      "copyright": "pixiv Inc.",
+      "license": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "terms": "https://vroid.pixiv.help/hc/en-us/articles/360013482714-Sendagaya-Shino",
+      "individual_terms": "pixiv 官方樣本條款明示 CC0。檔案由固定版本公開鏡像按需下載，已逐檔核對 Git 雜湊、內置 CC0 metadata 及 AIRI 原生預覽；不是 VRoid Hub 全站整合。"
     }
   ],
   "official_catalogue": [

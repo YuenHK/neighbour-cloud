@@ -1,6 +1,8 @@
 // No fetch handler or private cache. This bounded store contains only opaque
 // notification identifiers/timestamps, never cases, subscriptions or residents.
 const recent = new Set()
+self.addEventListener('install', event => event.waitUntil(self.skipWaiting()))
+self.addEventListener('activate', event => event.waitUntil(self.clients.claim()))
 async function claimNotification(id, remove = false) {
   if (!('indexedDB' in self)) return true
   const db = await new Promise(resolve => {

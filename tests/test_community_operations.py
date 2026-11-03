@@ -145,6 +145,47 @@ def test_offline_and_unknown_response_outbox_reuses_identity(system, tmp_path):
     assert (tmp_path / f'events/ep-patrol/{event.id}.receipt.json').is_file()
 
 
+def test_outbox_backoff_survives_process_restart_after_lost_cloud_ack(system, tmp_path):
+    pair, now, calls = system.ingest.pair(), [1000], []
+    item = payload(tmp_path)
+    def route(request):
+        calls.append(request)
+        receipt = system.ingest.accept(pair['site'], json.loads(request.content))
+        if len(calls) == 1:
+            raise httpx.ReadTimeout('synthetic response lost after commit')
+        return httpx.Response(200, json=receipt)
+    client = httpx.Client(transport=httpx.MockTransport(route))
+    def adapter():
+        return PatrolDelivery(tmp_path, 'https://neighbour-yuenhk-live.onrender.com',
+                              {'site': pair['site'], 'token': pair['token']}, client=client, clock=lambda: now[0])
+    event = Event.model_validate(item['event'])
+    with pytest.raises(RuntimeError, match='unconfirmed'):
+        adapter().add(event)
+    restarted = adapter()
+    with pytest.raises(RuntimeError, match='backoff'):
+        restarted.add(event)
+    assert len(calls) == 1
+    now[0] += 301
+    restarted.add(event)
+    assert len(calls) == 2 and system.services.cases.summary()['counts']['new'] == 2
+    assert not list(tmp_path.rglob('*.retry.json'))
+    assert len(list(tmp_path.rglob('*.jpg'))) == 3
+
+
+def test_outbox_retry_corruption_retains_all_evidence_and_does_not_transmit(system, tmp_path):
+    pair = system.ingest.pair()
+    item = payload(tmp_path)
+    event = Event.model_validate(item['event'])
+    state = tmp_path / f'events/ep-patrol/{event.id}.retry.json'
+    state.write_text('{"event":"wrong"}')
+    client = httpx.Client(transport=httpx.MockTransport(lambda _: pytest.fail('must not transmit')))
+    adapter = PatrolDelivery(tmp_path, 'https://neighbour-yuenhk-live.onrender.com',
+        {'site': pair['site'], 'token': pair['token']}, client=client)
+    with pytest.raises(ValueError, match='invalid_outbox_retry_state'):
+        adapter.add(event)
+    assert len(list(tmp_path.rglob('*.jpg'))) == 3 and state.read_text() == '{"event":"wrong"}'
+
+
 def subscription():
     from cryptography.hazmat.primitives import serialization
     from cryptography.hazmat.primitives.asymmetric import ec

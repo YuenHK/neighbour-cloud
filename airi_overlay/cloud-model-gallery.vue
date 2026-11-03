@@ -73,12 +73,14 @@ async function choose(row: Choice) {
     if (row.gallery) {
       const item = row.gallery
       const remote = item.format === 'vrm'
-      if (remote && !/^https:\/\/arweave\.net\/[\w-]{43}$/.test(item.archive))
+      const arweave = /^https:\/\/arweave\.net\/[\w-]{43}$/.test(item.archive)
+      const pinnedVRoid = /^https:\/\/raw\.githubusercontent\.com\/madjin\/vrm-samples\/[a-f0-9]{40}\/vroid\/beta\/(?:Sakurada_Fumiriya|Sendagaya_Shino)\.vrm$/.test(item.archive)
+      if (remote && !arweave && !pinnedVRoid)
         throw new Error('圖庫來源未能核對。')
-      const response = await fetch(item.archive, { credentials: 'omit', redirect: remote ? 'follow' : 'error', mode: remote ? 'cors' : 'same-origin', referrerPolicy: 'no-referrer', signal: AbortSignal.timeout(60000) })
+      const response = await fetch(item.archive, { credentials: 'omit', redirect: remote && arweave ? 'follow' : 'error', mode: remote ? 'cors' : 'same-origin', referrerPolicy: 'no-referrer', signal: AbortSignal.timeout(60000) })
       if (!response.ok || !response.body)
         throw new Error('模型暫時未能下載。')
-      if (remote && !/^https:\/\/(?:[a-z0-9]+\.)?arweave\.net\//.test(response.url))
+      if (remote && (arweave ? !/^https:\/\/(?:[a-z0-9]+\.)?arweave\.net\//.test(response.url) : response.url !== item.archive))
         throw new Error('模型下載來源不正確。')
       const reader = response.body.getReader()
       const chunks: Uint8Array[] = []

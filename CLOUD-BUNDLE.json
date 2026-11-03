@@ -176,13 +176,13 @@
     },
     {
       "path": "airi_overlay/cloud-model-gallery.json",
-      "bytes": 138717,
-      "sha256": "9ed1d037eac368a4c0e1709d053adfd85338104c87f66d9bc31d7adfdf4f422c"
+      "bytes": 141545,
+      "sha256": "e2dab481e1118489e3f5a154960f5170d298310a3b5ffa0cf1edae0804f32802"
     },
     {
       "path": "airi_overlay/cloud-model-gallery.vue",
-      "bytes": 15238,
-      "sha256": "a3e8903d05066a591551c41b1a1f43fb30460246af8723472bb4ce7d67374bb5"
+      "bytes": 15520,
+      "sha256": "6e721f704846281f8b3469a2d5ae00e0a7f99590e6ce781202d8582fc90ac88f"
     },
     {
       "path": "airi_overlay/cloud-model-library.vue",
@@ -606,8 +606,8 @@
     },
     {
       "path": "deploy/cloud/rollout.py",
-      "bytes": 8835,
-      "sha256": "a5e55d300473b9ae547ddcc548c525597808b0bbe916ff475e4577a419cf01e0"
+      "bytes": 8837,
+      "sha256": "ad4925de789ef698960e2f60f10d3bdf28b9e8080550342d563952f791130a15"
     },
     {
       "path": "deploy/cloud/runtime_storage.py",
@@ -816,13 +816,13 @@
     },
     {
       "path": "deploy/cloud/web/staff-notifications.js",
-      "bytes": 5304,
-      "sha256": "de3230e674374a1e4f2e883f03c65c5be8d31def2cfe85d113299cf19b354a6d"
+      "bytes": 6577,
+      "sha256": "fe7945bda370c9cbdc961e66a8aa7491a7e3e32617aa32bbdc0a70375dc84683"
     },
     {
       "path": "deploy/cloud/web/staff-sw.js",
-      "bytes": 2908,
-      "sha256": "94b1a989da139f576d595cad289fb0100af4b3c7052166eacbca003f883ed38b"
+      "bytes": 3069,
+      "sha256": "d7146b57b71f945e69c319bf0b07b962b7c681a5a9d8676dd0c3210ba49b8fd7"
     },
     {
       "path": "deploy/cloud/web/staff.webmanifest",
@@ -831,8 +831,8 @@
     },
     {
       "path": "deploy/cloud/web_assets.py",
-      "bytes": 11402,
-      "sha256": "e98a671a5d5041485db930dbdbaa993ccfc828353ffc4f6d8385a0d454ec21b2"
+      "bytes": 11436,
+      "sha256": "3bf2c59946f0751edb5c3d218b427fb29e2effaf65ae313d785e3dd429c84aa3"
     },
     {
       "path": "edge_hub/__init__.py",
@@ -1101,8 +1101,8 @@
     },
     {
       "path": "edge_hub/patrol_delivery.py",
-      "bytes": 7247,
-      "sha256": "506f4cd1d3d867cd9d689d87c2b45e624414d2790b1cb26455e6a277a6d7b533"
+      "bytes": 9968,
+      "sha256": "21a58423c3a641cdc9d121339f508da071d3bc15fd0da4c5b26f12d60f9479ca"
     },
     {
       "path": "edge_hub/patrol_followup.py",
