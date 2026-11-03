@@ -1,0 +1,13 @@
+/* Original apricot plush house. CSS movement follows the existing real loading states. */
+header>strong { display:flex; align-items:center; gap:8px; }
+.brand-mark { width:32px; height:32px; object-fit:contain; flex:0 0 auto; }
+.launch-scene { position:relative; }
+.launch-house { display:none; }
+.launch-mascot { position:absolute; z-index:2; width:150px; height:150px; object-fit:contain; left:50%; bottom:8px; transform:translateX(-50%); animation:mascot-hello 3.4s ease-in-out infinite; }
+.home { background:transparent; box-shadow:none; font-size:0; }
+.home img { display:block; width:160px; height:160px; margin:auto; object-fit:contain; }
+#launchScreen[data-state="failed"] .launch-mascot,
+#launchScreen[data-state="handoff"] .launch-mascot { animation:none; }
+@keyframes mascot-hello { 0%,55%,100% { transform:translateX(-50%) translateY(0) rotate(0); } 70% { transform:translateX(-50%) translateY(-6px) rotate(-2deg); } 85% { transform:translateX(-50%) translateY(-2px) rotate(2deg); } }
+@media(max-width:520px) { .launch-mascot { width:128px; height:128px; bottom:6px; } .brand-mark { width:28px; height:28px; } }
+@media(prefers-reduced-motion:reduce) { .launch-mascot,.home { animation:none!important; } }

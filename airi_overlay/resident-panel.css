@@ -1,0 +1,78 @@
+/* Presentation only. Keep text/control opacity independent of the glass panel. */
+body[data-cloud-view="resident"] .resident-assistant-panel {
+  background: rgba(255, 255, 255, .76);
+  border-color: rgba(255, 255, 255, .86);
+  box-shadow: 0 12px 35px #173c3714;
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+}
+body[data-cloud-view="resident"] .resident-greeting,
+body[data-cloud-view="resident"] .resident-bubble:not(.user) {
+  background: rgba(240, 248, 243, .82);
+}
+body[data-cloud-view="resident"] .resident-bubble.user {
+  background: rgba(33, 105, 93, .94);
+}
+body[data-cloud-view="resident"] .resident-assistant-panel textarea,
+body[data-cloud-view="resident"] .resident-assistant-panel button:not(.primary) {
+  background: rgba(255, 255, 255, .94);
+}
+body[data-cloud-view="resident"] .resident-panel-status:not(:empty) {
+  color: #365b52;
+  background: rgba(255, 255, 255, .80);
+  border-radius: 6px;
+  padding: 4px 6px;
+}
+@media (max-width: 760px) {
+  body[data-cloud-view="resident"] .estate-resident-layout {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    gap: 0;
+    padding: 8px;
+    isolation: isolate;
+  }
+  body[data-cloud-view="resident"][data-estate-kiosk] .estate-avatar-canvas {
+    grid-area: 1 / 1;
+    height: 100%;
+    min-height: 0;
+    align-self: stretch;
+    pointer-events: none;
+  }
+  body[data-cloud-view="resident"] .resident-assistant-panel {
+    grid-area: 1 / 1;
+    align-self: end;
+    box-sizing: border-box;
+    height: 58%;
+    min-height: min(360px, 100%);
+    max-height: 100%;
+    padding: 14px;
+    background: rgba(255, 255, 255, .60);
+    z-index: 2;
+  }
+  body[data-cloud-view="resident"] .resident-transcript {
+    min-height: 48px;
+    margin: 12px 0 8px;
+  }
+}
+@media (max-width: 760px) and (max-height: 500px) {
+  body[data-cloud-view="resident"] .resident-assistant-panel {
+    height: 100%;
+    min-height: 0;
+    padding: 10px;
+  }
+  body[data-cloud-view="resident"] .resident-transcript {
+    min-height: 0;
+  }
+}
+@media (prefers-contrast: more) {
+  body[data-cloud-view="resident"] .resident-assistant-panel {
+    background: rgba(255, 255, 255, .96);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  body[data-cloud-view="resident"] .resident-greeting,
+  body[data-cloud-view="resident"] .resident-bubble:not(.user) {
+    background: #edf4ef;
+  }
+}

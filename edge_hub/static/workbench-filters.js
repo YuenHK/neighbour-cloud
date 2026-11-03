@@ -15,7 +15,7 @@
     const form = make(host, 'form', '', 'workbench-filters')
     form.setAttribute('aria-label', events ? '現場回報檢索' : '個案檢索')
     const main = make(form, 'div', '', 'workbench-filter-main')
-    const searchLabel = make(main, 'label', '搜尋')
+    const searchLabel = make(main, 'label', '', 'workbench-filter-search')
     const search = make(searchLabel, 'input')
     search.type = 'search'; search.maxLength = 120
     search.placeholder = events ? '位置、事件編號或內容' : '個案編號、單位或內容'
@@ -28,13 +28,12 @@
       }
       return item
     }
-    const sort = select(main, '排序', events
-      ? [['created_desc', '最新回報'], ['created_asc', '最早回報'], ['completed_desc', '最近完成'], ['priority', '優先處理']]
-      : [['created_desc', '最新建立'], ['created_asc', '最早建立'], ['updated_desc', '最近更新'], ['due_asc', '跟進期限最先'], ['priority', '待辦優先']])
     const actions = make(main, 'div', '', 'workbench-filter-actions')
     const submit = make(actions, 'button', '搜尋'); submit.type = 'submit'
     const clear = make(actions, 'button', '清除篩選', 'service-button-secondary'); clear.type = 'button'
-    const states = make(form, 'div', '', 'workbench-filter-states')
+    const advanced = make(form, 'details', '', 'workbench-filter-dates')
+    const summary = make(advanced, 'summary', '篩選及排序')
+    const states = make(advanced, 'div', '', 'workbench-filter-states')
     states.setAttribute('role', 'group'); states.setAttribute('aria-label', '按處理狀態篩選')
     const choices = events
       ? [['all', '全部'], ['open', '未完成'], ['pending', '待核實'], ['confirmed', '已確認'], ['resolved', '已完成'], ['false_positive', '誤報']]
@@ -43,9 +42,10 @@
       const button = make(states, 'button', label); button.type = 'button'; buttons.set(value, button)
       button.addEventListener('click', () => apply(value))
     }
-    const advanced = make(form, 'details', '', 'workbench-filter-dates')
-    make(advanced, 'summary', '按日期範圍檢索')
     const dates = make(advanced, 'div', '', 'workbench-filter-date-fields')
+    const sort = select(dates, '排序', events
+      ? [['created_desc', '最新回報'], ['created_asc', '最早回報'], ['completed_desc', '最近完成'], ['priority', '優先處理']]
+      : [['created_desc', '最新建立'], ['created_asc', '最早建立'], ['updated_desc', '最近更新'], ['due_asc', '跟進期限最先'], ['priority', '待辦優先']])
     const field = select(dates, '日期依據', events
       ? [['created', '回報日期'], ['completed', '完成記錄日期']]
       : [['created', '建立日期'], ['updated', '最近更新日期'], ['due', '跟進期限']])
@@ -57,6 +57,10 @@
       search.value = applied.q; sort.value = applied.sort; field.value = applied.date_field
       from.value = applied.date_from; to.value = applied.date_to
       buttons.forEach((button, value) => button.setAttribute('aria-pressed', String(value === applied.state)))
+      const count = Number(applied.state !== defaults.state) + Number(applied.sort !== defaults.sort)
+        + Number(!!(applied.date_from || applied.date_to))
+      summary.textContent = count ? `篩選及排序（${count}）` : '篩選及排序'
+      clear.hidden = !applied.q && count === 0 && applied.date_field === defaults.date_field
       error.textContent = ''
     }
     function apply(state = applied.state) {

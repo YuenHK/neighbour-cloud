@@ -37,6 +37,13 @@ SHELL = {
     '/cloud/cloud-frame.js': (OVERLAY / 'cloud-frame.js', 'text/javascript'),
     '/cloud/cloud-transport.js': (OVERLAY / 'cloud-transport.js', 'text/javascript'),
     '/cloud/resident-recovery.js': (OVERLAY / 'resident-recovery.js', 'text/javascript'),
+    '/cloud/resident-panel.css': (OVERLAY / 'resident-panel.css', 'text/css'),
+    '/cloud/mascot.css': (WEB / 'mascot.css', 'text/css'),
+    '/assets/brand/neighbour-house-apricot-v1.webp': (WEB / 'brand/neighbour-house-apricot-v1.webp', 'image/webp'),
+    '/assets/brand/favicon-32.png': (WEB / 'brand/favicon-32.png', 'image/png'),
+    '/assets/brand/apple-touch-icon-180.png': (WEB / 'brand/apple-touch-icon-180.png', 'image/png'),
+    '/assets/brand/icon-192.png': (WEB / 'brand/icon-192.png', 'image/png'),
+    '/assets/brand/icon-512.png': (WEB / 'brand/icon-512.png', 'image/png'),
 }
 SUFFIX_TYPES = {'.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml',
     '.png': 'image/png', '.avif': 'image/avif', '.webp': 'image/webp', '.ico': 'image/x-icon',
@@ -153,7 +160,9 @@ class CloudWebAssets:
                     "style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; "
                     "connect-src 'self' data: blob: https://huggingface.co https://*.hf.co https://arweave.net https://*.arweave.net; worker-src 'self' blob:; "
                     "media-src 'self' blob:; frame-src 'none'; frame-ancestors 'self'; base-uri 'none'"})
-            return HTMLResponse(self.resident.read_bytes(), headers=headers)
+            data = self.resident.read_bytes().replace(
+                b'</head>', b'<link rel="stylesheet" href="/cloud/resident-panel.css"></head>', 1)
+            return HTMLResponse(data, headers=headers)
         source = self.files.get(path)
         if source is not None and not storage_acceptance:
             if re.search(r'-[A-Za-z0-9_-]{8,}\.', source.name):

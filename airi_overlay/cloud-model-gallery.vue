@@ -30,8 +30,12 @@ interface GalleryModel { id: string, name: string, source: string, archive: stri
 interface Choice { id: string, name: string, platform: string, format: string, image?: string, bytes?: number, model?: DisplayModel, gallery?: GalleryModel, sharedId?: string }
 const choices = computed(() => {
   const rows: Choice[] = (gallery.models as GalleryModel[]).map(item => ({ id: `gallery:${item.id}`, name: item.name, platform: item.platform || (item.source.includes('live2d.com') ? 'Live2D 官方' : '社群 CC0'), format: item.format || 'live2d-zip', image: item.image, bytes: item.bytes, gallery: item }))
-  for (const item of shared.value)
-    rows.push({ id: item.id, name: item.name, platform: '平台共享', format: item.id.startsWith('cloud-vrm-') ? 'vrm' : 'live2d-zip', bytes: item.bytes, sharedId: item.id })
+  for (const item of shared.value) {
+    const digest = item.id.replace(/^cloud-(?:live2d|vrm)-/, '')
+    const reviewed = (gallery.models as GalleryModel[]).find(model => model.sha256 === digest)
+    const local = display.displayModels.find(model => model.id === item.id)
+    rows.push({ id: item.id, name: item.name, platform: '平台共享', format: item.id.startsWith('cloud-vrm-') ? 'vrm' : 'live2d-zip', image: local?.previewImage || reviewed?.image, bytes: item.bytes, sharedId: item.id })
+  }
   for (const item of display.displayModels) {
     if (rows.some(row => row.id === item.id) || ![DisplayModelFormat.Live2dZip, DisplayModelFormat.VRM].includes(item.format))
       continue

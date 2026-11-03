@@ -181,8 +181,8 @@
     },
     {
       "path": "airi_overlay/cloud-model-gallery.vue",
-      "bytes": 14945,
-      "sha256": "fc96a7b46897f5b1e6982b2b5d9d4ed788d5a922b2b68322f2c40cae522d0350"
+      "bytes": 15238,
+      "sha256": "a3e8903d05066a591551c41b1a1f43fb30460246af8723472bb4ce7d67374bb5"
     },
     {
       "path": "airi_overlay/cloud-model-library.vue",
@@ -313,6 +313,11 @@
       "path": "airi_overlay/resident-idle.js",
       "bytes": 1115,
       "sha256": "aab42b3d40ddb3ce5dfc58ce2548451b436d431e149cfe9ed7ff165d573d8dfb"
+    },
+    {
+      "path": "airi_overlay/resident-panel.css",
+      "bytes": 2417,
+      "sha256": "600171510bc5ffc173f909c5a17468eb81c17fdfb4f42e266d3af9e0b8f5fe52"
     },
     {
       "path": "airi_overlay/resident-pcm.js",
@@ -601,8 +606,8 @@
     },
     {
       "path": "deploy/cloud/rollout.py",
-      "bytes": 8532,
-      "sha256": "a9a1b090739cf0e04148b29657c97467ec8b86ae12410648d8ac373bb03ed231"
+      "bytes": 8832,
+      "sha256": "8553fc757033164a9c47f013d9549fee8e846913248ccd7d0b90e858eb8db1ff"
     },
     {
       "path": "deploy/cloud/runtime_storage.py",
@@ -691,13 +696,43 @@
     },
     {
       "path": "deploy/cloud/web/boot-wait.html",
-      "bytes": 761,
-      "sha256": "a886d9665924a913d2de57aea63df25273ab800e3036635002df78ae46b0b9a1"
+      "bytes": 979,
+      "sha256": "5362e35cafe6f2774866b9e4266b97231a831449a73b15560181b8597fd44960"
     },
     {
       "path": "deploy/cloud/web/boot-wait.js",
       "bytes": 1754,
       "sha256": "010999b94f140413197b3a3896ececf630eee138209ac861543b4572039b1adc"
+    },
+    {
+      "path": "deploy/cloud/web/brand/README.md",
+      "bytes": 727,
+      "sha256": "37e7a3220a34f0696af6e1178b74694065bce7321ead3760916fd96ff5c6345c"
+    },
+    {
+      "path": "deploy/cloud/web/brand/apple-touch-icon-180.png",
+      "bytes": 40271,
+      "sha256": "8678e84d5331b54be27191cc45f4f106ecd7607d86eca45c9897f8fc122ee186"
+    },
+    {
+      "path": "deploy/cloud/web/brand/favicon-32.png",
+      "bytes": 2398,
+      "sha256": "f67b7547c484fbc715385148b9b7652b4e5085a70939c3c0f89ad6a2dd1d5044"
+    },
+    {
+      "path": "deploy/cloud/web/brand/icon-192.png",
+      "bytes": 45246,
+      "sha256": "13133f442002894ff0761073b7f7db6ba38642cf9340117861fc83bd5ed3fe2b"
+    },
+    {
+      "path": "deploy/cloud/web/brand/icon-512.png",
+      "bytes": 289868,
+      "sha256": "5d1b447bc25f4a9946670acbad74b3a1281a26649fdd4705eae8a0f997fbfe2e"
+    },
+    {
+      "path": "deploy/cloud/web/brand/neighbour-house-apricot-v1.webp",
+      "bytes": 48270,
+      "sha256": "6b0b61713e887060c8169b4debd7f2aea6d1f28564f0e3dff1b38f5c0609f24a"
     },
     {
       "path": "deploy/cloud/web/frame-entry.js",
@@ -706,8 +741,8 @@
     },
     {
       "path": "deploy/cloud/web/index.html",
-      "bytes": 6824,
-      "sha256": "4c114983c9278cd9bcb88f63b7ead37a705d07dc75b51cb8f278b06c677a5773"
+      "bytes": 7266,
+      "sha256": "ebe89a27e267002aaef9987b0059e03609b0c1c99ef237a4d47117c5b44816ba"
     },
     {
       "path": "deploy/cloud/web/launch-screen.css",
@@ -718,6 +753,11 @@
       "path": "deploy/cloud/web/launch-screen.js",
       "bytes": 7235,
       "sha256": "3f180f2bec080ddd081a7f449ccd32f182fa05933cbeb4d1c26ec7c6e1ab79f0"
+    },
+    {
+      "path": "deploy/cloud/web/mascot.css",
+      "bytes": 1217,
+      "sha256": "fc7c95be74e7ed679f951b675af5c8d2ad17733c9e60e060fa82384b874815f9"
     },
     {
       "path": "deploy/cloud/web/module-loading.css",
@@ -786,13 +826,13 @@
     },
     {
       "path": "deploy/cloud/web/staff.webmanifest",
-      "bytes": 295,
-      "sha256": "fbae6e5d959d5328aec84eaace67aeaef81a210332f8fdcd3d60619954c251b1"
+      "bytes": 379,
+      "sha256": "dd7f2680c3fb571a08c489f72857cf7c697dc6acde2c4e85555a57c7c11d2183"
     },
     {
       "path": "deploy/cloud/web_assets.py",
-      "bytes": 10680,
-      "sha256": "a2591f94e11374b0c44ebfe7c2c5fb80d8a030e84f5e2f6d7cd08c66ad9bbd84"
+      "bytes": 11402,
+      "sha256": "e98a671a5d5041485db930dbdbaa993ccfc828353ffc4f6d8385a0d454ec21b2"
     },
     {
       "path": "edge_hub/__init__.py",
@@ -1371,8 +1411,8 @@
     },
     {
       "path": "edge_hub/static/service-shell.css",
-      "bytes": 27892,
-      "sha256": "302ab87485ef78a9289f6d035315819d852859ea6fdf3d350412afe5a959dd25"
+      "bytes": 28361,
+      "sha256": "d7774ac9f6a62f95f91f1316cb48f8905a98f3bb1fd471223ca24de64fc0b3d8"
     },
     {
       "path": "edge_hub/static/service-shell.js",
@@ -1406,8 +1446,8 @@
     },
     {
       "path": "edge_hub/static/workbench-filters.js",
-      "bytes": 5081,
-      "sha256": "f2ccb5bce8482796f9e5765d7843f97e55dcdd79e1cfcc0cc32516f0c965a107"
+      "bytes": 5459,
+      "sha256": "bfe1d8ee2e356334fa8cbad45f6fe45cbe57a325e25ac6715ea8031b0c8e60c3"
     },
     {
       "path": "edge_hub/static/workspace-navigation.js",
@@ -1541,8 +1581,8 @@
     },
     {
       "path": "tools/cloud_bundle.py",
-      "bytes": 5568,
-      "sha256": "fcb8ac154f3bef090d78cc797b4d795ff1839669045df418b60edb3a755b5694"
+      "bytes": 5838,
+      "sha256": "39a24f4bea020339bd48c382a4de0545a44d84189311bf00abbbb367a13d3db2"
     },
     {
       "path": "tools/cloud_frontend_assets.py",
