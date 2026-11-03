@@ -51,6 +51,8 @@ from deploy.cloud.transcription_api import (
     transcription_router,
 )
 from deploy.cloud.voice_api import STREAM_PATHS, CloudVoiceBodyLimit, voice_router
+from deploy.cloud.vroid_api import VroidClient
+from deploy.cloud.vroid_library import Library, library_router
 from deploy.cloud.web_assets import CloudWebAssets
 from edge_hub import azure_voice, cloudflare_gemma
 from edge_hub.browser_timing import BrowserTimings, timing_router
@@ -236,7 +238,7 @@ class CloudServiceBodyLimit(ServiceBodyLimitMiddleware):
 
 
 def create_app(services, verifier, *, origin, model_client=None, voice_client=None, quota_client=None,
-               storage_acceptance=False, web_assets=None, maintenance=None, release_probe=None, site_access=None, presentation=None, operations=None):
+               storage_acceptance=False, web_assets=None, maintenance=None, release_probe=None, site_access=None, presentation=None, operations=None, vroid_client=None):
     if (not isinstance(services, CloudServices) or services.closed
             or not isinstance(verifier, GoogleIdentityVerifier) or type(storage_acceptance) is not bool):
         raise ValueError('explicit_open_cloud_services_and_google_verifier_required')
@@ -276,6 +278,11 @@ def create_app(services, verifier, *, origin, model_client=None, voice_client=No
             app.state.gallery_client = httpx.AsyncClient(trust_env=False, follow_redirects=False,
                 limits=httpx.Limits(max_connections=2, max_keepalive_connections=2, keepalive_expiry=30))
             cleanup.push_async_callback(app.state.gallery_client.aclose)
+            app.state.vroid_client = vroid_client or VroidClient()
+            if vroid_client is None:
+                cleanup.push_async_callback(app.state.vroid_client.close)
+            if app.state.vroid_library is not None:
+                cleanup.push_async_callback(app.state.vroid_library.close)
             app.state.robot_client = httpx.AsyncClient(trust_env=False, follow_redirects=False,
                 limits=httpx.Limits(max_connections=16, max_keepalive_connections=8, keepalive_expiry=30))
             cleanup.push_async_callback(app.state.robot_client.aclose)
@@ -289,7 +296,7 @@ def create_app(services, verifier, *, origin, model_client=None, voice_client=No
 
                 def pending_work():
                     return [item['task'] for item in app.state.resident_transcription.entries.values()
-                            if not item['task'].done()] + list(services.residents.search_pending.values()) + list(app.state.avatar_work.pending) + list(app.state.model_discovery.tasks) + (list(app.state.gallery_catalogue.tasks) if app.state.gallery_catalogue else [])
+                            if not item['task'].done()] + list(services.residents.search_pending.values()) + list(app.state.avatar_work.pending) + list(app.state.model_discovery.tasks) + (list(app.state.gallery_catalogue.tasks) if app.state.gallery_catalogue else []) + (list(app.state.vroid_library.pending) if app.state.vroid_library else [])
 
                 async def run_maintenance():
                     while not maintenance.gate.stopping:
@@ -355,11 +362,14 @@ def create_app(services, verifier, *, origin, model_client=None, voice_client=No
     app = FastAPI(lifespan=lifespan, docs_url=None, redoc_url=None, openapi_url=None)
     app.state.started = False
     patrol_ingest = None
+    app.state.vroid_library = None
     if operations is not None:
         patrol_ingest = PatrolIngest(services, operations)
         app.state.staff_push = StaffPush(operations, services.cases, origin)
         app.include_router(patrol_router(patrol_ingest, require_staff, current_principal))
         app.include_router(push_router(app.state.staff_push, require_staff))
+        app.state.vroid_library = Library(operations, lambda: app.state.vroid_client)
+        app.include_router(library_router(require_staff, app.state.vroid_library))
     app.state.browser_timings = BrowserTimings()
     app.state.resident_transcription = Transcription(lambda: app.state.resident_cloud_client)
     app.state.avatar_work = AvatarWork()
@@ -382,7 +392,11 @@ def create_app(services, verifier, *, origin, model_client=None, voice_client=No
 
         @app.get(PRESENTATION_PUBLIC_PATH)
         def resident_presentation():
-            return presentation.public()
+            value = presentation.public()
+            credit = app.state.vroid_library.credit(value['airi']['stage_model']) if app.state.vroid_library else None
+            if credit:
+                value['model_credit'] = credit
+            return value
 
         @app.get(PRESENTATION_STAFF_PATH)
         def staff_presentation():
@@ -419,6 +433,7 @@ def create_app(services, verifier, *, origin, model_client=None, voice_client=No
     @app.middleware('http')
     async def audit(request: Request, call_next):
         private = (private_staff_path(request.url.path, request.method)
+                   or request.url.path.startswith('/api/v1/service-desk/vroid/')
                    or request.url.path in ('/api/v1/events.csv', QUOTA_PATH, '/api/v1/governance/audit', PRESENTATION_STAFF_PATH) or staff_path(request.url.path))
         identity = None
         if private:
@@ -470,6 +485,8 @@ def create_app(services, verifier, *, origin, model_client=None, voice_client=No
         from deploy.cloud.airi_runtime import catalog
         if app.state.gallery_catalogue is not None:
             app.state.gallery_catalogue.schedule()
+        if app.state.vroid_library is not None and current_principal().role == 'staff':
+            app.state.vroid_library.schedule_refresh()
         result = catalog()
         return {'configured': result['configured'], 'check': 'configuration_only',
                 'provider_requests': 0, 'site_hardware': False}

@@ -20,7 +20,7 @@ TESTS = ['test_community_operations.py', 'test_cloud_http_app.py', 'test_cloud_s
          'test_ep_patrol.py', 'test_cloud_web_assets.py', 'test_workbench_filters.py',
          'test_cloud_admin_assets.py', 'test_service_desk.py', 'test_cloud_avatar_vrm.py',
          'test_cloud_avatar_assets.py', 'test_cloud_avatar_api.py', 'test_cloud_presentation.py',
-         'test_cloud_gallery_catalog.py']
+         'test_cloud_gallery_catalog.py', 'test_cloud_vroid_api.py', 'test_cloud_vroid_library.py']
 
 
 def fingerprint(root):

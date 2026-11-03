@@ -24,12 +24,13 @@ export function mergeModelChoices(rows, selectedId) {
     const key = `${row.format}:${row.sha256 || row.id}`
     const prior = groups.get(key)
     if (!prior) {
-      groups.set(key, { ...row, platforms: [row.platform], aliases: [row.name] })
+      groups.set(key, { ...row, platforms: [row.platform], aliases: [...new Set([row.name, ...(row.aliases || [])])] })
       continue
     }
     prior.platforms = [...new Set([...prior.platforms, row.platform])]
-    prior.aliases = [...new Set([...prior.aliases, row.name])]
+    prior.aliases = [...new Set([...prior.aliases, row.name, ...(row.aliases || [])])]
     prior.gallery ||= row.gallery
+    prior.vroid ||= row.vroid
     prior.sharedId ||= row.sharedId
     prior.image ||= row.image
     if (row.id === selectedId) {

@@ -479,6 +479,9 @@ function checkIdle() {
         </p>
       </div>
     </div>
+    <p v-if="presentation.model_credit" class="resident-model-credit">
+      模型：<a :href="presentation.model_credit.source" target="_blank" rel="noopener noreferrer">{{ presentation.model_credit.name }} · {{ presentation.model_credit.author }}</a>
+    </p>
     <p class="resident-panel-status" role="status">
       {{ status }}
     </p>
@@ -516,6 +519,10 @@ function checkIdle() {
     </form>
   </section>
 </template>
+
+<style>
+.resident-model-credit{font-size:11px;line-height:1.4;color:#60786d;margin:0;overflow-wrap:anywhere}.resident-model-credit a{text-decoration:underline}
+</style>
 
 <style scoped>
 .resident-assistant-panel {

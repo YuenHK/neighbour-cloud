@@ -1,10 +1,31 @@
 from datetime import UTC, datetime
+from types import SimpleNamespace
 
 import pytest
 
 from edge_hub.events import Event, EventStore
 from edge_hub.service_desk import ResidentCase, ServiceDeskStore
 from edge_hub.workbench_query import validate
+
+
+def test_equal_time_case_order_uses_creation_sequence_not_random_uuid(tmp_path,monkeypatch):
+    import edge_hub.service_desk as module
+
+    identities=iter(['f'*32,'1'*32,'a'*32])
+    monkeypatch.setattr(module,'uuid4',lambda:SimpleNamespace(hex=next(identities)))
+    monkeypatch.setattr(module.time,'time',lambda:1800000000)
+    store=ServiceDeskStore(tmp_path/'cases.sqlite3')
+    try:
+        rows=[store.create(ResidentCase(submission_id=f'{i+1:032x}',kind='water',message='公開排序測試',
+                                      location='1樓1室',confirmed=True)) for i in range(3)]
+        for sort in ('created_desc','updated_desc','priority','due_asc'):
+            assert [row['case_number'] for row in store.list(sort=sort)['items']]==[3,2,1]
+        assert [row['case_number'] for row in store.list(sort='created_asc')['items']]==[1,2,3]
+        assert store.summary()['latest_id']==rows[2]['id']
+        text=store.unit_progress('1樓1室')
+        assert text.index('3')<text.index('2')<text.index('1')
+    finally:
+        store.close()
 
 
 def test_case_filters_apply_before_paging_and_keep_short_number_search(tmp_path):

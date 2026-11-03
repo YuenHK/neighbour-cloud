@@ -181,8 +181,8 @@
     },
     {
       "path": "airi_overlay/cloud-model-gallery.vue",
-      "bytes": 16868,
-      "sha256": "753855502d52e1aaee61e7b51e0a7b09c9ee78d846646ee4266eb7e342cfab4e"
+      "bytes": 20463,
+      "sha256": "2d668da828dd52d8bca1026103c26a952e680a64508c66843668b64863427c9f"
     },
     {
       "path": "airi_overlay/cloud-model-library.vue",
@@ -256,8 +256,8 @@
     },
     {
       "path": "airi_overlay/model-dedup.js",
-      "bytes": 1530,
-      "sha256": "7f1fbabb531c83fd2bd800658f9c82f57fc7c18f90ae2b07a4fc169c9d405bf8"
+      "bytes": 1622,
+      "sha256": "0046859bdb15b287dc8d054ca624144b90b234ba7dabffced326b780944a1a7c"
     },
     {
       "path": "airi_overlay/model-settings-page.vue",
@@ -341,8 +341,8 @@
     },
     {
       "path": "airi_overlay/resident-service-panel.vue",
-      "bytes": 25887,
-      "sha256": "c977a3cbd5936b54945463397939adf4408fd2f1a182c54024399575d5f11f59"
+      "bytes": 26328,
+      "sha256": "547770915a18d390f684100e9b957c9892e77ae55de731cbc38c10a0070f6152"
     },
     {
       "path": "airi_overlay/resident-session.js",
@@ -491,8 +491,8 @@
     },
     {
       "path": "deploy/cloud/http_app.py",
-      "bytes": 30230,
-      "sha256": "41b349294e8f0c5e0467841535b94259e6e79bad1694b80a5cb31da7f33f714a"
+      "bytes": 31384,
+      "sha256": "1a57a79b552a184bb1521ff7be1a291bc880abced37bef3ee91bd6269bfe8839"
     },
     {
       "path": "deploy/cloud/libsql_connection.py",
@@ -611,8 +611,8 @@
     },
     {
       "path": "deploy/cloud/rollout.py",
-      "bytes": 8838,
-      "sha256": "008b9b291d1ccf46ca790b8a66fa3ba5f19871dc96e5a808708f53ee88c00b6f"
+      "bytes": 8824,
+      "sha256": "c82b201542fbe3771486378e29afcb0bcdaae55ab86884294f005bdb60fad051"
     },
     {
       "path": "deploy/cloud/runtime_storage.py",
@@ -683,6 +683,21 @@
       "path": "deploy/cloud/voice_api.py",
       "bytes": 2945,
       "sha256": "0cd56ffbe07cb2c2f8f5cc451067a62a49fe559220dae6d0b29c857b3e3363e0"
+    },
+    {
+      "path": "deploy/cloud/vroid_api.py",
+      "bytes": 17392,
+      "sha256": "02f8590b7fcd66c5adf1c3ef10ad16225a56f30819399046eb62f24bd6360eec"
+    },
+    {
+      "path": "deploy/cloud/vroid_library.py",
+      "bytes": 13216,
+      "sha256": "75a432e4421dd9c1381c61ab45f5f1540b451200f3a1b434a79e5b03dcc1e687"
+    },
+    {
+      "path": "deploy/cloud/vroid_reviewed.json",
+      "bytes": 152826,
+      "sha256": "7c48d248422a6ce8d240e94d4e9b71d7df45da0fe535191fce4bf38939d38183"
     },
     {
       "path": "deploy/cloud/web/admin-entry.js",
@@ -1251,8 +1266,8 @@
     },
     {
       "path": "edge_hub/service_desk.py",
-      "bytes": 51155,
-      "sha256": "e4e36667843d60cf327b3acb0aca55e2515130ef57cfa2532f109417e972e34c"
+      "bytes": 51533,
+      "sha256": "3131ff1a65caa989166f58a155da215fb0d8b569a8ad334426baf6c8520d85a8"
     },
     {
       "path": "edge_hub/service_identity.py",
@@ -1576,8 +1591,8 @@
     },
     {
       "path": "tools/acceptance_gate.py",
-      "bytes": 4687,
-      "sha256": "43878888feae560d65471c155613c1b0eadd44c004f89ce5bdf87d7356a6c59b"
+      "bytes": 4745,
+      "sha256": "a963b13aab32df692f9d648934cdea34fbd9f5e0b95019824895990ff2d593f4"
     },
     {
       "path": "tools/check_release_gate.py",

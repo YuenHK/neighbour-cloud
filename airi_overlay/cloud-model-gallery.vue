@@ -3,7 +3,7 @@ import type { DisplayModel } from '@proj-airi/stage-ui/stores/display-models'
 
 import { errorMessageFrom } from '@moeru/std'
 import { DisplayModelFormat, useDisplayModelsStore } from '@proj-airi/stage-ui/stores/display-models'
-import { computed, inject, onMounted, ref } from 'vue'
+import { computed, inject, onMounted, ref, watch } from 'vue'
 
 import gallery from './cloud-model-gallery.json'
 
@@ -29,10 +29,20 @@ const ownModels = ref<string[]>([])
 const ownEntry = ref('')
 const localDigests = ref<Record<string, string>>({})
 const localReady = ref(false)
+class VroidPreviewError extends Error {
+  constructor(message: string, readonly hide: boolean) {
+    super(message)
+  }
+}
+interface VroidModel { id: string, name: string, author: string, source: string, terms: string, image: string, bytes: number, sha256: string }
+const vroid = ref<VroidModel[]>([])
+const visibleCount = ref(60)
 interface GalleryModel { id: string, name: string, source: string, archive: string, image: string, bytes: number, sha256: string, license: string, terms: string, individual_terms: string, format?: string, platform?: string }
-interface Choice { id: string, name: string, platform: string, format: string, sha256?: string, platforms?: string[], aliases?: string[], image?: string, bytes?: number, model?: DisplayModel, gallery?: GalleryModel, sharedId?: string }
+interface Choice { id: string, name: string, platform: string, format: string, sha256?: string, platforms?: string[], aliases?: string[], image?: string, bytes?: number, model?: DisplayModel, gallery?: GalleryModel, sharedId?: string, vroid?: VroidModel }
 const choices = computed(() => {
   const rows: Choice[] = (gallery.models as GalleryModel[]).map(item => ({ id: `gallery:${item.id}`, name: item.name, platform: item.platform || (item.source.includes('live2d.com') ? 'Live2D 官方' : '社群 CC0'), format: item.format || 'live2d-zip', sha256: item.sha256, image: item.image, bytes: item.bytes, gallery: item }))
+  for (const item of vroid.value)
+    rows.push({ id: `vroid:${item.id}`, name: item.name, platform: 'VRoid Hub', format: 'vrm', sha256: item.sha256, image: item.image, bytes: item.bytes, vroid: item, aliases: [item.author] })
   for (const item of shared.value) {
     const digest = item.id.replace(/^cloud-(?:live2d|vrm)-/, '')
     const reviewed = (gallery.models as GalleryModel[]).find(model => model.sha256 === digest)
@@ -55,6 +65,10 @@ const platforms = computed(() => [...new Set(choices.value.flatMap(row => row.pl
 const filtered = computed(() => choices.value.filter(row => (platform.value === 'all' || row.platforms?.includes(platform.value))
   && (format.value === 'all' || row.format === format.value)
   && `${row.aliases?.join(' ')} ${row.name} ${row.platforms?.join(' ')}`.toLocaleLowerCase().includes(query.value.trim().toLocaleLowerCase())))
+const visible = computed(() => filtered.value.slice(0, visibleCount.value))
+watch([query, platform, format], () => {
+  visibleCount.value = 60
+})
 function status(value: string) {
   message.value = value
   notify(value)
@@ -66,6 +80,18 @@ function picked(model: DisplayModel) {
   emit('close')
 }
 onMounted(async () => {
+  void (async () => {
+    try {
+      const transport = Reflect.get(globalThis, '__NEIGHBOUR_CLOUD_TRANSPORT__')
+      const response = await transport.fetch('/api/v1/service-desk/vroid/models', { signal: AbortSignal.timeout(20000) })
+      if (response.ok) {
+        const value = await response.json()
+        if (value.connected && Array.isArray(value.items))
+          vroid.value = value.items
+      }
+    }
+    catch { /* Optional library never blocks built-in/shared choices. */ }
+  })()
   void (async () => {
     const found: Record<string, string> = {}
     // Hash one file at a time, cached by Blob identity; no startup mass reads.
@@ -86,7 +112,7 @@ onMounted(async () => {
   catch { message.value = '共享清單暫未載入；已核對圖庫及此裝置模型仍可選擇。' }
 })
 async function choose(row: Choice) {
-  if (busy.value || (row.gallery && !accepted.value))
+  if (busy.value || ((row.gallery || row.vroid) && !accepted.value))
     return
   busy.value = row.id
   status(`正在準備 ${row.name}…`)
@@ -96,6 +122,40 @@ async function choose(row: Choice) {
       model = await loadSharedModel(row.sharedId, row.name)
       if (!display.displayModels.some(item => item.id === model!.id))
         display.displayModels.push(model)
+    }
+    else if (!model && row.vroid) {
+      const item = row.vroid
+      const transport = Reflect.get(globalThis, '__NEIGHBOUR_CLOUD_TRANSPORT__')
+      const response = await transport.fetch(`/api/v1/service-desk/vroid/models/${encodeURIComponent(item.id)}/preview`, {
+        method: 'POST',
+        signal: AbortSignal.timeout(90000),
+      })
+      if (!response.ok || !response.body) {
+        const value = await response.json().catch(() => ({}))
+        throw new VroidPreviewError(value.detail?.message || 'VRoid 暫時未能下載，沒有自動重試。', response.status === 422 || ['model_changed_requires_review', 'model_not_reviewed'].includes(value.detail?.code))
+      }
+      const reader = response.body.getReader()
+      const chunks: Uint8Array[] = []
+      let size = 0
+      try {
+        while (true) {
+          const part = await reader.read()
+          if (part.done)
+            break
+          size += part.value.byteLength
+          if (size > item.bytes || size > 32 * 1024 * 1024)
+            throw new VroidPreviewError('模型下載超過已核對大小。', true)
+          chunks.push(part.value)
+        }
+      }
+      finally {
+        await reader.cancel().catch(() => {})
+        reader.releaseLock()
+      }
+      const content = new Blob(chunks as BlobPart[])
+      if (content.size !== item.bytes || await modelHash(content) !== item.sha256)
+        throw new VroidPreviewError('模型檔案核對未通過，原角色保留。', true)
+      model = await display.addDisplayModel(DisplayModelFormat.VRM, new File([content], `${item.name}.vrm`, { type: 'model/gltf-binary' }))
     }
     else if (!model && row.gallery) {
       const item = row.gallery
@@ -137,8 +197,10 @@ async function choose(row: Choice) {
     picked(model)
   }
   catch (error) {
-    failed.value.add(row.id)
-    status(`${errorMessageFrom(error) ?? '未能完整載入模型。'} 原角色保留，今次清單會先隱藏此項。`)
+    const hide = !row.vroid || (error instanceof VroidPreviewError && error.hide)
+    if (hide)
+      failed.value.add(row.id)
+    status(`${errorMessageFrom(error) ?? '未能完整載入模型。'} 原角色保留，${hide ? '今次清單會先隱藏此項。' : '稍後可再次選擇。'}`)
   }
   finally { busy.value = '' }
 }
@@ -215,8 +277,8 @@ async function prepareOwnArchive() {
       {{ localReady ? message : '正在整理此裝置模型，避免重複顯示…' }}
     </p>
     <div class="model-picker-grid">
-      <article v-for="row in filtered" :key="row.id" :class="{ current: props.selectedModel?.id === row.id }">
-        <button type="button" :disabled="!!busy || !!row.gallery && !accepted" :aria-label="`選擇 ${row.name}`" @click="choose(row)">
+      <article v-for="row in visible" :key="row.id" :class="{ current: props.selectedModel?.id === row.id }">
+        <button type="button" :disabled="!!busy || (!!row.gallery || !!row.vroid) && !accepted" :aria-label="`選擇 ${row.name}`" @click="choose(row)">
           <img v-if="row.image && !imagesFailed.has(row.id)" :src="row.image" :alt="row.name" loading="lazy" @error="imagesFailed.add(row.id)">
           <span v-else class="model-picker-placeholder" aria-hidden="true">♧</span>
           <strong>{{ row.name }}</strong><span class="model-picker-tag">{{ row.platform }}{{ row.format === 'vrm' ? ' · 3D' : '' }}</span>
@@ -225,8 +287,14 @@ async function prepareOwnArchive() {
         <details v-if="row.gallery" class="model-picker-terms">
           <summary>授權及來源</summary><p>{{ row.gallery.individual_terms }}</p><a :href="row.gallery.source" target="_blank" rel="noopener noreferrer">作者來源</a> · <a :href="row.gallery.license" target="_blank" rel="noopener noreferrer">授權</a> · <a :href="row.gallery.terms" target="_blank" rel="noopener noreferrer">條款</a>
         </details>
+        <details v-else-if="row.vroid" class="model-picker-terms">
+          <summary>作者及授權</summary><p>{{ row.vroid.author }} · {{ row.vroid.terms }}</p><a :href="row.vroid.source" target="_blank" rel="noopener noreferrer">作者來源及最新條款</a>
+        </details>
       </article>
     </div>
+    <button v-if="filtered.length > visible.length" type="button" class="model-picker-more" :disabled="!!busy" @click="visibleCount += 60">
+      顯示更多（{{ visible.length }} / {{ filtered.length }}）
+    </button>
     <p v-if="!filtered.length" class="model-picker-empty">
       未找到可用模型，試吓其他名稱或來源。
     </p>

@@ -31,3 +31,16 @@ test('a file is hashed once and unreadable files are retained rather than falsel
   assert.equal(await fileDigest(file), await fileDigest(file)); assert.equal(reads, 1)
   assert.equal(await findSameModel([{ type:'file', format:'vrm', file:{size:1,arrayBuffer:async()=>{throw Error('unreadable')}} }], 'vrm', file, await fileDigest(file)), undefined)
 })
+
+test('resource author search and VRoid provenance survive merging with an existing shared file', async () => {
+  const { mergeModelChoices } = await loaded
+  const source = { id:'123', source:'https://hub.vroid.com/en/characters/1/models/123' }
+  const rows = [
+    {id:'shared-id',name:'Existing.vrm',format:'vrm',sha256:'abc',platform:'平台共享'},
+    {id:'vroid:123',name:'Original',format:'vrm',sha256:'abc',platform:'VRoid Hub',aliases:['Creator Name'],vroid:source},
+  ]
+  const result = mergeModelChoices(rows)
+  assert.equal(result.length,1)
+  assert.deepEqual(result[0].aliases,['Existing.vrm','Original','Creator Name'])
+  assert.equal(result[0].vroid,source)
+})

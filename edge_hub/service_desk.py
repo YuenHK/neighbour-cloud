@@ -381,10 +381,11 @@ class ServiceDeskStore:
                     "CASE WHEN c.kind='human_support' AND c.message LIKE '【需即時關懷】%' THEN 0 ELSE 1 END,c.created_at_ms DESC"}[selected['sort']]
         source = (' FROM service_cases c LEFT JOIN service_case_numbers n ON n.case_id=c.id '
                   'LEFT JOIN patrol_case_links l ON l.case_id=c.id')
+        sequence = 'ASC' if selected['sort']=='created_asc' else 'DESC'
         with self.lock:
             rows = self.db.execute('SELECT c.*,COALESCE(n.ordinal,c.case_number) AS public_number,'
                 'l.event_id AS patrol_event_id,l.desired_status AS patrol_state,l.sync_pending AS patrol_pending' +
-                source + where + ' ORDER BY ' + order + ',c.id DESC LIMIT ? OFFSET ?', [*args, limit, offset]).fetchall()
+                source + where + ' ORDER BY ' + order + ',COALESCE(n.ordinal,c.case_number) ' + sequence + ',c.id DESC LIMIT ? OFFSET ?', [*args, limit, offset]).fetchall()
             total = self.db.execute('SELECT COUNT(*)' + source + where, args).fetchone()[0]
             counts = dict(self.db.execute('SELECT c.status,COUNT(*) FROM service_cases c WHERE ' + group_clause + ' GROUP BY c.status').fetchall())
             latest = self.db.execute('SELECT MAX(created_at_ms),MAX(case_number) FROM service_cases').fetchone()
@@ -399,7 +400,8 @@ class ServiceDeskStore:
                     'pending_by_group': dict(self.db.execute("SELECT CASE WHEN kind='human_support' OR team='住戶支援' THEN 'care' ELSE 'requests' END,COUNT(*) FROM service_cases WHERE status='new' GROUP BY 1").fetchall()),
                     'delivery_scope': 'local_staff_workbench_only',
                     'overdue': self.db.execute("SELECT COUNT(*) FROM service_cases WHERE status!='resolved' AND due_at_ms>0 AND due_at_ms<?", (int(time.time()*1000),)).fetchone()[0],
-                    'latest_id': self.db.execute('SELECT id FROM service_cases ORDER BY created_at_ms DESC,id DESC LIMIT 1').fetchone()[0] if self.db.execute('SELECT 1 FROM service_cases LIMIT 1').fetchone() else None}
+                    'latest_id': self.db.execute('SELECT c.id FROM service_cases c LEFT JOIN service_case_numbers n ON n.case_id=c.id '
+                        'ORDER BY c.created_at_ms DESC,COALESCE(n.ordinal,c.case_number) DESC,c.id DESC LIMIT 1').fetchone()[0] if self.db.execute('SELECT 1 FROM service_cases LIMIT 1').fetchone() else None}
 
     def progress(self, prefix, *, unit='', legacy=False):
         pattern = r'[a-f0-9]{8,32}' if legacy else r'(?:[1-9]\d{0,11}|[a-f0-9]{8,32})'
@@ -430,7 +432,8 @@ class ServiceDeskStore:
         if not re.search(r'\d|室', unit.split('座', 1)[-1]):
             return '我幫你查，講埋樓層同單位，就唔會同其他住戶嘅個案混淆。'
         with self.lock:
-            rows = self.db.execute('SELECT * FROM service_cases WHERE unit=? ORDER BY created_at_ms DESC LIMIT 6', (unit,)).fetchall()
+            rows = self.db.execute('SELECT c.* FROM service_cases c LEFT JOIN service_case_numbers n ON n.case_id=c.id '
+                'WHERE c.unit=? ORDER BY c.created_at_ms DESC,COALESCE(n.ordinal,c.case_number) DESC,c.id DESC LIMIT 6', (unit,)).fetchall()
             if not rows:
                 return '暫時未對上呢個單位嘅個案。你可以講數字編號，或者講返座數、樓層同單位，我再幫你查。'
             if len(rows) == 1:
