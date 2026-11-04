@@ -4,9 +4,20 @@ Current service: https://neighbour-yuenhk-live.onrender.com/ . Residents enter d
 
 The reviewed program runs on Render Free in Singapore with one instance and automatic deployment disabled. It uses the existing Turso Free durable databases, Cloudflare Gemma dialogue, Azure HiuMaan F0 speech, Cloudflare Whisper speech recognition, and Tavily search. No paid upgrade, quota reset, or automatic provider substitution is enabled.
 
-## 2026-11-04: voice-driven lip sync and conversational movement are live
+## 2026-11-04: expressive arm and upper-body gestures are live
 
-Current runtime `fb7bd0c1ea4cef129d80fb711fd920f9ab5aeffb`, official CLI deploy `dep-dbl9egijnfac73f9r16g`, release `avatar-performance-20261104-barrier22`; existing URL and Gemma + Microsoft HiuMaan F0 remain unchanged. The selected character and every original case, model, memory marker, control flag, ledger, event, Operations record (including VRoid) and historical quota period were retained.
+Current runtime `44b326619389b575777e1af002b14b3af5972c8e`, official CLI deploy `dep-dblaehrm8hqs738n2ecg`, release `avatar-body-20261104-barrier23`. Existing URL, selected model, accepted lip sync, Gemma and Microsoft HiuMaan F0 remain unchanged. No ENV, credentials, schema or resident-data migration.
+
+The VRM driver adds a shoulder-height greeting wave, alternating open-hand speech gestures with quiet beats, a slight listening lean and gentler two-hand care gestures. Eleven upper-body bones blend over the native idle pose, return smoothly without drift and restore on reduced motion, hidden pages or model switches. The root, legs, camera, mouth and eyes are untouched. Other model rigs may expose fewer moving parts. These client-side gestures add no AI requests.
+
+430 backend tests, 62 Node tests, network faults, Chromium/WebKit workbench flows and 36 dialogue evaluations passed for the unchanged runtime source. Frontend84 lint/typecheck/build and native byte restoration passed. The actual published Miku VRM was rendered in isolated native-browser tests for all four gestures, framing, settling and reduced motion. 39 production HTTPS program/assets and auth rejection checks passed. All original cases, short numbers, model/settings, memory marker, controls, ledger, events, Operations including VRoid and historical quota were retained. No real provider, microphone, playback, formal test case or EP operation was performed; new human body-gesture acceptance is pending.
+
+This README and bundle update is documentation only; do not redeploy it.
+
+## Earlier 2026-11-04: voice-driven lip sync and conversational movement
+
+
+The previous runtime `fb7bd0c1ea4cef129d80fb711fd920f9ab5aeffb`, official CLI deploy `dep-dbl9egijnfac73f9r16g`, release `avatar-performance-20261104-barrier22`; existing URL and Gemma + Microsoft HiuMaan F0 remain unchanged. The selected character and every original case, model, memory marker, control flag, ledger, event, Operations record (including VRoid) and historical quota period were retained.
 
 The resident PCM stream now feeds one stable analysis bus into AIRI's native VRM/Live2D lip driver. The installed wLipSync worklet and WASM are served from this origin without weakening CSP. Switching analysis cannot disconnect audible playback. Speech completion closes the mouth, and gentle head/chest gestures follow conversation while respecting reduced motion and the original idle pose. No webcam or resident face tracking is enabled.
 
@@ -59,4 +70,3 @@ Permission is hereby granted, free of charge, to any person obtaining a copy of 
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
