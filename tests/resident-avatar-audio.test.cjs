@@ -58,3 +58,44 @@ test('VRM gestures preserve the idle pose, do not accumulate rotation and respec
  driver.update(vrm);driver.restore();assert.ok(head.quaternion.angleTo(newIdle)<1e-7,'new native animation was overwritten')
  assert.ok(chest.quaternion.angleTo(idle)<1e-7)
 })
+
+test('conversational limbs animate shoulders, elbows and wrists, blend back, and never touch locomotion or mouth',async()=>{
+ const path=require('node:path'),vm=require('node:vm'),{createRequire}=require('node:module')
+ const ts=fs.existsSync('.vendor/airi/node_modules/typescript')?require(path.resolve('.vendor/airi/node_modules/typescript')):require('typescript')
+ const three=fs.existsSync('.vendor/airi/packages/stage-ui-three/package.json')?createRequire(path.resolve('.vendor/airi/packages/stage-ui-three/package.json'))('three'):require('three')
+ const gestures=await load('airi_overlay/resident-gestures.js'),exports={},media={matches:false}
+ const scope={exports,require:id=>id==='three'?three:gestures,matchMedia:()=>media,document:{hidden:false},performance:{now:()=>1000}}
+ vm.runInContext(ts.transpileModule(fs.readFileSync('airi_overlay/cloud-vrm-gestures.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,vm.createContext(scope))
+ const names=['head','chest','spine','leftShoulder','rightShoulder','leftUpperArm','rightUpperArm','leftLowerArm','rightLowerArm','leftHand','rightHand','hips','leftUpperLeg','rightUpperLeg']
+ const bones=Object.fromEntries(names.map(name=>[name,new three.Object3D()]));let mouthWrites=0
+ const idle=new three.Quaternion().setFromEuler(new three.Euler(.03,.02,.01));Object.values(bones).forEach(b=>b.quaternion.copy(idle))
+ const vrm={humanoid:{getNormalizedBoneNode:name=>bones[name]},expressionManager:{setValue(){mouthWrites++}}},driver=exports.residentVrmGesture()
+ scope.__NEIGHBOUR_RESIDENT_GESTURE__={kind:'greeting',start:0,duration:2300}
+ for(let i=0;i<600;i++)driver.update(vrm,1/60)
+ assert.ok(bones.rightUpperArm.quaternion.angleTo(idle)>.25,'greeting has no visible arm raise')
+ assert.ok(bones.rightLowerArm.quaternion.angleTo(idle)>.25,'greeting has no elbow bend')
+ assert.ok(bones.rightHand.quaternion.angleTo(idle)>.15,'greeting has no wrist movement')
+ for(const name of ['hips','leftUpperLeg','rightUpperLeg'])assert.ok(bones[name].quaternion.equals(idle),'locomotion changed')
+ assert.equal(mouthWrites,0)
+ const previous=bones.rightUpperArm.quaternion.clone();delete scope.__NEIGHBOUR_RESIDENT_GESTURE__
+ driver.update(vrm,1/60)
+ assert.ok(bones.rightUpperArm.quaternion.angleTo(previous)<.15,'arm snapped when speech/gesture ended')
+ for(let i=0;i<300;i++)driver.update(vrm,1/60)
+ for(const name of names)assert.ok(bones[name].quaternion.angleTo(idle)<1e-6,`${name} did not return to native pose`)
+ scope.__NEIGHBOUR_RESIDENT_GESTURE__={kind:'speaking',start:0,duration:2600,continuous:true}
+ for(let i=0;i<200;i++)driver.update(vrm,1/60)
+ media.matches=true;driver.update(vrm,1/60)
+ Object.values(bones).forEach(b=>assert.ok(b.quaternion.angleTo(idle)<1e-6))
+ assert.doesNotThrow(()=>driver.update({humanoid:{getNormalizedBoneNode:()=>undefined}},1/60))
+})
+
+test('body speech uses alternating emphasis and quiet beats instead of repeating the greeting wave',async()=>{
+ const {bodyGestureOffsets}=await load('airi_overlay/resident-gestures.js')
+ assert.equal(typeof bodyGestureOffsets,'function')
+ const gesture={kind:'speaking',start:0,duration:2600,continuous:true}
+ const a=bodyGestureOffsets(gesture,1300),b=bodyGestureOffsets(gesture,3900),quiet=bodyGestureOffsets(gesture,6500)
+ assert.ok(Math.abs(a.rightUpperArm[2])>Math.abs(a.leftUpperArm[2]))
+ assert.ok(Math.abs(b.leftUpperArm[2])>Math.abs(b.rightUpperArm[2]))
+ assert.ok(Math.abs(quiet.rightUpperArm[2])<Math.abs(a.rightUpperArm[2])*.5)
+ assert.equal(bodyGestureOffsets({...gesture,start:NaN},1000),undefined)
+})

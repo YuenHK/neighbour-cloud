@@ -46,3 +46,45 @@ export function gestureOffsets(gesture, now) {
     return { x: -0.7 * envelope, y: 1.4 * wave * envelope, z: 1.3 * envelope, body: 0.2 * envelope }
   return { x: Math.sin(2 * Math.PI * p) * envelope, y: 1.5 * wave * envelope, z: 0.6 * envelope, body: 0.25 * envelope }
 }
+
+/**
+ * Additive VRM bone rotations in degrees, relative to the native idle pose.
+ * @param {{kind:string,start:number,duration:number,continuous?:boolean}|undefined} gesture
+ * @param {number} now
+ */
+export function bodyGestureOffsets(gesture, now) {
+  if (!gestureOffsets(gesture, now))
+    return undefined
+  const elapsed = (now - gesture.start) / gesture.duration
+  const p = gesture.continuous ? elapsed % 1 : elapsed
+  const envelope = Math.sin(Math.PI * p) ** 2
+  const wave = Math.sin(6 * Math.PI * p)
+  let left = (gesture.kind === 'greeting' ? 0.05 : 0.25) * envelope
+  let right = envelope
+  if (gesture.kind === 'speaking') {
+    // Alternate the leading hand, then leave a quieter phrase. Greeting
+    // waves never repeat throughout an ordinary spoken answer.
+    const beat = Math.floor(elapsed) % 3
+    left = envelope * (beat === 1 ? 1 : beat === 2 ? 0.12 : 0.25)
+    right = envelope * (beat === 0 ? 1 : beat === 2 ? 0.12 : 0.25)
+  }
+  const greeting = gesture.kind === 'greeting'
+  const care = gesture.kind === 'care'
+  const listen = gesture.kind === 'listen'
+  if (care || listen)
+    left = right = envelope * (listen ? 0.35 : 0.65)
+  const lift = greeting ? 48 : 8
+  const bend = greeting ? 8 : care ? 110 : 75
+  const fold = greeting ? 110 : 15
+  return {
+    spine: [(listen ? 2.2 : care ? 1.5 : 0.6) * envelope, 0.6 * (left - right), 0.5 * (right - left)],
+    leftShoulder: [0, -1.3 * left, -1.4 * left],
+    rightShoulder: [0, 1.3 * right, 1.4 * right],
+    leftUpperArm: [-2 * left, -4 * left, -8 * left],
+    rightUpperArm: [-2 * right, 4 * right, lift * right],
+    leftLowerArm: [0, -bend * left, -fold * left],
+    rightLowerArm: [0, bend * right, fold * right],
+    leftHand: [-14 * left, -4 * left, 3 * left],
+    rightHand: [(greeting ? -38 : -14) * right, 4 * right, (greeting ? 10 * wave : -3) * right],
+  }
+}

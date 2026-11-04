@@ -1,7 +1,7 @@
 {
   "format": "neighbour-cloud-preparation-v1",
   "kind": "source-only",
-  "deployed": true,
+  "deployed": false,
   "contains_resident_data": false,
   "contains_credentials": false,
   "requires": [
@@ -236,8 +236,8 @@
     },
     {
       "path": "airi_overlay/cloud-vrm-gestures.ts",
-      "bytes": 1683,
-      "sha256": "dee83773a4846aeaa8a89625ff425eb80c786c92fa096bfbafba2b57ef5cc18a"
+      "bytes": 3136,
+      "sha256": "2ff167adbb10a699f90046b2ac8b8758018bbf770d2319a79966a7ced7b859a0"
     },
     {
       "path": "airi_overlay/embedded-settings.ts",
@@ -316,8 +316,8 @@
     },
     {
       "path": "airi_overlay/resident-gestures.js",
-      "bytes": 2251,
-      "sha256": "8f1b0a69aee6b64c2a1530bb00787d330cd8348a4bbd2d93a358cdec38cb8d8a"
+      "bytes": 4103,
+      "sha256": "b21f3caf4dc22a54cb3baa11b786285054b742cb8c98847bf7dacfe1f69f583a"
     },
     {
       "path": "airi_overlay/resident-idle.js",
@@ -626,8 +626,8 @@
     },
     {
       "path": "deploy/cloud/rollout.py",
-      "bytes": 8829,
-      "sha256": "1c6714dcf30051dcb74f120892c8c5bf695282eea92452c62560e883ecfad779"
+      "bytes": 8822,
+      "sha256": "21c672ec74b688e4a20050eb49a59aa79d9c51a8aebf7270efcd1540f1882a79"
     },
     {
       "path": "deploy/cloud/runtime_storage.py",
@@ -1659,20 +1659,5 @@
       "bytes": 4746,
       "sha256": "8bf3ecc3f05d619df53c09d93bbc9abfe76a0356f1a7487a4b20cdfdf94d1bce"
     }
-  ],
-  "current_runtime": {
-    "origin": "https://neighbour-yuenhk-live.onrender.com",
-    "runtime": "fb7bd0c1ea4cef129d80fb711fd920f9ab5aeffb",
-    "deploy": "dep-dbl9egijnfac73f9r16g",
-    "release": "avatar-performance-20261104-barrier22",
-    "service": "srv-dbii3qijnfac73cgabd0",
-    "instance": "srv-dbii3qijnfac73cgabd0-4sgs6",
-    "PID": 60,
-    "ready_utc": "2026-11-04T02:27:34.573161815Z",
-    "Free_Singapore_instances": 1,
-    "autoDeploy": "no",
-    "mouth_and_gestures": "native voice-driven VRM/Live2D; no camera input",
-    "all_original_data_preserved": true,
-    "documentation_only_no_redeploy": true
-  }
+  ]
 }
