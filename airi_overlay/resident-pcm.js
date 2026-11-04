@@ -16,6 +16,19 @@ export class ResidentPcm {
     this.queued = 0
     this.finished = false
     this.next = 0
+    this.analysisSource = undefined
+  }
+
+  // One stable analysis bus for the complete utterance. PCM chunks retain
+  // their sole audible connection; replacing an analyser cannot cut speech.
+  prepareAnalysis() {
+    if (this.analysisSource || !this.context)
+      return
+    try {
+      this.analysisSource = this.context.createGain()
+      globalThis.dispatchEvent?.(new CustomEvent('resident-pcm-node', { detail: { source: this.analysisSource, context: this.context } }))
+    }
+    catch { /* Avatar analysis must never prevent speech playback. */ }
   }
 
   write(text) {
@@ -47,6 +60,7 @@ export class ResidentPcm {
     await this.context.resume()
     if (this.context.state !== 'running')
       throw new Error('audio_locked')
+    this.prepareAnalysis()
     const signal = AbortSignal.any([this.controller.signal, AbortSignal.timeout(35000)])
     const response = await this.fetcher(this.endpoint, {
       method: 'POST',
@@ -118,7 +132,12 @@ export class ResidentPcm {
           const node = this.context.createBufferSource()
           node.buffer = buffer
           node.connect(this.context.destination)
-          globalThis.dispatchEvent?.(new CustomEvent('resident-pcm-node', { detail: { source: node, context: this.context } }))
+          if (this.analysisSource) {
+            try {
+              node.connect(this.analysisSource)
+            }
+            catch { /* Keep the existing audible path. */ }
+          }
           this.sources.add(node)
           node.onended = () => {
             this.sources.delete(node)
@@ -152,6 +171,11 @@ export class ResidentPcm {
       catch {}
     }
     this.sources.clear()
+    if (this.analysisSource) {
+      globalThis.dispatchEvent?.(new CustomEvent('resident-pcm-ended', { detail: { source: this.analysisSource, context: this.context } }))
+      this.analysisSource.disconnect()
+      this.analysisSource = undefined
+    }
     if (this.ownsContext)
       void this.context?.close().catch(() => {})
   }

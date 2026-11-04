@@ -1,7 +1,7 @@
 {
   "format": "neighbour-cloud-preparation-v1",
   "kind": "source-only",
-  "deployed": true,
+  "deployed": false,
   "contains_resident_data": false,
   "contains_credentials": false,
   "requires": [
@@ -235,6 +235,11 @@
       "sha256": "e5015528a90b21c7502829f3be15719d94136c41243895e0e665ee5616808710"
     },
     {
+      "path": "airi_overlay/cloud-vrm-gestures.ts",
+      "bytes": 1683,
+      "sha256": "dee83773a4846aeaa8a89625ff425eb80c786c92fa096bfbafba2b57ef5cc18a"
+    },
+    {
       "path": "airi_overlay/embedded-settings.ts",
       "bytes": 898,
       "sha256": "94ee7f164a637faf500c02234551e0fc478fa3be7b221c2bc9cfe5cdf8f42931"
@@ -311,13 +316,23 @@
     },
     {
       "path": "airi_overlay/resident-gestures.js",
-      "bytes": 1715,
-      "sha256": "99c9f9137e112f5cc21a0971c43258047f1a6f4413a015e9e04f76a7ffa2ee6c"
+      "bytes": 2251,
+      "sha256": "8f1b0a69aee6b64c2a1530bb00787d330cd8348a4bbd2d93a358cdec38cb8d8a"
     },
     {
       "path": "airi_overlay/resident-idle.js",
       "bytes": 1115,
       "sha256": "aab42b3d40ddb3ce5dfc58ce2548451b436d431e149cfe9ed7ff165d573d8dfb"
+    },
+    {
+      "path": "airi_overlay/resident-lipsync-assets.d.ts",
+      "bytes": 78,
+      "sha256": "63d9494543bb8f8cbd09505a3bfe80fd79e350d0b20be278e77caba6967c2466"
+    },
+    {
+      "path": "airi_overlay/resident-lipsync.ts",
+      "bytes": 1729,
+      "sha256": "7bb626f6ceecf0429b1a81cb7b6625b5c7cd78945804bfa2795eadabf92bfa16"
     },
     {
       "path": "airi_overlay/resident-panel.css",
@@ -326,8 +341,8 @@
     },
     {
       "path": "airi_overlay/resident-pcm.js",
-      "bytes": 7378,
-      "sha256": "5d76743d08ccde353316bb52d0994d637a3ba71911f8db459d634a12a4a748ee"
+      "bytes": 8299,
+      "sha256": "8d81db2df97a242e3bbd6ef767161b8706f0b394b7c4840b0f9a2e2ca3cde3b2"
     },
     {
       "path": "airi_overlay/resident-recovery.js",
@@ -341,8 +356,8 @@
     },
     {
       "path": "airi_overlay/resident-service-panel.vue",
-      "bytes": 27122,
-      "sha256": "a63e708f857e406b724c41445effacd1c595f2832cd15bc1f5e598ae37934e6d"
+      "bytes": 27237,
+      "sha256": "31cd4ddfd326d49d09160cb0a5edeae094fce08dd7266b735744f5b2c973b99f"
     },
     {
       "path": "airi_overlay/resident-session.js",
@@ -471,8 +486,8 @@
     },
     {
       "path": "deploy/cloud/frontend_wiring.py",
-      "bytes": 23151,
-      "sha256": "7a148605af85e207d94d3ed4373e7db52293ce659cec9ad38ad64135a140ad5e"
+      "bytes": 29006,
+      "sha256": "062a7440651151fb7d567eb9617c2ab4bbc55a0050d5d6eaf8243916dcb04b17"
     },
     {
       "path": "deploy/cloud/gallery_sources.py",
@@ -611,8 +626,8 @@
     },
     {
       "path": "deploy/cloud/rollout.py",
-      "bytes": 8830,
-      "sha256": "9df3d594bba55282626b85d2afe8804b21c2f58dc076111548856ddd994382c8"
+      "bytes": 8829,
+      "sha256": "1c6714dcf30051dcb74f120892c8c5bf695282eea92452c62560e883ecfad779"
     },
     {
       "path": "deploy/cloud/runtime_storage.py",
@@ -1596,8 +1611,8 @@
     },
     {
       "path": "tools/acceptance_gate.py",
-      "bytes": 4794,
-      "sha256": "66027c87efce6cac34b43f270f505ec6b58ba19e5429afaa505da9490dbf3215"
+      "bytes": 4867,
+      "sha256": "fcdd39d2a1c30b29c0b511e24e2aeff9a05c632e501d62316538897662b8879f"
     },
     {
       "path": "tools/check_release_gate.py",
@@ -1611,8 +1626,8 @@
     },
     {
       "path": "tools/cloud_frontend_assets.py",
-      "bytes": 5213,
-      "sha256": "6e8fbd76f3f18244abfbbfaa66d24101c8943ff336b4985ad5713b0b5c3367fe"
+      "bytes": 5228,
+      "sha256": "f0af33bb2fd36ca92e75099ccbd2cb8e62d2607f438383ffb19a1b0e9bebc2da"
     },
     {
       "path": "tools/cloud_preflight.py",
@@ -1644,16 +1659,5 @@
       "bytes": 4746,
       "sha256": "8bf3ecc3f05d619df53c09d93bbc9abfe76a0356f1a7487a4b20cdfdf94d1bce"
     }
-  ],
-  "current_runtime": {
-    "commit": "9412ad86d14a2600fee150753f188d0152a14a5e",
-    "release": "resident-responsive-20261104-barrier21",
-    "deploy": "dep-dbl84o6tlv9c73b9agt0",
-    "origin": "https://neighbour-yuenhk-live.onrender.com",
-    "resident_UI": "proportional viewport, bounded notices, compact privacy and relocated public attribution",
-    "voice_display": "Microsoft voice service; original HiuMaan F0 IDs unchanged",
-    "reviewed_choices_preserved": 227,
-    "all_original_Operations_and_data_preserved": true,
-    "documentation_only_no_redeploy": true
-  }
+  ]
 }

@@ -53,7 +53,7 @@ def package(source, output, verification):
         if relative.as_posix() in ('estate-theme.css', 'estate-mark.svg'):
             selected.append(path)
         elif relative.parts[0] == 'assets' and path.suffix in SUFFIX_TYPES:
-            if path.suffix == '.wasm' and not path.name.startswith('ort-wasm-'):
+            if path.suffix == '.wasm' and not path.name.startswith(('ort-wasm-', 'wlipsync-')):
                 continue
             gallery = relative.as_posix() in gallery_paths
             if path.suffix == '.zip' and not gallery and not path.name.startswith(('hiyori_free_zh-', 'hiyori_pro_zh-')):

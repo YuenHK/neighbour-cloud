@@ -1,1 +1,0 @@
-import"./live2d-opfs-registration-XOYgnNCk.js";

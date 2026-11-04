@@ -16,13 +16,24 @@ export function residentGesture(kind) {
     return
   Reflect.set(globalThis, key, Object.freeze({ kind, start: now, duration }))
 }
-/** @param {{kind:string,start:number,duration:number}|undefined} gesture @param {number} now */
+/** Keep gentle conversational motion only while actual audio is scheduled. */
+export function residentSpeechGesture(active, care = false) {
+  if (active) {
+    const kind = care ? 'care' : 'speaking'
+    Reflect.set(globalThis, key, Object.freeze({ kind, start: performance.now(), duration: durations[kind], continuous: true }))
+  }
+  else if (Reflect.get(globalThis, key)?.continuous) {
+    Reflect.deleteProperty(globalThis, key)
+  }
+}
+/** @param {{kind:string,start:number,duration:number,continuous?:boolean}|undefined} gesture @param {number} now */
 export function gestureOffsets(gesture, now) {
   if (!gesture || !durations[gesture.kind] || !Number.isFinite(now) || !Number.isFinite(gesture.start)
     || !Number.isFinite(gesture.duration) || gesture.duration <= 0) {
     return undefined
   }
-  const p = (now - gesture.start) / gesture.duration
+  const elapsed = (now - gesture.start) / gesture.duration
+  const p = gesture.continuous && elapsed >= 0 ? elapsed % 1 : elapsed
   if (p < 0 || p > 1)
     return undefined
   const envelope = Math.sin(Math.PI * p) ** 2

@@ -101,6 +101,100 @@ def cloud_scene(source):
         "  if (state === 'mounted' && stageModelRenderer.value !== 'live2d')\n"
         "    window.dispatchEvent(new CustomEvent('resident-render-state', { detail: { state: 'ready' } }))\n"
         "}, { immediate: true })\n\n").replace('\n', newline) + late, 1)
+    return cloud_avatar_audio(source)
+
+
+def cloud_avatar_audio(source):
+    """Stable resident stream graph, independent of per-chunk playback nodes."""
+    old = source[source.index('async function residentPcmGraph(event: Event) {'):source.index('</script>', source.index('async function residentPcmGraph(event: Event) {'))]
+    if old.count("window.addEventListener('resident-pcm-node'") != 1:
+        raise ValueError('cloud_avatar_audio_anchor_requires_review')
+    new = """let residentSource: AudioNode | undefined
+let residentGraphGeneration = 0
+const vrmGestures = residentVrmGesture()
+watch(vrmViewerRef, (viewer) => viewer?.setVrmFrameHook(vrmGestures.update), { flush: 'post' })
+watch(() => props.paused, (paused) => { if (paused) vrmGestures.restore() })
+async function residentPcmGraph(event: Event) {
+  const data = (event as CustomEvent<{ source: AudioNode, context: AudioContext }>).detail
+  if (!data || data.context !== audioContext || stageDisposed)
+    return
+  residentSource = data.source
+  const generation = ++residentGraphGeneration
+  currentAudioSource.value = data.source
+  setupAnalyser()
+  try {
+    await setupLipSync()
+    if (stageDisposed || generation !== residentGraphGeneration || residentSource !== data.source)
+      return
+    if (audioAnalyser.value)
+      data.source.connect(audioAnalyser.value)
+    if (lipSyncNode.value)
+      data.source.connect(lipSyncNode.value)
+  }
+  catch { /* Audio playback remains available if avatar analysis cannot start. */ }
+}
+function residentPcmEnded(event: Event) {
+  const data = (event as CustomEvent<{ source: AudioNode }>).detail
+  if (data?.source !== residentSource)
+    return
+  residentGraphGeneration++
+  if (currentAudioSource.value === residentSource)
+    currentAudioSource.value = undefined
+  residentSource = undefined
+}
+onMounted(() => {
+  window.addEventListener('resident-pcm-node', residentPcmGraph)
+  window.addEventListener('resident-pcm-ended', residentPcmEnded)
+})
+onUnmounted(() => {
+  stageDisposed = true
+  residentGraphGeneration++
+  vrmGestures.restore()
+  window.removeEventListener('resident-pcm-node', residentPcmGraph)
+  window.removeEventListener('resident-pcm-ended', residentPcmEnded)
+})
+"""
+    source = source.replace(old, new)
+    for old, new in (
+        ('const currentAudioSource = ref<AudioBufferSourceNode>()', 'const currentAudioSource = ref<AudioNode>()\nlet stageDisposed = false'),
+        ("import { animations } from '@proj-airi/stage-ui-three/assets/vrm'", "import { animations } from '@proj-airi/stage-ui-three/assets/vrm'\nimport { residentVrmGesture } from '../../../../stage-ui-three/src/cloud-vrm-gestures'\nimport { releaseResidentLipSync } from '../../../../model-driver-lipsync/src/resident-lipsync'"),
+        ('    lipSyncNode.value?.disconnect()', '    releaseResidentLipSync(lipSyncNode.value)'),
+        ('async function setupLipSync() {', 'let lipSyncPreparing: Promise<void> | undefined\nasync function setupLipSync() {\n  if (lipSyncPreparing) return lipSyncPreparing\n  lipSyncPreparing = prepareLipSync().finally(() => {\n    lipSyncPreparing = undefined\n  })\n  return lipSyncPreparing\n}\nasync function prepareLipSync() {'),
+        ('    live2dLipSync.value = lipSync', "    if (stageDisposed || stageModelRenderer.value !== 'live2d') {\n      releaseResidentLipSync(lipSync.node)\n      return\n    }\n    live2dLipSync.value = lipSync"),
+    ):
+        if source.count(old) != 1:
+            raise ValueError('cloud_avatar_scene_anchor_requires_review')
+        source = source.replace(old, new, 1)
+    return source
+
+
+def cloud_audio_node_type(source):
+    if source.count('currentAudioSource?: AudioBufferSourceNode') != 1:
+        raise ValueError('cloud_avatar_node_type_requires_review')
+    return source.replace('currentAudioSource?: AudioBufferSourceNode', 'currentAudioSource?: AudioNode', 1)
+
+
+def cloud_live2d_lip_sync(source):
+    old = "import { createWLipSyncNode } from 'wlipsync'"
+    if source.count(old) != 1:
+        raise ValueError('cloud_live2d_worklet_requires_review')
+    return source.replace(old, "import { createResidentLipSync as createWLipSyncNode } from '../resident-lipsync'", 1)
+
+
+def cloud_vrm_lip_sync(source):
+    for old, new in (
+        ("import { createWLipSyncNode } from 'wlipsync'", "import { createResidentLipSync as createWLipSyncNode, releaseResidentLipSync } from '../../../../model-driver-lipsync/src/resident-lipsync'"),
+        ('Ref<AudioBufferSourceNode | undefined, AudioBufferSourceNode | undefined>', 'Ref<AudioNode | undefined, AudioNode | undefined>'),
+        ('  const { audioContext } = useAudioContext()', '  const { audioContext } = useAudioContext()\n  let disposed = false'),
+        ('useAsyncState(createWLipSyncNode(audioContext, profile as Profile), undefined)', 'useAsyncState(createWLipSyncNode(audioContext, profile as Profile).then(node => {\n    if (disposed) releaseResidentLipSync(node)\n    return node\n  }), undefined)'),
+        ('        oldAudioNode.disconnect()', '        if (lipSyncNode.value) oldAudioNode.disconnect(lipSyncNode.value)'),
+        ('  onUnmounted(() => audioNode.value?.disconnect())', "  onUnmounted(() => {\n    disposed = true\n    if (lipSyncNode.value) {\n      try {\n        audioNode.value?.disconnect(lipSyncNode.value)\n      } catch {}\n      releaseResidentLipSync(lipSyncNode.value)\n    }\n  })"),
+        ('    if (!ready || !newAudioNode || !lipSyncNode.value)', '    if (disposed || !ready || !newAudioNode || !lipSyncNode.value)'),
+        ('    const vol = node.volume ?? 0', '    const vol = audioNode.value ? (node.volume ?? 0) : 0'),
+    ):
+        if source.count(old) != 1:
+            raise ValueError('cloud_vrm_worklet_requires_review')
+        source = source.replace(old, new, 1)
     return source
 
 

@@ -66,3 +66,13 @@ def test_failed_build_or_missing_required_runtime_is_not_packaged(build):
 def test_unused_cdn_fonts_are_removed_without_changing_the_layout_or_system_font():
     css = b'@font-face{font-family:test;src:url(https://cdn.jsdelivr.net/fontsource/fonts/test.woff2)}.card{color:green}@font-face{font-family:local;src:url(/assets/local.woff2)}'
     assert cloud_styles(css) == b'.card{color:green}@font-face{font-family:local;src:url(/assets/local.woff2)}'
+
+
+def test_self_hosted_lipsync_runtime_is_packaged_without_broadening_wasm_selection(build):
+    source, output, proof = build
+    (source / 'assets/wlipsync-reviewed.wasm').write_bytes(b'installed audio analysis runtime')
+    (source / 'assets/audio-processor-reviewed.js').write_text('registerProcessor("wlipsync-processor", Processor)')
+    package(source, output, proof)
+    assert (output / 'assets/wlipsync-reviewed.wasm').is_file()
+    assert (output / 'assets/audio-processor-reviewed.js').is_file()
+    assert not (output / 'assets/duckdb.wasm').exists()

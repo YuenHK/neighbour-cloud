@@ -11,7 +11,7 @@ import { storeToRefs } from 'pinia'
 import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 
 import { createResidentApi } from './resident-api.js'
-import { residentGesture } from './resident-gestures.js'
+import { residentGesture, residentSpeechGesture } from './resident-gestures.js'
 import { ResidentIdle } from './resident-idle.js'
 import { ResidentPcm, ResidentTiming } from './resident-pcm.js'
 import { createResidentTextFilter, readResidentReply, residentMessageParts, residentPlainText, residentSpeechText } from './resident-response.js'
@@ -48,6 +48,7 @@ const { nowSpeaking } = storeToRefs(useSpeakingStore())
 const { audioContext: residentAudioContext } = useAudioContext()
 const speechActive = ref(false)
 let activeCare = false
+watch(nowSpeaking, active => residentSpeechGesture(active, activeCare), { flush: 'sync' })
 watch(speechActive, (active) => {
   if (active)
     residentGesture(activeCare ? 'care' : 'speaking')
