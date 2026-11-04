@@ -202,6 +202,37 @@
       close.addEventListener('click', () => dialog.close())
       const body = append(dialog, 'div', '', 'service-case-dialog-body')
       while (card.firstChild) body.append(card.firstChild)
+      if (globalThis.location?.pathname?.startsWith('/cloud/') && row.message !== '已按保存期限清除') {
+        const photo = append(body, 'div', '', 'service-case-photo')
+        const view = append(photo, 'button', '查看居民自願附相')
+        view.type = 'button'
+        let photoUrl
+        view.addEventListener('click', async () => {
+          view.disabled = true
+          try {
+            const reply = await fetch(`/api/v1/service-desk/requests/${row.id}/photo`, { cache: 'no-store', credentials: 'omit', redirect: 'error', signal: AbortSignal.timeout(10000) })
+            if (reply.status === 404 || reply.status === 410) { view.textContent = '沒有可查看的居民附相'; return }
+            if (!reply.ok || !reply.headers.get('content-type')?.startsWith('image/jpeg')) throw new Error('case_photo_unavailable')
+            const blob = await reply.blob()
+            if (blob.size > 40000 || !dialog.open) throw new Error('case_photo_closed')
+            if (photoUrl) URL.revokeObjectURL(photoUrl)
+            photoUrl = URL.createObjectURL(blob)
+            const image = append(photo, 'img', '')
+            image.alt = '居民已確認供個案跟進的相片'
+            image.src = photoUrl
+            image.style.cssText = 'display:block;max-width:240px;max-height:240px;border-radius:12px;margin:10px 0'
+            view.textContent = '居民已確認供職員跟進，非身份核證'
+          }
+          catch { view.disabled = false; view.textContent = '相片暫時未能載入，按此再試' }
+        })
+        dialog.addEventListener('close', () => {
+          if (photoUrl) URL.revokeObjectURL(photoUrl)
+          photoUrl = undefined
+          photo.querySelectorAll('img').forEach(image => image.remove())
+          view.disabled = false
+          view.textContent = '查看居民自願附相'
+        })
+      }
       const summary = append(card, 'div', '', 'service-case-summary')
       const top = append(summary, 'div', '', 'service-case-summary-heading')
       append(top, 'strong', `#${row.case_number || row.id.slice(0, 8)} · ${labels[row.kind]}`)

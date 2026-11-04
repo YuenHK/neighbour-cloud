@@ -53,7 +53,9 @@ def package(source, output, verification):
         if relative.as_posix() in ('estate-theme.css', 'estate-mark.svg'):
             selected.append(path)
         elif relative.parts[0] == 'assets' and path.suffix in SUFFIX_TYPES:
-            if path.suffix == '.wasm' and not path.name.startswith(('ort-wasm-', 'wlipsync-')):
+            if path.suffix in ('.task', '.tflite') and relative.parent.as_posix() != 'assets/face-1.2.2':
+                continue  # Do not newly ship unrelated native camera/pose models.
+            if path.suffix == '.wasm' and not path.name.startswith(('ort-wasm-', 'wlipsync-', 'vision_wasm_')):
                 continue
             gallery = relative.as_posix() in gallery_paths
             if path.suffix == '.zip' and not gallery and not path.name.startswith(('hiyori_free_zh-', 'hiyori_pro_zh-')):

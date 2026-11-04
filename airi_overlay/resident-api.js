@@ -77,6 +77,11 @@ export function createResidentApi({ cloud = false, transport, fetcher = (...args
     chat(body, signal) {
       return post(cloud ? '/api/v1/resident/chat' : 'http://127.0.0.1:8000/api/v1/resident/chat', { ...body, native_settings: true }, signal)
     },
+    uploadCasePhoto(body, signal) {
+      if (!cloud)
+        throw new Error('cloud_case_photo_required')
+      return post('/api/v1/resident/case-photo', body, signal)
+    },
     /** @param {unknown} value @param {{sessionId: string, turnId: string}} ids @param {AbortSignal} [signal] */
     async completePlan(value, ids, signal) {
       if (!cloud || !value || typeof value !== 'object')

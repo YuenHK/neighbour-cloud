@@ -44,7 +44,8 @@ test('VRM gestures preserve the idle pose, do not accumulate rotation and respec
  const three=fs.existsSync('.vendor/airi/packages/stage-ui-three/package.json')?createRequire(path.resolve('.vendor/airi/packages/stage-ui-three/package.json'))('three'):require('three')
  const gestures=await load('airi_overlay/resident-gestures.js')
  const output=ts.transpileModule(fs.readFileSync('airi_overlay/cloud-vrm-gestures.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText
- const media={matches:false},exports={},scope={exports,require:id=>id==='three'?three:gestures,matchMedia:()=>media,document:{hidden:false},performance:{now:()=>1000}}
+ const gaze=await load('airi_overlay/resident-gaze-state.js')
+ const media={matches:false},exports={},scope={exports,require:id=>id==='three'?three:id.includes('gaze-state')?gaze:gestures,matchMedia:()=>media,document:{hidden:false},performance:{now:()=>1000}}
  const ctx=vm.createContext(scope);vm.runInContext(output,ctx)
  const head=new three.Object3D(),chest=new three.Object3D(),idle=new three.Quaternion().setFromEuler(new three.Euler(.1,.2,.3))
  head.quaternion.copy(idle);chest.quaternion.copy(idle)
@@ -64,7 +65,8 @@ test('conversational limbs animate shoulders, elbows and wrists, blend back, and
  const ts=fs.existsSync('.vendor/airi/node_modules/typescript')?require(path.resolve('.vendor/airi/node_modules/typescript')):require('typescript')
  const three=fs.existsSync('.vendor/airi/packages/stage-ui-three/package.json')?createRequire(path.resolve('.vendor/airi/packages/stage-ui-three/package.json'))('three'):require('three')
  const gestures=await load('airi_overlay/resident-gestures.js'),exports={},media={matches:false}
- const scope={exports,require:id=>id==='three'?three:gestures,matchMedia:()=>media,document:{hidden:false},performance:{now:()=>1000}}
+ const gaze=await load('airi_overlay/resident-gaze-state.js')
+ const scope={exports,require:id=>id==='three'?three:id.includes('gaze-state')?gaze:gestures,matchMedia:()=>media,document:{hidden:false},performance:{now:()=>1000}}
  vm.runInContext(ts.transpileModule(fs.readFileSync('airi_overlay/cloud-vrm-gestures.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,vm.createContext(scope))
  const names=['head','chest','spine','leftShoulder','rightShoulder','leftUpperArm','rightUpperArm','leftLowerArm','rightLowerArm','leftHand','rightHand','hips','leftUpperLeg','rightUpperLeg']
  const bones=Object.fromEntries(names.map(name=>[name,new three.Object3D()]));let mouthWrites=0
@@ -98,4 +100,27 @@ test('body speech uses alternating emphasis and quiet beats instead of repeating
  assert.ok(Math.abs(b.leftUpperArm[2])>Math.abs(b.rightUpperArm[2]))
  assert.ok(Math.abs(quiet.rightUpperArm[2])<Math.abs(a.rightUpperArm[2])*.5)
  assert.equal(bodyGestureOffsets({...gesture,start:NaN},1000),undefined)
+})
+
+test('local gaze rotates VRM head and eyes within limits, then restores native eye configuration',async()=>{
+ const path=require('node:path'),vm=require('node:vm'),{createRequire}=require('node:module')
+ const ts=require(path.resolve('.vendor/airi/node_modules/typescript'))
+ const three=createRequire(path.resolve('.vendor/airi/packages/stage-ui-three/package.json'))('three')
+ const gestures=await load('airi_overlay/resident-gestures.js'),gaze=await load('airi_overlay/resident-gaze-state.js'),exports={}
+ let now=1000
+ const scope={exports,require:id=>id==='three'?three:id.includes('gaze-state')?gaze:gestures,matchMedia:()=>({matches:false}),document:{hidden:false},performance:{now:()=>now}}
+ vm.runInContext(ts.transpileModule(fs.readFileSync('airi_overlay/cloud-vrm-gestures.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,vm.createContext(scope))
+ const head=new three.Object3D(),eye={autoUpdate:true,yaw:3,pitch:2},vrm={humanoid:{getNormalizedBoneNode:name=>name==='head'?head:undefined},lookAt:eye}
+ const driver=exports.residentVrmGesture()
+ global.__NEIGHBOUR_RESIDENT_GAZE__={x:1,y:.5,at:1000}
+ try{
+  for(let i=0;i<200;i++)driver.update(vrm)
+  assert.ok(head.quaternion.angleTo(new three.Quaternion())>.1)
+  assert.ok(head.quaternion.angleTo(new three.Quaternion())<.4)
+  assert.equal(eye.autoUpdate,false);assert.ok(eye.yaw<0&&Math.abs(eye.yaw)<=12)
+  now=3000
+  for(let i=0;i<300;i++)driver.update(vrm)
+  assert.ok(head.quaternion.angleTo(new three.Quaternion())<.0001)
+  assert.deepEqual(eye,{autoUpdate:true,yaw:3,pitch:2})
+ }finally{delete global.__NEIGHBOUR_RESIDENT_GAZE__;driver.restore()}
 })

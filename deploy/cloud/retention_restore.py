@@ -24,6 +24,11 @@ def columns(db, table):
 
 
 def require_schema(db, scope):
+    if scope == 'estate':
+        actual = columns(db, 'cloud_operations')
+        if actual and not {'namespace', 'identity', 'payload'} <= actual:
+            raise ValueError('unrecognised_retention_restore_schema')
+        return  # Older estate backups may predate the optional extension table.
     tables = {'cases': ('service_cases', {'id', 'status', 'message', 'location', 'contact'}),
               'events': ('events', {'id', 'zone', 'evidence', 'details_json'}),
               'photos': ('cloud_photos', {'key', 'event_id', 'content', 'digest'})}
@@ -39,6 +44,13 @@ def require_schema(db, scope):
 def reconcile(db, scope, records):
     require_schema(db, scope)
     changed = 0
+    if scope == 'estate':
+        if columns(db, 'cloud_operations'):
+            for record in records:
+                if record['kind'] == 'case':
+                    changed += db.execute('DELETE FROM cloud_operations WHERE namespace=? AND identity=?',
+                                          ('resident-case-photo-v1', record['target'])).rowcount
+        return changed
     if scope == 'cases':
         fields = sorted(PRIVATE_CASE_FIELDS & columns(db, 'service_cases'))
         activity = columns(db, 'service_case_activity')

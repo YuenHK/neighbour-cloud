@@ -44,7 +44,7 @@ def test_reviewed_assets_allow_same_origin_resident_media_only_after_stage(tmp_p
     assert response(assets, '/cloud/resident', True).status_code == 423
     assert response(assets, '/assets/resident-123.js', True) is None
     shell = response(assets, '/')
-    assert shell.headers['permissions-policy'] == 'microphone=(self), camera=(), autoplay=(self)'
+    assert shell.headers['permissions-policy'] == 'microphone=(self), camera=(self), autoplay=(self)'
     resident = response(assets, '/cloud/resident')
     assert resident.status_code == 200 and b'/assets/resident-123.js' in resident.body
     assert "frame-ancestors 'self'" in resident.headers['content-security-policy']

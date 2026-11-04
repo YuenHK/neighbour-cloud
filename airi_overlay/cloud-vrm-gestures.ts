@@ -3,6 +3,7 @@ import type { Object3D } from 'three'
 
 import { Euler, Quaternion, Vector3 } from 'three'
 
+import { readResidentGaze } from './resident-gaze-state.js'
 import { bodyGestureOffsets, gestureOffsets } from './resident-gestures.js'
 
 const bones = ['head', 'chest', 'spine', 'leftShoulder', 'rightShoulder', 'leftUpperArm', 'rightUpperArm', 'leftLowerArm', 'rightLowerArm', 'leftHand', 'rightHand'] as const
@@ -15,12 +16,21 @@ export function residentVrmGesture() {
   const delta = new Quaternion()
   const euler = new Euler()
   let currentVrm: VRM | undefined
+  let eyePose: { vrm: VRM, auto: boolean, yaw: number, pitch: number } | undefined
+  const gazeOffset = new Vector3()
   function restore() {
     for (const [bone, pose] of poses) {
       if (bone.quaternion.equals(pose.after))
         bone.quaternion.copy(pose.before)
     }
     poses.clear()
+    gazeOffset.set(0, 0, 0)
+    if (eyePose?.vrm.lookAt) {
+      eyePose.vrm.lookAt.autoUpdate = eyePose.auto
+      eyePose.vrm.lookAt.yaw = eyePose.yaw
+      eyePose.vrm.lookAt.pitch = eyePose.pitch
+    }
+    eyePose = undefined
   }
   function update(vrm: VRM, deltaSeconds = 1 / 60) {
     if (currentVrm !== vrm) {
@@ -34,7 +44,23 @@ export function residentVrmGesture() {
     const gesture = Reflect.get(globalThis, '__NEIGHBOUR_RESIDENT_GESTURE__')
     const now = performance.now()
     const offsets = gestureOffsets(gesture, now)
-    if (!offsets && !poses.size)
+    const gaze = readResidentGaze(now)
+    const dt = Number.isFinite(deltaSeconds) ? Math.max(0, Math.min(1 / 15, deltaSeconds)) : 1 / 60
+    const blend = 1 - Math.exp(-9 * dt)
+    gazeOffset.lerp(new Vector3(gaze ? -gaze.x * 16 : 0, gaze ? gaze.y * 9 : 0, 0), blend * 0.6)
+    if (gaze && vrm.lookAt) {
+      eyePose ||= { vrm, auto: vrm.lookAt.autoUpdate, yaw: vrm.lookAt.yaw, pitch: vrm.lookAt.pitch }
+      vrm.lookAt.autoUpdate = false
+      vrm.lookAt.yaw = gazeOffset.x * 0.7
+      vrm.lookAt.pitch = gazeOffset.y * 0.7
+    }
+    else if (eyePose?.vrm.lookAt) {
+      eyePose.vrm.lookAt.autoUpdate = eyePose.auto
+      eyePose.vrm.lookAt.yaw = eyePose.yaw
+      eyePose.vrm.lookAt.pitch = eyePose.pitch
+      eyePose = undefined
+    }
+    if (!offsets && !poses.size && !gaze)
       return
     const targets: Partial<Record<GestureBone, number[]>> = {
       ...bodyGestureOffsets(gesture, now),
@@ -45,8 +71,10 @@ export function residentVrmGesture() {
           }
         : {}),
     }
-    const dt = Number.isFinite(deltaSeconds) ? Math.max(0, Math.min(1 / 15, deltaSeconds)) : 1 / 60
-    const blend = 1 - Math.exp(-9 * dt)
+    if (gaze || gazeOffset.lengthSq() > 1e-6) {
+      const head = targets.head || zero
+      targets.head = [head[0] + gazeOffset.y, head[1] + gazeOffset.x, head[2]]
+    }
     // The native idle mixer runs first. Add small rotations to its current
     // pose, undoing our prior offset only when no animation replaced it.
     for (const name of bones) {

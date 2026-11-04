@@ -218,7 +218,7 @@ class BackupStore:
             base = Path(directory)
             raw = self.download(identity, base / 'raw')
             replacements, updated = {}, json.loads(json.dumps(old))
-            for role in ('cases', 'events', 'photos'):
+            for role in ('cases', 'events', 'photos', 'estate'):
                 path = base / (role + '-reconciled.sqlite3')
                 info = recover(raw['files'][role], path, expected_sha256=old['files'][role]['sha256'],
                                ledger=ledger, live_checkpoint=head, scope=role, timeout=120)

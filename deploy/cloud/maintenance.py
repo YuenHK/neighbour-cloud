@@ -136,6 +136,11 @@ class CloudMaintenance:
                     db.execute('BEGIN IMMEDIATE')
                     reconcile(db, role, selected)
             existing = backup_db.execute("SELECT id FROM cloud_backup_sets WHERE status='ready' ORDER BY created_ms").fetchall()
+            # Case-photo ciphertext lives in the existing estate extension table.
+            # Reapply all independent case-erasure intents even after partial work.
+            with closing(self.profile.connect(self._path('estate').as_uri() + '?mode=rw', uri=True, timeout=10)) as estate, estate:
+                estate.execute('BEGIN IMMEDIATE')
+                reconcile(estate, 'estate', records)
             for row in existing:
                 backups.reconcile_erasure(row[0], ledger=ledger, scratch_root=self.root, now_ms=stamp,
                                            writer_fence=writer_fence)

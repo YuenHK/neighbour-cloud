@@ -26,6 +26,7 @@ SHELL = {
     '/cloud/launch-screen.js': (WEB / 'launch-screen.js', 'text/javascript'),
     '/cloud/launch-screen.css': (WEB / 'launch-screen.css', 'text/css'),
     '/cloud/module-warmup.js': (WEB / 'module-warmup.js', 'text/javascript'),
+    '/cloud/startup-repair.js': (WEB / 'startup-repair.js', 'text/javascript'),
     # A browser can request these after the real app becomes ready midway
     # through loading the independent cold-start document.
     '/cloud/boot-wait.js': (WEB / 'boot-wait.js', 'text/javascript'),
@@ -38,6 +39,7 @@ SHELL = {
     '/cloud/cloud-frame.js': (OVERLAY / 'cloud-frame.js', 'text/javascript'),
     '/cloud/cloud-transport.js': (OVERLAY / 'cloud-transport.js', 'text/javascript'),
     '/cloud/resident-recovery.js': (OVERLAY / 'resident-recovery.js', 'text/javascript'),
+    '/cloud/resident-gaze-worker.js': (OVERLAY / 'resident-gaze-worker.js', 'text/javascript'),
     '/cloud/resident-panel.css': (OVERLAY / 'resident-panel.css', 'text/css'),
     '/cloud/mascot.css': (WEB / 'mascot.css', 'text/css'),
     '/assets/brand/neighbour-house-apricot-v1.webp': (WEB / 'brand/neighbour-house-apricot-v1.webp', 'image/webp'),
@@ -48,7 +50,7 @@ SHELL = {
 }
 SUFFIX_TYPES = {'.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml',
     '.png': 'image/png', '.avif': 'image/avif', '.webp': 'image/webp', '.ico': 'image/x-icon',
-    '.wasm': 'application/wasm', '.zip': 'application/zip', '.onnx': 'application/octet-stream',
+    '.wasm': 'application/wasm', '.zip': 'application/zip', '.onnx': 'application/octet-stream', '.tflite': 'application/octet-stream', '.task': 'application/octet-stream',
     '.json': 'application/json', '.hdr': 'application/octet-stream', '.vrma': 'application/octet-stream', '.vrm': 'application/octet-stream',
     '.woff': 'font/woff', '.woff2': 'font/woff2'}
 
@@ -112,7 +114,9 @@ class CloudWebAssets:
                     "manifest-src 'self'; frame-ancestors 'none'; base-uri 'none'"}
         if not storage_acceptance and self.resident is not None:
             # An ancestor policy cannot be widened by its resident iframe.
-            headers['Permissions-Policy'] = 'microphone=(self), camera=(), autoplay=(self)'
+            headers['Permissions-Policy'] = 'microphone=(self), camera=(self), autoplay=(self)'
+        if path == '/cloud/resident-gaze-worker.js':
+            headers['Content-Security-Policy'] = "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; connect-src 'self'; worker-src 'none'; base-uri 'none'"
         if path == '/login-config':
             return JSONResponse({'client_id': client_id,
                 **({'public_resident': True} if self.public_resident and not storage_acceptance else {})}, headers=headers)
@@ -156,7 +160,7 @@ class CloudWebAssets:
                 return JSONResponse({'detail': '正式資料仍在準備，未開放居民對話。'}, status_code=423, headers=headers)
             if self.resident is None:
                 return JSONResponse({'detail': '居民畫面仍在準備。'}, status_code=503, headers=headers)
-            headers.update({'Permissions-Policy': 'microphone=(self), camera=(), autoplay=(self)',
+            headers.update({'Permissions-Policy': 'microphone=(self), camera=(self), autoplay=(self)',
                 'Content-Security-Policy': "default-src 'self'; script-src 'self' blob: 'wasm-unsafe-eval'; "
                     "style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; "
                     "connect-src 'self' data: blob: https://huggingface.co https://*.hf.co https://arweave.net https://*.arweave.net https://raw.githubusercontent.com; worker-src 'self' blob:; "

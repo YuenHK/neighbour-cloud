@@ -1,6 +1,11 @@
 // Short, per-frame gestures. No API calls, timers, storage or conversation data.
 const key = '__NEIGHBOUR_RESIDENT_GESTURE__'
-const durations = { greeting: 2300, listen: 1700, speaking: 2600, care: 2300 }
+const durations = { greeting: 3200, listen: 1700, speaking: 2600, care: 2300 }
+export function shouldResidentWelcome(state, now) {
+  return !!state?.visible && !!state.mounted && !state.hidden && !state.busy && !state.speaking
+    && state.messages === 0 && !state.draft && Number.isFinite(now) && Number.isFinite(state.lastAt)
+    && now - state.lastAt >= 45000
+}
 /** @param {'greeting'|'listen'|'speaking'|'care'|'clear'} kind */
 export function residentGesture(kind) {
   if (kind === 'clear') {
@@ -36,7 +41,8 @@ export function gestureOffsets(gesture, now) {
   const p = gesture.continuous && elapsed >= 0 ? elapsed % 1 : elapsed
   if (p < 0 || p > 1)
     return undefined
-  const envelope = Math.sin(Math.PI * p) ** 2
+  const edge = Math.max(0, Math.min(1, p / 0.18, (1 - p) / 0.22))
+  const envelope = gesture.kind === 'greeting' ? edge * edge * (3 - 2 * edge) : Math.sin(Math.PI * p) ** 2
   const wave = Math.sin(4 * Math.PI * p)
   if (gesture.kind === 'greeting')
     return { x: 1.4 * envelope, y: 4 * wave * envelope, z: 2 * envelope, body: 0.7 * envelope }
@@ -57,7 +63,8 @@ export function bodyGestureOffsets(gesture, now) {
     return undefined
   const elapsed = (now - gesture.start) / gesture.duration
   const p = gesture.continuous ? elapsed % 1 : elapsed
-  const envelope = Math.sin(Math.PI * p) ** 2
+  const edge = Math.max(0, Math.min(1, p / 0.18, (1 - p) / 0.22))
+  const envelope = gesture.kind === 'greeting' ? edge * edge * (3 - 2 * edge) : Math.sin(Math.PI * p) ** 2
   const wave = Math.sin(6 * Math.PI * p)
   let left = (gesture.kind === 'greeting' ? 0.05 : 0.25) * envelope
   let right = envelope

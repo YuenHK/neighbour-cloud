@@ -121,7 +121,13 @@ export function createLaunchScreen(document, { onRetry, onContinue }) {
       node('launchNote').textContent = '若瀏覽器未允許收音，可先用文字進入，再按咪高峰啟用。此檢查不會試用 API 或扣除 AI 額度。'
     }
   }
-  return { start, phase, hide, finish, fail, checks, moduleState(key, state) {
+  return { start, phase, hide, finish, fail, checks, repair(message) {
+    if (!active) return
+    root.dataset.state = 'repairing'
+    text.textContent = '正在自動重新連接'
+    node('launchDetail').textContent = message
+    node('launchNote').textContent = '只處理未完成的載入，不會重複傳送對話或建立個案。'
+  }, moduleState(key, state) {
     const chip = document.querySelector(`[data-warm-chip="${key}"]`)
     if (!chip) return
     chip.dataset.state = state

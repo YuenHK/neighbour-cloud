@@ -11,7 +11,8 @@ import { storeToRefs } from 'pinia'
 import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 
 import { createResidentApi } from './resident-api.js'
-import { residentGesture, residentSpeechGesture } from './resident-gestures.js'
+import { ResidentGaze } from './resident-gaze.js'
+import { residentGesture, residentSpeechGesture, shouldResidentWelcome } from './resident-gestures.js'
 import { ResidentIdle } from './resident-idle.js'
 import { ResidentPcm, ResidentTiming } from './resident-pcm.js'
 import { createResidentTextFilter, readResidentReply, residentMessageParts, residentPlainText, residentSpeechText } from './resident-response.js'
@@ -36,6 +37,29 @@ const messages = ref<{ role: string, content: string }[]>([])
 const busy = ref(false)
 const status = ref('可以直接講，或者打字同我傾。')
 const followupNotice = ref('')
+const gazeState = ref('off')
+const casePhotoTarget = ref<{ id: string, number: number }>()
+const photoPreview = ref('')
+const photoStatus = ref('')
+const photoBusy = ref(false)
+const photoDialog = ref<HTMLDialogElement>()
+let previewCaseId = ''
+let photoStartedCamera = false
+let gaze: ResidentGaze | undefined
+let avatarVisible = window.parent === window
+let avatarMounted = Reflect.get(globalThis, '__NEIGHBOUR_AVATAR_READY__') === true
+let entranceGreeted = false
+let lastWelcome = performance.now()
+let welcomeTimer: ReturnType<typeof setInterval> | undefined
+function toggleGaze() {
+  if (['off', 'unavailable'].includes(gazeState.value))
+    void gaze?.start()
+  else
+    gaze?.stop()
+}
+function startHandControl() {
+  void gaze?.start(true)
+}
 const transcript = ref<HTMLElement>()
 const speechRuntime = useSpeechRuntimeStore()
 const consciousness = useConsciousnessStore()
@@ -70,6 +94,12 @@ const session = new ResidentSession(async (body: unknown, signal: AbortSignal, o
   const response = await residentApi.chat({ ...(body as object), messages: history, airi_system_prompt: Reflect.get(globalThis, '__NEIGHBOUR_CLOUD__') === true ? '' : String(airiCard.systemPrompt || '').slice(0, 4000) }, deadline)
   if (response.ok && response.headers?.get('content-type')?.includes('application/json')) {
     const plan = await response.clone().json()
+    if (!deadline.aborted && plan.followup?.delivered === true && /^[a-f0-9]{32}$/.test(plan.followup.id)
+      && Number.isSafeInteger(plan.followup.case_number)) {
+      if (casePhotoTarget.value?.id !== plan.followup.id)
+        cancelPhoto()
+      casePhotoTarget.value = { id: plan.followup.id, number: plan.followup.case_number }
+    }
     if (!deadline.aborted && typeof plan.followup?.notice === 'string')
       followupNotice.value = plan.followup.notice.slice(0, 350)
     if (plan.object === 'resident.plan') {
@@ -123,6 +153,62 @@ const session = new ResidentSession(async (body: unknown, signal: AbortSignal, o
   }
   return readResidentReply(response, onDelta, deadline)
 }, { maxMessages: runtimePreferences?.memory?.context_messages ?? 60, maxCharacters: runtimePreferences?.memory?.context_characters ?? 16000 })
+function cancelPhoto() {
+  photoPreview.value = ''
+  previewCaseId = ''
+  photoDialog.value?.close()
+  if (photoStartedCamera)
+    gaze?.stop()
+  photoStartedCamera = false
+}
+async function prepareCasePhoto() {
+  const target = casePhotoTarget.value
+  if (!target || photoBusy.value)
+    return
+  const generation = session.generation
+  photoBusy.value = true
+  try {
+    if (['off', 'unavailable'].includes(gazeState.value)) {
+      photoStartedCamera = true
+      await gaze?.start()
+    }
+    if (generation !== session.generation || target.id !== casePhotoTarget.value?.id) {
+      cancelPhoto()
+      return
+    }
+    photoPreview.value = gaze?.capturePreview() || ''
+    previewCaseId = target.id
+    await nextTick()
+    photoDialog.value?.showModal()
+  }
+  catch { photoStatus.value = '鏡頭未準備好；可以稍後再試，文字個案已保留。' }
+  finally { photoBusy.value = false }
+}
+async function confirmCasePhoto() {
+  if (photoBusy.value || !photoPreview.value || casePhotoTarget.value?.id !== previewCaseId)
+    return
+  const generation = session.generation
+  const controller = new AbortController()
+  inputControllers.add(controller)
+  photoBusy.value = true
+  try {
+    const reply = await residentApi.uploadCasePhoto({ session_id: session.sessionId, case_id: previewCaseId, jpeg: photoPreview.value.split(',')[1], consent: true, purpose: 'case-followup-v1' }, AbortSignal.any([controller.signal, AbortSignal.timeout(15000)]))
+    if (!reply.ok || (await reply.json()).stored !== true)
+      throw new Error('case_photo_not_confirmed')
+    if (generation === session.generation) {
+      photoStatus.value = '相片已附上個案，只供職員跟進；個案完成後 90 日清除。'
+      cancelPhoto()
+    }
+  }
+  catch {
+    if (generation === session.generation)
+      photoStatus.value = '暫時未能確認相片已儲存；可再確認一次，文字個案仍保留。'
+  }
+  finally {
+    inputControllers.delete(controller)
+    photoBusy.value = false
+  }
+}
 function clearAudio() {
   if (pcmPlayer)
     nowSpeaking.value = false
@@ -180,8 +266,14 @@ function cancelWaiting() {
   status.value = '已停止等候，內容已保留；已送達的個案仍會由職員跟進。'
 }
 function reset() {
+  cancelPhoto()
+  casePhotoTarget.value = undefined
+  photoStatus.value = ''
+  if (!gaze?.hands)
+    gaze?.stop()
   activeCare = false
   residentGesture('greeting')
+  lastWelcome = performance.now()
   followupNotice.value = ''
   inactivity.stop()
   session.reset()
@@ -423,7 +515,25 @@ function acknowledgeReady(event?: MessageEvent) {
   window.parent.postMessage({ type: 'estate-assistant-ready' }, hubOrigin)
 }
 function greetAvatar() {
-  residentGesture('greeting')
+  avatarMounted = true
+  if (avatarVisible && !entranceGreeted) {
+    entranceGreeted = true
+    residentGesture('greeting')
+    lastWelcome = performance.now()
+  }
+}
+function welcomeIfIdle() {
+  if (shouldResidentWelcome({ visible: avatarVisible, mounted: avatarMounted, hidden: document.hidden, busy: busy.value, speaking: speechActive.value || nowSpeaking.value, messages: messages.value.length, draft: draft.value, lastAt: lastWelcome }, performance.now())) {
+    residentGesture('greeting')
+    lastWelcome = performance.now()
+  }
+}
+function residentVisible(event: MessageEvent) {
+  if (event.origin !== location.origin || event.source !== window.parent || event.data?.type !== 'neighbour-resident-visible')
+    return
+  avatarVisible = true
+  if (avatarMounted)
+    greetAvatar()
 }
 function sharedModelUnavailable() {
   if (!busy.value && messages.value.length === 0)
@@ -436,6 +546,15 @@ function acknowledgeModelCredit(event: MessageEvent) {
   }
 }
 onMounted(() => {
+  gaze = new ResidentGaze((state: string) => {
+    if (state === 'tracking' && gazeState.value !== 'tracking')
+      welcomeIfIdle()
+    gazeState.value = state
+  })
+  welcomeTimer = setInterval(welcomeIfIdle, 5000)
+  window.addEventListener('message', residentVisible)
+  if (avatarMounted && avatarVisible)
+    greetAvatar()
   if (cloudResident && window.parent !== window) {
     window.addEventListener('message', acknowledgeModelCredit)
     window.parent.postMessage({ type: 'neighbour-model-credit', credit: presentation.model_credit || null }, location.origin)
@@ -452,6 +571,10 @@ onMounted(() => {
   window.dispatchEvent(new Event('resident-conversation-ready'))
 })
 onUnmounted(() => {
+  clearInterval(welcomeTimer)
+  cancelPhoto()
+  gaze?.dispose()
+  window.removeEventListener('message', residentVisible)
   window.removeEventListener('message', acknowledgeModelCredit)
   window.removeEventListener('estate:shared-model-unavailable', sharedModelUnavailable)
   if (residentApi.cloud)
@@ -474,10 +597,31 @@ function checkIdle() {
 <template>
   <section class="resident-assistant-panel" aria-label="居民數字人對話">
     <header>
-      <div><h2>你好，慢慢傾。</h2></div><button type="button" class="resident-end" aria-label="結束本輪對話，迎接下一位" @click="reset">
+      <div><h2>你好，慢慢傾。</h2></div><button type="button" class="resident-end" data-hand-action="next" aria-label="結束本輪對話，迎接下一位" @click="reset">
         下一位
       </button>
     </header>
+    <details v-if="cloudResident" class="resident-gaze-options">
+      <summary data-hand-action="camera-options">
+        視線互動{{ gazeState === 'tracking' ? ' · 已跟隨你' : gazeState === 'searching' ? ' · 尋找位置中' : '' }}
+      </summary>
+      <p>允許鏡頭後，角色會望向你。影像只喺此裝置即時處理，不拍照、不上傳、不儲存，亦不辨認身份。視線模式按「下一位」會關閉；手勢導覽模式會保持鏡頭，直到關閉或離開居民頁。</p>
+      <button type="button" data-hand-action="camera-toggle" :aria-pressed="!['off', 'unavailable'].includes(gazeState)" @click="toggleGaze">
+        {{ ['off', 'unavailable'].includes(gazeState) ? '允許鏡頭並啟用視線互動' : '關閉鏡頭及視線互動' }}
+      </button>
+      <button v-if="!gaze?.hands" type="button" @click="startHandControl">
+        啟用鏡頭手勢導覽
+      </button>
+      <p v-if="gaze?.hands">
+        手掌移動游標；停留在按鈕後捏合拇指與食指確認。握拳暫停，畫面上下邊緣可捲動對話。首次鏡頭及語音權限需由現場職員預先允許。
+      </p>
+      <p v-if="gazeState === 'starting'" role="status">
+        正在準備，請留意瀏覽器鏡頭權限提示。
+      </p>
+      <p v-else-if="gazeState === 'unavailable'" role="status">
+        鏡頭未能啟用或已中斷；對話及語音可照常使用。
+      </p>
+    </details>
     <div ref="transcript" class="resident-transcript" aria-live="polite" aria-relevant="additions">
       <p v-if="!messages.length" class="resident-greeting">
         {{ presentation.greeting || '查資料、傾偈、跟進事情，直接同我講就得。' }}
@@ -499,6 +643,15 @@ function checkIdle() {
       <p v-if="followupNotice" class="resident-panel-status" role="status">
         {{ followupNotice }}
       </p>
+      <div v-if="cloudResident && casePhotoTarget" class="resident-case-photo">
+        <p>個案 {{ casePhotoTarget.number }}：可自願拍照，方便已登入職員跟進時認到你；不拍照亦可求助。完成後 90 日清除，包括平台管理的備份。</p>
+        <button type="button" data-hand-action="photo-preview" :disabled="photoBusy" @click="prepareCasePhoto">
+          拍照並預覽（未上傳）
+        </button>
+        <p v-if="photoStatus" role="status">
+          {{ photoStatus }}
+        </p>
+      </div>
       <p v-if="voiceRecovering" class="resident-panel-status">
         正在自動恢復語音連接；你可以繼續打字。
       </p>
@@ -518,17 +671,28 @@ function checkIdle() {
     <form @submit.prevent="sendMessage()">
       <label class="resident-input-label" for="residentDraft">想講啲咩？</label><textarea id="residentDraft" v-model="draft" rows="2" maxlength="2000" required placeholder="直接講，或者喺度打字…" @input="touch" />
       <div class="resident-panel-actions">
-        <button type="button" :aria-pressed="listening" @click="emit('microphone')">
+        <button type="button" data-hand-action="microphone" :aria-pressed="listening" @click="emit('microphone')">
           {{ listening ? inputStatus === 'starting' ? '準備收音中 · 暫停' : inputStatus === 'failed' ? '重新準備語音' : inputStatus === 'waiting' ? '點一下啟動收音' : inputStatus === 'speaking' ? '朗讀中 · 暫停收音' : '正在聆聽 · 暫停' : '開始語音傾談' }}
-        </button><button v-if="speechActive" type="button" @click="clearAudio">
+        </button><button v-if="speechActive" type="button" data-hand-action="stop-voice" @click="clearAudio">
           停止朗讀
-        </button><button v-if="busy" type="button" @click="cancelWaiting">
+        </button><button v-if="busy" type="button" data-hand-action="stop-wait" @click="cancelWaiting">
           停止等候
-        </button><button class="primary" type="submit" :disabled="busy || !draft.trim()">
+        </button><button class="primary" type="submit" data-hand-action="send" :disabled="busy || !draft.trim()">
           {{ busy ? '回覆中…' : '傳送' }}
         </button>
       </div>
     </form>
+    <dialog ref="photoDialog" class="resident-photo-dialog" aria-label="確認個案相片" @cancel.prevent="cancelPhoto">
+      <h3>拍照方便職員跟進個案</h3>
+      <p>確認後，相片會附上個案 {{ casePhotoTarget?.number }}，只供已登入職員查看；個案完成後 90 日清除。不確認則不上傳。</p>
+      <img v-if="photoPreview" :src="photoPreview" alt="你準備附上個案的相片預覽">
+      <button type="button" data-hand-action="photo-confirm" :disabled="photoBusy" @click="confirmCasePhoto">
+        確認附上個案
+      </button>
+      <button type="button" data-hand-action="photo-cancel" :disabled="photoBusy" @click="cancelPhoto">
+        取消，不上傳
+      </button>
+    </dialog>
   </section>
   <details v-if="presentation.model_credit && !creditInHeader" class="resident-model-credit">
     <summary>角色來源</summary>

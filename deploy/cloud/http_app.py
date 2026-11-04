@@ -364,6 +364,8 @@ def create_app(services, verifier, *, origin, model_client=None, voice_client=No
     patrol_ingest = None
     app.state.vroid_library = None
     if operations is not None:
+        from deploy.cloud.case_photo import router as case_photo_router
+        app.include_router(case_photo_router(services, operations, current_principal, require_staff))
         patrol_ingest = PatrolIngest(services, operations)
         app.state.staff_push = StaffPush(operations, services.cases, origin)
         app.include_router(patrol_router(patrol_ingest, require_staff, current_principal))

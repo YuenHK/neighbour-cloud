@@ -1,11 +1,20 @@
 // Fetch code without executing it, mounting a console or contacting hardware.
-export function preloadModules(document, modules, { onState = () => {}, timeoutMs = 10000 } = {}) {
+export async function preloadModules(document, modules, options = {}) {
+  const first = await preloadOnce(document, modules, options)
+  return Promise.all(first.map(async result => {
+    if (result.state !== 'failed') return result
+    const module = modules.find(item => item.key === result.key)
+    // One retry of same-origin program assets; never runs application modules.
+    return (await preloadOnce(document, [module], { ...options, fresh: true }))[0]
+  }))
+}
+function preloadOnce(document, modules, { onState = () => {}, timeoutMs = 10000, fresh = false } = {}) {
   return Promise.all(modules.map(({ key, path }) => new Promise(resolve => {
     if (!/^\/(?:assets\/[\w-]+\.js|cloud\/(?:admin\/[\w-]+\.js|robot-entry\.js|robot-assets\/ep-(?:fleet|console)(?:-[a-f0-9]{12})?\.js))$/.test(path)) {
       resolve({ key, state: 'failed' }); return
     }
     const absolute = new URL(path, document.location.origin).href
-    const existing = [...document.querySelectorAll('link[rel=modulepreload]')].find(link => link.href === absolute)
+    const existing = !fresh && [...document.querySelectorAll('link[rel=modulepreload]')].find(link => link.href === absolute)
     const link = existing || document.createElement('link')
     let done = false, timer
     const finish = state => {

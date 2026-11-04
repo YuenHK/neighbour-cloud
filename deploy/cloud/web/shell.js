@@ -3,6 +3,7 @@ import { createCloudSession } from '/cloud/cloud-session.js'
 import { createLaunchScreen } from '/cloud/launch-screen.js'
 import { preloadModules } from '/cloud/module-warmup.js'
 import { placeModelCredit, preparePrivacy } from '/cloud/privacy.js'
+import { StartupRepair } from '/cloud/startup-repair.js'
 
 const node = id => document.getElementById(id)
 preparePrivacy(document)
@@ -13,8 +14,15 @@ let opening = false
 let navigationEpoch = 0
 let navigationAbort = new AbortController()
 let currentArea = 'resident'
+let startupTimer, startupTextReady = false
+const startupRepair = new StartupRepair({ onState(key, state) {
+  if (key !== 'frame' || !frame?.classList.contains('is-warming')) return
+  if (state === 'retrying') launch.repair('畫面暫時未能啟動，正在自動重新連接一次。')
+  if (state === 'unavailable') launch.fail('自動重新連接仍未完成；原有資料保留，可以稍後再試。')
+} })
 const launch = createLaunchScreen(document, {
   onRetry() {
+    startupRepair.reset()
     if (currentArea === 'staff' && provider && role === 'staff') show('staff')
     else { beginNavigation(); void startResident() }
   },
@@ -27,6 +35,7 @@ void preloadModules(document, [...document.querySelectorAll('link[data-neighbour
 function reveal() {
   if (!frame || !frame.classList.contains('is-warming')) return
   const showing = frame
+  clearTimeout(startupTimer)
   showing.classList.remove('is-warming')
   showing.classList.add('is-revealing')
   launch.finish(() => {
@@ -34,6 +43,7 @@ function reveal() {
     showing.classList.remove('is-revealing')
     showing.inert = false
     showing.removeAttribute('aria-hidden')
+    if (currentArea === 'resident') showing.contentWindow.postMessage({ type: 'neighbour-resident-visible' }, location.origin)
   })
 }
 window.addEventListener('message', event => {
@@ -42,17 +52,35 @@ window.addEventListener('message', event => {
     && placeModelCredit(document, event.data.credit))
     frame.contentWindow.postMessage({ type: 'neighbour-model-credit-placed' }, location.origin)
   if (event.data?.type === 'neighbour-readiness' && currentArea === 'resident') {
+    startupTextReady = event.data.textReady === true
     launch.checks(event.data)
     if (event.data.ready === true) reveal()
+    else if (startupTextReady && ['action', 'failed'].some(state => Object.values(event.data.checks || {}).includes(state))) reveal()
   }
   if (event.data?.type === 'neighbour-service-stage' && currentArea === 'resident') {
     launch.phase('avatar')
   }
   if (event.data?.type === 'neighbour-service-stage' && currentArea === 'staff') launch.staffSettings()
   if (event.data?.type === 'neighbour-service-ready' && event.data.area === 'staff' && currentArea === 'staff') reveal()
-  if (event.data?.type === 'neighbour-service-error') launch.fail('畫面未能完成載入，可以重新連接。原有資料仍然保留。')
+  if (event.data?.type === 'neighbour-service-error') void repairStartupFrame()
 })
+function canRepairFrame() {
+  if (!frame?.classList.contains('is-warming')) return false
+  try {
+    const idle = frame.contentWindow.__NEIGHBOUR_RESIDENT_IDLE__
+    return typeof idle === 'function' ? idle() === true : !startupTextReady
+  }
+  catch { return false }
+}
+async function repairStartupFrame() {
+  if (startupTextReady) { reveal(); return }
+  const own = frame, epoch = navigationEpoch
+  const retried = await startupRepair.run('frame', () => { show(currentArea); return true }, canRepairFrame)
+  if (!retried && frame === own && epoch === navigationEpoch && frame?.classList.contains('is-warming')) launch.fail('載入仍未完成；未重新傳送任何對話或個案，可以稍後再試。')
+}
 function beginNavigation() {
+  startupRepair.reset()
+  clearTimeout(startupTimer)
   navigationEpoch++
   navigationAbort.abort()
   navigationAbort = new AbortController()
@@ -60,6 +88,7 @@ function beginNavigation() {
   session.clear()
 }
 function closeService() {
+  clearTimeout(startupTimer)
   launch.hide()
   broker?.close()
   if (broker) window.removeEventListener('message', broker.receive)
@@ -78,17 +107,20 @@ function show(area) {
   frame?.remove()
   frame = document.createElement('iframe')
   currentArea = area
+  clearTimeout(startupTimer)
+  startupTextReady = false
   launch.start(area, 'interface')
   frame.className = 'is-warming'
   frame.inert = true
   frame.setAttribute('aria-hidden', 'true')
   frame.title = area === 'staff' ? '管理工作台' : '居民服務台'
-  frame.allow = area === 'staff' ? "microphone 'none'; camera 'none'; autoplay 'self'" : "microphone 'self'; camera 'none'; autoplay 'self'"
+  frame.allow = area === 'staff' ? "microphone 'none'; camera 'none'; autoplay 'self'" : "microphone 'self'; camera 'self'; autoplay 'self'"
   frame.referrerPolicy = 'no-referrer'
   frame.src = area === 'staff' ? '/cloud/admin' : '/cloud/resident?estate=1'
   broker = createFrameBroker({ origin: location.origin, frameWindow: () => frame?.contentWindow, tokenProvider: provider })
   window.addEventListener('message', broker.receive)
   node('service').replaceChildren(frame)
+  startupTimer = setTimeout(() => { void repairStartupFrame() }, 25000)
   for (const name of ['resident', 'staff']) node(name).setAttribute('aria-current', String(name === area))
 }
 const session = createCloudSession({ origin: location.origin, onClear: closeService,

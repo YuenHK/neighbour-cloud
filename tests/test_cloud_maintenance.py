@@ -11,6 +11,8 @@ import test_cloud_bootstrap
 from deploy.cloud.backup_store import DAY, BackupStore
 from deploy.cloud.bootstrap import open_services
 from deploy.cloud.maintenance import CloudMaintenance, MaintenanceGate
+from deploy.cloud.operations import Operations
+from deploy.cloud.operations import migrate as migrate_operations
 
 prepared = test_cloud_bootstrap.prepared
 seeded = test_cloud_bootstrap.seeded
@@ -100,6 +102,12 @@ def test_daily_snapshot_retention_backup_scrub_and_original_quota_memory_survive
         BackupStore(db, KEY, initialize=True)
     with open_services(profile, signing_key_loader=lambda: KEY) as services:
         cases, events, photos = services.cases.db, services.events._connection, services.photos.db
+        case_id = cases.execute('SELECT id FROM service_cases').fetchone()[0]
+        with closing(profile.connect(services.estate.path)) as estate:
+            migrate_operations(estate)
+            operations = Operations(estate, KEY)
+            operations.put('resident-case-photo-v1', case_id, {'sealed': 'SYNTHETIC-CASE-PHOTO-CIPHERTEXT'})
+            operations.put('vroid-library', case_id, {'must_survive': True})
         with cases:
             cases.execute('CREATE TABLE IF NOT EXISTS case_privacy_expiry(id TEXT PRIMARY KEY,erased_at_ms INTEGER NOT NULL)')
         with photos:
@@ -137,6 +145,11 @@ def test_daily_snapshot_retention_backup_scrub_and_original_quota_memory_survive
                     assert recovered.execute('SELECT message FROM service_cases').fetchone()[0] == '已按保存期限清除'
                 with closing(sqlite3.connect(archive['files']['photos'])) as recovered:
                     assert recovered.execute('SELECT COUNT(*) FROM native_evidence_blobs').fetchone()[0] == 0
+                with closing(sqlite3.connect(archive['files']['estate'])) as recovered:
+                    assert recovered.execute('SELECT COUNT(*) FROM cloud_operations WHERE namespace=?', ('resident-case-photo-v1',)).fetchone()[0] == 0
+                    assert recovered.execute('SELECT COUNT(*) FROM cloud_operations WHERE namespace=?', ('vroid-library',)).fetchone()[0] == 1
+        with closing(profile.connect(services.estate.path)) as estate:
+            assert estate.execute('SELECT COUNT(*) FROM cloud_operations WHERE namespace=?', ('resident-case-photo-v1',)).fetchone()[0] == 0
         assert job.public_status()['backup_cleanup_verified'] is True
 
 

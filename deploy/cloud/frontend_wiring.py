@@ -91,6 +91,7 @@ def cloud_scene(source):
         "watch(componentState, (state) => {\n"
         "  if (Reflect.get(globalThis, '__NEIGHBOUR_CLOUD__') === true)\n"
         "    parent.postMessage({ type: 'neighbour-service-stage', state }, location.origin)\n"
+        "  Reflect.set(globalThis, '__NEIGHBOUR_AVATAR_READY__', state === 'mounted')\n"
         "  if (state === 'mounted') window.dispatchEvent(new Event('resident-avatar-ready'))\n"
         "}, { immediate: true })").replace('\n', newline), 1)
     late = 'watch([stageModelRenderer, () => props.paused]'
