@@ -1,10 +1,31 @@
 /* Presentation only. Keep text/control opacity independent of the glass panel. */
+body[data-cloud-view="resident"] .estate-resident-layout { box-sizing:border-box;min-height:0;grid-template-rows:minmax(0,1fr); }
 body[data-cloud-view="resident"] .resident-assistant-panel {
+  box-sizing: border-box;
+  min-height: 0;
+  overflow: hidden;
   background: rgba(255, 255, 255, .76);
   border-color: rgba(255, 255, 255, .86);
   box-shadow: 0 12px 35px #173c3714;
   -webkit-backdrop-filter: blur(3px);
   backdrop-filter: blur(3px);
+}
+body[data-cloud-view="resident"] .resident-assistant-panel header,
+body[data-cloud-view="resident"] .resident-assistant-panel form { flex-shrink: 0; }
+body[data-cloud-view="resident"] .resident-panel-notices { flex:0 1 auto;min-height:0;max-height:26%;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin; }
+body[data-cloud-view="resident"] .resident-panel-notices:focus-visible { outline:2px solid #76b8a4;outline-offset:-2px; }
+body[data-cloud-view="resident"] .resident-panel-actions { flex-wrap: wrap; }
+body[data-cloud-view="resident"] .resident-transcript { min-height: 0; overscroll-behavior: contain; }
+body[data-cloud-view="resident"] .resident-assistant-panel textarea { min-height: 60px; max-height: 16dvh; resize: none; }
+body[data-cloud-view="resident"] .resident-model-credit { position:absolute;left:16px;bottom:12px;z-index:2;max-width:min(320px,40%);font-size:11px;color:#365b52; }
+body[data-cloud-view="resident"] .resident-model-credit summary { width:fit-content;padding:5px 8px;border-radius:8px;background:#ffffffe6;cursor:pointer; }
+body[data-cloud-view="resident"] .resident-model-credit p { margin:4px 0;padding:8px;border-radius:8px;background:#fffffff2;overflow-wrap:anywhere; }
+@media (min-width:761px) and (max-height:600px) {
+  body[data-cloud-view="resident"] .estate-resident-layout { padding:8px 12px;gap:12px; }
+  body[data-cloud-view="resident"] .resident-assistant-panel { padding:12px; }
+  body[data-cloud-view="resident"] .resident-assistant-panel h2 { font-size:18px; }
+  body[data-cloud-view="resident"] .resident-transcript { margin:8px 0; }
+  body[data-cloud-view="resident"] .resident-panel-status { margin-bottom:4px; }
 }
 body[data-cloud-view="resident"] .resident-greeting,
 body[data-cloud-view="resident"] .resident-bubble:not(.user) {
@@ -24,6 +45,7 @@ body[data-cloud-view="resident"] .resident-panel-status:not(:empty) {
   padding: 4px 6px;
 }
 @media (max-width: 760px) {
+  body[data-cloud-view="resident"] .resident-assistant-panel textarea { font-size:16px; }
   body[data-cloud-view="resident"] .estate-resident-layout {
     display: grid !important;
     grid-template-columns: minmax(0, 1fr);

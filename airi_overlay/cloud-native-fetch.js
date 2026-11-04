@@ -26,7 +26,7 @@ export function pcmWav(bytes, rate = 24000) {
 
 export async function previewWav(response) {
   if (!response.ok || !response.body)
-    throw new Error('曉曼暫時未能試聽。')
+    throw new Error('語音暫時未能試聽。')
   const reader = response.body.getReader()
   const decoder = new TextDecoder()
   const pieces = []
@@ -49,7 +49,7 @@ export async function previewWav(response) {
           throw new Error('試聽格式未能核對。')
         const data = JSON.parse(frame.slice(6))
         if (data.error)
-          throw new Error('曉曼暫時未能試聽；沒有自動重送。')
+          throw new Error('語音暫時未能試聽；沒有自動重送。')
         if (data.done === true) {
           done = true
           break
@@ -131,7 +131,7 @@ export function managedNativeFetch(kind, { transport, speech, transcribe }) {
       })
     }
     if (body.model !== 'azure-hiumaan-f0' || body.voice !== 'zh-HK-HiuMaanNeural' || typeof body.input !== 'string')
-      throw new Error('請選擇 Microsoft Azure 曉曼 F0。')
+      throw new Error('請選擇 Microsoft 語音服務。')
     let input = body.input
     if (input.trimStart().startsWith('<')) {
       const xml = new DOMParser().parseFromString(input, 'application/xml')

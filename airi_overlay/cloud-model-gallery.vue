@@ -75,7 +75,7 @@ function status(value: string) {
   emit('status', value)
 }
 function picked(model: DisplayModel) {
-  status('已選擇模型作預覽；按「儲存至平台」才發佈，Gemma 及曉曼保持不變。')
+  status('已選擇模型作預覽；按「儲存至平台」才發佈，Gemma 及語音設定保持不變。')
   emit('pick', model)
   emit('close')
 }

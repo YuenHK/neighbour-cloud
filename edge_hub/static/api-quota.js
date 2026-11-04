@@ -104,7 +104,7 @@
   }
   function readiness(root, data, now = Date.now()) {
     const expected = ['chat', 'speech', 'recognition', 'page']
-    const labels = {chat:'對話設定',speech:'曉曼朗讀',recognition:'本機辨識',page:'數字人頁面'}
+    const labels = {chat:'對話設定',speech:'Microsoft 語音服務',recognition:'本機辨識',page:'數字人頁面'}
     if (!Array.isArray(data?.checks) || data.checks.length !== 4
       || !Number.isFinite(data.checked_at_ms) || Math.abs(now-data.checked_at_ms) > 30000
       || expected.some(id => data.checks.filter(row => row?.id === id && typeof row.ready === 'boolean').length !== 1)) {

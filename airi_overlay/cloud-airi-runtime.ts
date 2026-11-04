@@ -21,7 +21,7 @@ export type RuntimePreferences = typeof runtimeDefaults
 export const cloudRuntime = reactive(structuredClone(runtimeDefaults))
 export const managedProviderIds = ['cloudflare-workers-ai', 'microsoft-speech', 'openai-compatible-audio-transcription']
 
-const voice = { id: 'zh-HK-HiuMaanNeural', name: '曉曼 · 香港廣東話', provider: 'microsoft-speech', compatibleModels: ['azure-hiumaan-f0'], gender: 'female', languages: [{ code: 'zh-HK', title: '香港廣東話' }] }
+const voice = { id: 'zh-HK-HiuMaanNeural', name: '香港廣東話', provider: 'microsoft-speech', compatibleModels: ['azure-hiumaan-f0'], gender: 'female', languages: [{ code: 'zh-HK', title: '香港廣東話' }] }
 
 // Native stores use Vue i18n/analytics composables. Construct them during
 // setup, before awaiting the authenticated catalog or IndexedDB.
@@ -92,11 +92,11 @@ function registerManagedProviders(configured?: Record<string, boolean>) {
       category: 'speech',
       tasks: ['text-to-speech'],
       nameKey: 'neighbour.hiumaan',
-      name: 'Microsoft Azure 曉曼 · F0',
+      name: 'Microsoft 語音服務',
       descriptionKey: 'neighbour.hiumaan.description',
       description: '香港廣東話朗讀；使用已接通的免費 F0 資源。',
       createProvider: () => ({ speech: (model: string) => ({ apiKey: '', baseURL, model, fetch: fetchFor('speech') }) }),
-      capabilities: { listModels: async () => [{ id: 'azure-hiumaan-f0', name: '曉曼 F0', provider: 'microsoft-speech' }], listVoices: async () => [voice] },
+      capabilities: { listModels: async () => [{ id: 'azure-hiumaan-f0', name: 'Microsoft 語音服務', provider: 'microsoft-speech' }], listVoices: async () => [voice] },
       validators: { chatPingCheckAvailable: false, validateProviderConfig: () => ({ errors: [], reason: '', valid: configured?.['microsoft-speech'] ?? true }) },
     },
     {

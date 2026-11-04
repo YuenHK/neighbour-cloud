@@ -174,7 +174,7 @@ async function save() {
     const response = await transport.fetch('/api/v1/service-desk/presentation', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), signal: AbortSignal.timeout(15000) })
     if (!response.ok) {
       if (response.status === 422) {
-        status.value = '請核對設定：平台已接入免費 Gemma、曉曼及 Whisper；其他供應商尚未啟用。語速 0.5–2 倍、音調／音量 ±30%，交接 1–3 分鐘。角色指示最多 4,000 字。未覆蓋原設定。'
+        status.value = '請核對設定：平台已接入免費 Gemma、Microsoft 語音服務及 Whisper；其他供應商尚未啟用。語速 0.5–2 倍、音調／音量 ±30%，交接 1–3 分鐘。角色指示最多 4,000 字。未覆蓋原設定。'
         return
       }
       throw new Error('save_unconfirmed')

@@ -111,7 +111,7 @@ export function createLaunchScreen(document, { onRetry, onContinue }) {
   function checks(value) {
     if (!active || area !== 'resident') return
     textAvailable = value.textReady === true
-    const labels = { interface: '對話介面', runtime: '對話及曉曼設定', avatar: '角色及背景', input: '語音收音' }
+    const labels = { interface: '對話介面', runtime: '對話及語音設定', avatar: '角色及背景', input: '語音收音' }
     const pending = Object.entries(labels).filter(([key]) => value.checks?.[key] !== 'ready')
     phase('avatar')
     node('launchDetail').textContent = pending.length ? `仍在核對：${pending.map(([key, label]) => `${label}${['action', 'failed'].includes(value.checks?.[key]) ? '（需要處理）' : ''}`).join('、')}。` : '必要畫面及輸入已準備好。'

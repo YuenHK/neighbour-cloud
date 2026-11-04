@@ -21,6 +21,7 @@ SHELL = {
     '/staff.webmanifest': (WEB / 'staff.webmanifest', 'application/manifest+json'),
     '/': (WEB / 'index.html', 'text/html'),
     '/cloud/shell.js': (WEB / 'shell.js', 'text/javascript'),
+    '/cloud/privacy.js': (WEB / 'privacy.js', 'text/javascript'),
     '/cloud/shell.css': (WEB / 'shell.css', 'text/css'),
     '/cloud/launch-screen.js': (WEB / 'launch-screen.js', 'text/javascript'),
     '/cloud/launch-screen.css': (WEB / 'launch-screen.css', 'text/css'),

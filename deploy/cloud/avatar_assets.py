@@ -104,7 +104,7 @@ def validate_archive(content):
             for group in refs.get('Motions', {}).values():
                 for motion in group:
                     if motion.get('Sound'):
-                        raise ValueError('請使用不含額外音效的模型，保留平台原有曉曼語音。')
+                        raise ValueError('請使用不含額外音效的模型，保留平台原有 Microsoft 語音服務。')
                     required.append(motion['File'])
             for reference in required:
                 relative = archive_path(unquote(reference))

@@ -1,7 +1,7 @@
 {
   "format": "neighbour-cloud-preparation-v1",
   "kind": "source-only",
-  "deployed": true,
+  "deployed": false,
   "contains_resident_data": false,
   "contains_credentials": false,
   "requires": [
@@ -151,13 +151,13 @@
     },
     {
       "path": "airi_overlay/cloud-airi-provider.vue",
-      "bytes": 3307,
-      "sha256": "520561e00a6d0129bac3739a2712a62c7007bd3d0e292ec49eb73ff235f52fbe"
+      "bytes": 3294,
+      "sha256": "1b176e2693bdf5f86fb10b9daa2d779918476ce8bc85836c3ea35ac9a0505927"
     },
     {
       "path": "airi_overlay/cloud-airi-runtime.ts",
-      "bytes": 8154,
-      "sha256": "8a9886c185ecff5c9562d2120897350180bd428868046e68fadea4b1144d7ee3"
+      "bytes": 8151,
+      "sha256": "b2f28e8c43b6c9d3519f307af46fe83db756cb8911ee3c0a3d959c326a252c31"
     },
     {
       "path": "airi_overlay/cloud-app.vue",
@@ -181,8 +181,8 @@
     },
     {
       "path": "airi_overlay/cloud-model-gallery.vue",
-      "bytes": 20463,
-      "sha256": "2d668da828dd52d8bca1026103c26a952e680a64508c66843668b64863427c9f"
+      "bytes": 20469,
+      "sha256": "a0492722a701f70346aab6887725ebfe2c5f04546bb60cad55a08e771f1f048c"
     },
     {
       "path": "airi_overlay/cloud-model-library.vue",
@@ -191,8 +191,8 @@
     },
     {
       "path": "airi_overlay/cloud-native-fetch.js",
-      "bytes": 6016,
-      "sha256": "fc6c116a13d93819cb06f18070945feb8aaf59a2b2b6cf44f3c6fccfa54d445a"
+      "bytes": 6013,
+      "sha256": "1b40ecb39292ee6e925ffb880c03f41d9bdc1d06445fcacaadc58de507bce4d5"
     },
     {
       "path": "airi_overlay/cloud-pixi-csp.ts",
@@ -211,8 +211,8 @@
     },
     {
       "path": "airi_overlay/cloud-resident.css",
-      "bytes": 2158,
-      "sha256": "d054e6baf750e8a72e8b45a398bbf5a4686d7417172929285fa632f0f35b5ee5"
+      "bytes": 2161,
+      "sha256": "3bc26a3af84ecf08318b06e55b9d789f9e2ad000732bf0b8395bec18140a3179"
     },
     {
       "path": "airi_overlay/cloud-session.js",
@@ -221,8 +221,8 @@
     },
     {
       "path": "airi_overlay/cloud-settings.vue",
-      "bytes": 14535,
-      "sha256": "599dd4073d42f5ba65950a7f1431dca28eb7ffc6b09106ebdcc170c6c2472b2e"
+      "bytes": 14551,
+      "sha256": "e8ee386c91f29489aba7b20116f5c92886f6107d7edaef699e5b422164f66648"
     },
     {
       "path": "airi_overlay/cloud-shared-models.ts",
@@ -321,8 +321,8 @@
     },
     {
       "path": "airi_overlay/resident-panel.css",
-      "bytes": 2417,
-      "sha256": "600171510bc5ffc173f909c5a17468eb81c17fdfb4f42e266d3af9e0b8f5fe52"
+      "bytes": 4378,
+      "sha256": "f55c24003707295f90f12a82a5bc4e81649e30c3720b84a3c13c6086b788f27c"
     },
     {
       "path": "airi_overlay/resident-pcm.js",
@@ -341,8 +341,8 @@
     },
     {
       "path": "airi_overlay/resident-service-panel.vue",
-      "bytes": 26328,
-      "sha256": "547770915a18d390f684100e9b957c9892e77ae55de731cbc38c10a0070f6152"
+      "bytes": 27122,
+      "sha256": "a63e708f857e406b724c41445effacd1c595f2832cd15bc1f5e598ae37934e6d"
     },
     {
       "path": "airi_overlay/resident-session.js",
@@ -416,8 +416,8 @@
     },
     {
       "path": "deploy/cloud/avatar_assets.py",
-      "bytes": 11728,
-      "sha256": "966ab044aa0cc6391826744cb890c67e5baa296d6b8b27c3d2fdc3ccf07b5ef0"
+      "bytes": 11739,
+      "sha256": "7f070bafe9857f6d02757db09c85952aec943f60dbaecfe3c46470ef1d93dbd8"
     },
     {
       "path": "deploy/cloud/avatar_prepare.py",
@@ -576,8 +576,8 @@
     },
     {
       "path": "deploy/cloud/quota_api.py",
-      "bytes": 9183,
-      "sha256": "aebed8a7e12cb81d8ab93cc4f34a2aea6cf0cca8d3570fe96ec7aa947f4c37fe"
+      "bytes": 9160,
+      "sha256": "f44e9c6bbc2a5b384e19d772b9323c1cdb17a8821c6130567cfa9ece7ab7f70e"
     },
     {
       "path": "deploy/cloud/release_envelope.py",
@@ -611,8 +611,8 @@
     },
     {
       "path": "deploy/cloud/rollout.py",
-      "bytes": 8824,
-      "sha256": "c82b201542fbe3771486378e29afcb0bcdaae55ab86884294f005bdb60fad051"
+      "bytes": 8830,
+      "sha256": "9df3d594bba55282626b85d2afe8804b21c2f58dc076111548856ddd994382c8"
     },
     {
       "path": "deploy/cloud/runtime_storage.py",
@@ -761,8 +761,8 @@
     },
     {
       "path": "deploy/cloud/web/index.html",
-      "bytes": 7361,
-      "sha256": "1a157a83806f5a1ec7a01daad15093552a7a8feef10debe312049aadc43e0673"
+      "bytes": 7752,
+      "sha256": "5e12b97f3ee3edb4db57ae10276eebf86a932c73597389590c77701616f0dc49"
     },
     {
       "path": "deploy/cloud/web/launch-screen.css",
@@ -772,7 +772,7 @@
     {
       "path": "deploy/cloud/web/launch-screen.js",
       "bytes": 7235,
-      "sha256": "3f180f2bec080ddd081a7f449ccd32f182fa05933cbeb4d1c26ec7c6e1ab79f0"
+      "sha256": "f9947d798185c3e7cc7c6bdc1540bbc5adb3ac5a0de7846e58e104343bb2d2db"
     },
     {
       "path": "deploy/cloud/web/mascot.css",
@@ -798,6 +798,11 @@
       "path": "deploy/cloud/web/presentation.js",
       "bytes": 2207,
       "sha256": "e1fdcea80e743c6d8f53962c0886b37d076c2b5feaae70219dd1f688459a34e3"
+    },
+    {
+      "path": "deploy/cloud/web/privacy.js",
+      "bytes": 1263,
+      "sha256": "9eee8704dfd9f956ca865ce0e097df21e114d5227428bd3bbf6fe40c2b21c64c"
     },
     {
       "path": "deploy/cloud/web/quota-compact.js",
@@ -826,13 +831,13 @@
     },
     {
       "path": "deploy/cloud/web/shell.css",
-      "bytes": 3862,
-      "sha256": "0912e1200b4215d0ec0da0df629314698c85623684b0747a5d3cf96ae94bfc8e"
+      "bytes": 4408,
+      "sha256": "12c6c00d67d515243e31ccfcad69991377bc8bb38cd614c10284ba362594ff71"
     },
     {
       "path": "deploy/cloud/web/shell.js",
-      "bytes": 10179,
-      "sha256": "6a1dd13103b90edce085e067ed7fac9cb9dcce75c53efd4a805bd5d5c776b290"
+      "bytes": 10505,
+      "sha256": "f10e820d5cc02bb85ec3cc0e7dc5082d30c38c1c56102b6e4c3cdcd761401607"
     },
     {
       "path": "deploy/cloud/web/staff-notifications.js",
@@ -851,8 +856,8 @@
     },
     {
       "path": "deploy/cloud/web_assets.py",
-      "bytes": 11436,
-      "sha256": "3bf2c59946f0751edb5c3d218b427fb29e2effaf65ae313d785e3dd429c84aa3"
+      "bytes": 11502,
+      "sha256": "adc30dd469710076651487b5c6ea4aefa881831ee0d16d9b4e777a49058962fe"
     },
     {
       "path": "edge_hub/__init__.py",
@@ -1296,8 +1301,8 @@
     },
     {
       "path": "edge_hub/static/api-quota.js",
-      "bytes": 6015,
-      "sha256": "98abc1900e5c05d8b2a4324f47416c6f7e69ca7336b13485649f83df648b5b84"
+      "bytes": 6025,
+      "sha256": "c13881d417f6abb2ddf4e9820f119a19f19264f4e1aac1e9d6f8a7d61261f54a"
     },
     {
       "path": "edge_hub/static/assistant-memory.html",
@@ -1591,8 +1596,8 @@
     },
     {
       "path": "tools/acceptance_gate.py",
-      "bytes": 4745,
-      "sha256": "a963b13aab32df692f9d648934cdea34fbd9f5e0b95019824895990ff2d593f4"
+      "bytes": 4794,
+      "sha256": "66027c87efce6cac34b43f270f505ec6b58ba19e5429afaa505da9490dbf3215"
     },
     {
       "path": "tools/check_release_gate.py",
@@ -1639,16 +1644,5 @@
       "bytes": 4746,
       "sha256": "8bf3ecc3f05d619df53c09d93bbc9abfe76a0356f1a7487a4b20cdfdf94d1bce"
     }
-  ],
-  "current_runtime": {
-    "commit": "bfd84823d65d0f4390711ecae75bcf4cdf9ca787",
-    "release": "vroid-library-20261103-barrier20",
-    "deploy": "dep-dbl7apmc6qcc73ak9reg",
-    "origin": "https://neighbour-yuenhk-live.onrender.com",
-    "reviewed_choices": 227,
-    "VRoid_new_VRM": 201,
-    "independent_library_goal_20_complete": false,
-    "cloud_VRoid_connection": "owner-approved sealed durable storage outside Git",
-    "documentation_only_no_redeploy": true
-  }
+  ]
 }

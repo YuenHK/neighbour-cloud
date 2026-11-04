@@ -21,6 +21,7 @@ defineProps<{ listening: boolean, voiceUnavailable?: boolean, voiceRecovering?: 
 const emit = defineEmits<{ microphone: [], endSession: [], speaking: [boolean] }>()
 const cloudResident = Reflect.get(globalThis, '__NEIGHBOUR_CLOUD__') === true
 const presentation = Reflect.get(globalThis, '__NEIGHBOUR_PRESENTATION__') || {}
+const creditInHeader = ref(false)
 const runtimePreferences = cloudResident ? presentation.airi?.runtime : undefined
 const hubOrigin = cloudResident || Reflect.get(globalThis, '__NEIGHBOUR_REMOTE__') === true ? location.origin : 'http://127.0.0.1:8000'
 const residentApi = createResidentApi({
@@ -317,7 +318,7 @@ async function sendMessage(text = draft.value, voice = true, inputEndedAt?: numb
                   speechActive.value = false
                   speechFailed = true
                   emit('speaking', false)
-                  status.value = '曉曼暫時未能完成朗讀，文字已保留。'
+                  status.value = '語音暫時未能完成朗讀，文字已保留。'
                 }
               },
               ended: () => {
@@ -427,7 +428,17 @@ function sharedModelUnavailable() {
   if (!busy.value && messages.value.length === 0)
     status.value = '共享模型暫時未能載入，先使用原有角色；對話及語音仍可繼續。'
 }
+function acknowledgeModelCredit(event: MessageEvent) {
+  if (cloudResident && event.origin === location.origin && event.source === window.parent
+    && event.data?.type === 'neighbour-model-credit-placed') {
+    creditInHeader.value = true
+  }
+}
 onMounted(() => {
+  if (cloudResident && window.parent !== window) {
+    window.addEventListener('message', acknowledgeModelCredit)
+    window.parent.postMessage({ type: 'neighbour-model-credit', credit: presentation.model_credit || null }, location.origin)
+  }
   window.addEventListener('estate:shared-model-unavailable', sharedModelUnavailable)
   if (residentApi.cloud)
     Reflect.set(globalThis, '__NEIGHBOUR_RESIDENT_IDLE__', () => !busy.value && !draft.value && messages.value.length === 0 && !session.profile)
@@ -440,6 +451,7 @@ onMounted(() => {
   window.dispatchEvent(new Event('resident-conversation-ready'))
 })
 onUnmounted(() => {
+  window.removeEventListener('message', acknowledgeModelCredit)
   window.removeEventListener('estate:shared-model-unavailable', sharedModelUnavailable)
   if (residentApi.cloud)
     Reflect.deleteProperty(globalThis, '__NEIGHBOUR_RESIDENT_IDLE__')
@@ -479,30 +491,29 @@ function checkIdle() {
         </p>
       </div>
     </div>
-    <p v-if="presentation.model_credit" class="resident-model-credit">
-      模型：<a :href="presentation.model_credit.source" target="_blank" rel="noopener noreferrer">{{ presentation.model_credit.name }} · {{ presentation.model_credit.author }}</a>
-    </p>
-    <p class="resident-panel-status" role="status">
-      {{ status }}
-    </p>
-    <p v-if="followupNotice" class="resident-panel-status" role="status">
-      {{ followupNotice }}
-    </p>
-    <p v-if="voiceRecovering" class="resident-panel-status">
-      正在自動恢復語音連接；你可以繼續打字。
-    </p>
-    <p v-else-if="voiceUnavailable" class="resident-panel-status">
-      語音暫時未能使用，請先用文字傾談。
-    </p>
-    <p v-else-if="listening && inputStatus === 'starting'" class="resident-panel-status">
-      正在準備收音，未開始聆聽；你可以先打字。
-    </p>
-    <p v-else-if="listening && inputStatus === 'waiting'" class="resident-panel-status">
-      收音未啟動或已中斷，點一下語音掣重新啟動。
-    </p>
-    <p v-else-if="listening && inputStatus === 'speaking'" class="resident-panel-status">
-      朗讀完會繼續聆聽；想先講可以按「停止朗讀」。
-    </p>
+    <div class="resident-panel-notices" tabindex="0" aria-label="服務提示">
+      <p class="resident-panel-status" role="status">
+        {{ status }}
+      </p>
+      <p v-if="followupNotice" class="resident-panel-status" role="status">
+        {{ followupNotice }}
+      </p>
+      <p v-if="voiceRecovering" class="resident-panel-status">
+        正在自動恢復語音連接；你可以繼續打字。
+      </p>
+      <p v-else-if="voiceUnavailable" class="resident-panel-status">
+        語音暫時未能使用，請先用文字傾談。
+      </p>
+      <p v-else-if="listening && inputStatus === 'starting'" class="resident-panel-status">
+        正在準備收音，未開始聆聽；你可以先打字。
+      </p>
+      <p v-else-if="listening && inputStatus === 'waiting'" class="resident-panel-status">
+        收音未啟動或已中斷，點一下語音掣重新啟動。
+      </p>
+      <p v-else-if="listening && inputStatus === 'speaking'" class="resident-panel-status">
+        朗讀完會繼續聆聽；想先講可以按「停止朗讀」。
+      </p>
+    </div>
     <form @submit.prevent="sendMessage()">
       <label class="resident-input-label" for="residentDraft">想講啲咩？</label><textarea id="residentDraft" v-model="draft" rows="2" maxlength="2000" required placeholder="直接講，或者喺度打字…" @input="touch" />
       <div class="resident-panel-actions">
@@ -518,6 +529,10 @@ function checkIdle() {
       </div>
     </form>
   </section>
+  <details v-if="presentation.model_credit && !creditInHeader" class="resident-model-credit">
+    <summary>角色來源</summary>
+    <p><a :href="presentation.model_credit.source" target="_blank" rel="noopener noreferrer">{{ presentation.model_credit.name }} · {{ presentation.model_credit.author }}</a></p>
+  </details>
 </template>
 
 <style>

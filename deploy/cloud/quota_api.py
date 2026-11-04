@@ -71,7 +71,7 @@ def local_overview(*, now=None):
          '方案列示每日 10,000 Neurons；官方剩餘未回傳。',
          '理解居民需要、自然聊天、延續本輪上下文，以及辨識廣東話錄音；兩項服務共用此每日額度，不轉用其他模型。',
          '方案按 UTC 每日重設；下方時間屬系統保守守護，並非官方餘額查詢結果。'),
-        ('azure-voice', 'Microsoft Azure Speech · Free F0', '廣東話語音（曉曼）',
+        ('azure-voice', 'Microsoft 語音服務', '廣東話朗讀',
          'azure_tts_characters', azure_voice.configured(), ('azure-voice-control.json',),
          'F0 方案列示每月 500,000 計費字元；官方剩餘未回傳。',
          '將數字人回覆朗讀成香港廣東話；沒有本機聲線或付費備援。',

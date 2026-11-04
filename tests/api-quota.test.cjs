@@ -14,10 +14,10 @@ test('readiness shows missing or stale dependencies without presenting cached su
   const { api, root } = harness()
   const checks = ['chat','speech','recognition','page'].map(id => ({id,ready:true}))
   api.readiness(root,{checks,checked_at_ms:1000},1000)
-  assert.match(root.textContent,/曉曼朗讀：就緒/)
+  assert.match(root.textContent,/Microsoft 語音服務：就緒/)
   checks[1].ready=false
   api.readiness(root,{checks,checked_at_ms:1000},1000)
-  assert.match(root.textContent,/曉曼朗讀：需檢查/)
+  assert.match(root.textContent,/Microsoft 語音服務：需檢查/)
   api.readiness(root,{checks,checked_at_ms:1000},32000)
   assert.match(root.textContent,/未能確認/)
   api.readiness(root,{checks:[{id:'chat',ready:true}],checked_at_ms:32000},32000)

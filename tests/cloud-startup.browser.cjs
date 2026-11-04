@@ -13,7 +13,7 @@ async function main(){
   if(u.pathname==='/api/v1/resident/access')return route.fulfill({json:{token}})
   if(u.pathname==='/api/v1/resident/session')return route.fulfill({json:{authenticated:true,role:'resident',storage_acceptance:false}})
   if(u.pathname==='/cloud/resident')return route.fulfill({contentType:'text/html',body:'<p>合成居民畫面</p><script>parent.postMessage({type:"neighbour-service-stage",state:"mounted"},location.origin);parent.postMessage({type:"estate-assistant-ready"},location.origin)</script>'})
-  const files={'/':'deploy/cloud/web/index.html','/cloud/launch-screen.js':'deploy/cloud/web/launch-screen.js','/cloud/launch-screen.css':'deploy/cloud/web/launch-screen.css','/cloud/module-warmup.js':'deploy/cloud/web/module-warmup.js','/cloud/shell.js':'deploy/cloud/web/shell.js','/cloud/shell.css':'deploy/cloud/web/shell.css','/cloud/cloud-session.js':'airi_overlay/cloud-session.js','/cloud/cloud-frame.js':'airi_overlay/cloud-frame.js'}
+  const files={'/':'deploy/cloud/web/index.html','/cloud/launch-screen.js':'deploy/cloud/web/launch-screen.js','/cloud/launch-screen.css':'deploy/cloud/web/launch-screen.css','/cloud/module-warmup.js':'deploy/cloud/web/module-warmup.js','/cloud/shell.js':'deploy/cloud/web/shell.js','/cloud/privacy.js':'deploy/cloud/web/privacy.js','/cloud/shell.css':'deploy/cloud/web/shell.css','/cloud/cloud-session.js':'airi_overlay/cloud-session.js','/cloud/cloud-frame.js':'airi_overlay/cloud-frame.js'}
   if(files[u.pathname])return route.fulfill({contentType:u.pathname.endsWith('.js')?'text/javascript':u.pathname.endsWith('.css')?'text/css':'text/html',body:fs.readFileSync(files[u.pathname])})
   throw Error('Unexpected '+u.pathname)
  })

@@ -25,7 +25,7 @@ const modulePath = computed(() => props.providerId === 'microsoft-speech' ? '/se
       <ProviderBasicSettings title="已接入的服務" description="沿用平台已有的免費服務，設定由 AIRI 統一保存。">
         <p>{{ configured ? '平台已接通；登入憑證由伺服器保管，毋須重複輸入。' : '平台暫時未能確認這項服務的設定，原有資料保留。' }}</p>
         <p v-if="providerId === 'microsoft-speech'">
-          Microsoft Azure Speech F0 · 曉曼 · 香港廣東話
+          Microsoft 語音服務 · 香港廣東話
         </p>
         <p v-else-if="providerId === 'cloudflare-workers-ai'">
           Cloudflare Workers AI · Gemma 4 26B A4B · Free
@@ -39,11 +39,11 @@ const modulePath = computed(() => props.providerId === 'microsoft-speech' ? '/se
         </button>
       </ProviderBasicSettings>
       <section v-if="providerId === 'microsoft-speech'" class="cloud-airi-prosody">
-        <h2>曉曼的說話方式</h2>
-        <p>儲存至平台後，居民朗讀會使用同一組設定；可前往語音合成模組試聽草稿。聲線仍是曉曼。</p>
+        <h2>說話方式</h2>
+        <p>儲存至平台後，居民朗讀會使用同一組設定；可前往語音合成模組試聽草稿。香港廣東話聲線保持不變。</p>
         <FieldRange v-model="rate" label="說話速度" description="1 為正常速度。" :min="0.5" :max="2" :step="0.01" :format-value="value => `${value} 倍`" />
         <FieldRange v-model="pitch" label="音調" description="預設 0，保留原有音調。" :min="-30" :max="30" :step="1" :format-value="value => `${value}%`" />
-        <FieldRange v-model="cloudRuntime.speech.volume" label="音量調整" description="相對於曉曼預設音量。" :min="-30" :max="30" :step="1" :format-value="value => `${value}%`" />
+        <FieldRange v-model="cloudRuntime.speech.volume" label="音量調整" description="相對於預設音量。" :min="-30" :max="30" :step="1" :format-value="value => `${value}%`" />
       </section>
     </ProviderSettingsContainer>
   </ProviderSettingsLayout>

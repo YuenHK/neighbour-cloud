@@ -2,8 +2,10 @@ import { createFrameBroker } from '/cloud/cloud-frame.js'
 import { createCloudSession } from '/cloud/cloud-session.js'
 import { createLaunchScreen } from '/cloud/launch-screen.js'
 import { preloadModules } from '/cloud/module-warmup.js'
+import { placeModelCredit, preparePrivacy } from '/cloud/privacy.js'
 
 const node = id => document.getElementById(id)
+preparePrivacy(document)
 let frame, broker, expire, provider, role
 let publicMode = false
 let requestedArea = new URLSearchParams(location.search).get('workspace') === 'staff' ? 'staff' : 'resident'
@@ -36,6 +38,9 @@ function reveal() {
 }
 window.addEventListener('message', event => {
   if (event.origin !== location.origin || !frame || event.source !== frame.contentWindow) return
+  if (event.data?.type === 'neighbour-model-credit' && currentArea === 'resident'
+    && placeModelCredit(document, event.data.credit))
+    frame.contentWindow.postMessage({ type: 'neighbour-model-credit-placed' }, location.origin)
   if (event.data?.type === 'neighbour-readiness' && currentArea === 'resident') {
     launch.checks(event.data)
     if (event.data.ready === true) reveal()
