@@ -1,7 +1,7 @@
 {
   "format": "neighbour-cloud-preparation-v1",
   "kind": "source-only",
-  "deployed": false,
+  "deployed": true,
   "contains_resident_data": false,
   "contains_credentials": false,
   "requires": [
@@ -1639,5 +1639,16 @@
       "bytes": 4746,
       "sha256": "8bf3ecc3f05d619df53c09d93bbc9abfe76a0356f1a7487a4b20cdfdf94d1bce"
     }
-  ]
+  ],
+  "current_runtime": {
+    "commit": "bfd84823d65d0f4390711ecae75bcf4cdf9ca787",
+    "release": "vroid-library-20261103-barrier20",
+    "deploy": "dep-dbl7apmc6qcc73ak9reg",
+    "origin": "https://neighbour-yuenhk-live.onrender.com",
+    "reviewed_choices": 227,
+    "VRoid_new_VRM": 201,
+    "independent_library_goal_20_complete": false,
+    "cloud_VRoid_connection": "owner-approved sealed durable storage outside Git",
+    "documentation_only_no_redeploy": true
+  }
 }
