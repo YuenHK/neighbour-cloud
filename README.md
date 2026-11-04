@@ -4,7 +4,17 @@ Current service: https://neighbour-yuenhk-live.onrender.com/ . Residents enter d
 
 The reviewed program runs on Render Free in Singapore with one instance and automatic deployment disabled. It uses the existing Turso Free durable databases, Cloudflare Gemma dialogue, Azure HiuMaan F0 speech, Cloudflare Whisper speech recognition, and Tavily search. No paid upgrade, quota reset, or automatic provider substitution is enabled.
 
-## 2026-11-04: reviewed VRoid library is live
+## 2026-11-04: responsive resident interface is live
+
+Current runtime is `9412ad86d14a2600fee150753f188d0152a14a5e`, official CLI deploy `dep-dbl84o6tlv9c73b9agt0`, release `resident-responsive-20261104-barrier21`. The public URL is unchanged. Conversation and speech provider/model/voice IDs, selected character and stored data are preserved; the visible voice name is now “Microsoft 語音服務”.
+
+The resident view uses proportional desktop columns instead of squeezing the avatar beside a fixed 600px chat column. Bounded grid rows and a scrollable notice area keep the composer accessible when the viewport is short or follow-up/speech errors are long. Mobile retains the translucent chat panel. Public model attribution moves into the concise top privacy menu, with active-frame/origin checks, safe public URLs and an acknowledged standalone fallback outside the chat. Original author and Live2D notices remain accessible.
+
+The final source-matching gate passed 426 backend tests, 56 Node tests, network faults, workbench Chromium/WebKit flows and 36 dialogue evaluations. Frontend75 lint, typecheck and build passed with native source restored. A full isolated resident portal passed 12 viewport sizes, resize/draft retention, long notices with a synthetic speech failure, safe attribution messaging and chat. Thirty-five real HTTPS pages/assets matched exactly; 201 unchanged thumbnail hashes match the prior release evidence. Original cases, IDs, selected model, presentation, memory marker, controls, deletion ledger, events and all Operations records including the sealed VRoid connection matched their stopped baseline; previous quota periods were nondecreasing. No resident data, credentials or models were reimported or republished, and no real AI/audio/EP requests were used to validate this UI change. The old formal process was confirmed exited before the sole new release was approved.
+
+This README/bundle metadata update is documentation only and does not require another deployment.
+
+## Earlier 2026-11-04: reviewed VRoid library
 
 Runtime commit `bfd84823d65d0f4390711ecae75bcf4cdf9ca787` was deployed with the official Render CLI as `dep-dbl7apmc6qcc73ak9reg`, release `vroid-library-20261103-barrier20`. The prior process had actually exited; only the new inert instance was present before independent data checks and release approval. This documentation update does not require another deployment.
 

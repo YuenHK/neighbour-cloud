@@ -1,7 +1,7 @@
 {
   "format": "neighbour-cloud-preparation-v1",
   "kind": "source-only",
-  "deployed": false,
+  "deployed": true,
   "contains_resident_data": false,
   "contains_credentials": false,
   "requires": [
@@ -1644,5 +1644,16 @@
       "bytes": 4746,
       "sha256": "8bf3ecc3f05d619df53c09d93bbc9abfe76a0356f1a7487a4b20cdfdf94d1bce"
     }
-  ]
+  ],
+  "current_runtime": {
+    "commit": "9412ad86d14a2600fee150753f188d0152a14a5e",
+    "release": "resident-responsive-20261104-barrier21",
+    "deploy": "dep-dbl84o6tlv9c73b9agt0",
+    "origin": "https://neighbour-yuenhk-live.onrender.com",
+    "resident_UI": "proportional viewport, bounded notices, compact privacy and relocated public attribution",
+    "voice_display": "Microsoft voice service; original HiuMaan F0 IDs unchanged",
+    "reviewed_choices_preserved": 227,
+    "all_original_Operations_and_data_preserved": true,
+    "documentation_only_no_redeploy": true
+  }
 }
