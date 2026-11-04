@@ -4,9 +4,20 @@ Current service: https://neighbour-yuenhk-live.onrender.com/ . Residents enter d
 
 The reviewed program runs on Render Free in Singapore with one instance and automatic deployment disabled. It uses the existing Turso Free durable databases, Cloudflare Gemma dialogue, Azure HiuMaan F0 speech, Cloudflare Whisper speech recognition, and Tavily search. No paid upgrade, quota reset, or automatic provider substitution is enabled.
 
-## 2026-11-04: responsive resident interface is live
+## 2026-11-04: voice-driven lip sync and conversational movement are live
 
-Current runtime is `9412ad86d14a2600fee150753f188d0152a14a5e`, official CLI deploy `dep-dbl84o6tlv9c73b9agt0`, release `resident-responsive-20261104-barrier21`. The public URL is unchanged. Conversation and speech provider/model/voice IDs, selected character and stored data are preserved; the visible voice name is now “Microsoft 語音服務”.
+Current runtime `fb7bd0c1ea4cef129d80fb711fd920f9ab5aeffb`, official CLI deploy `dep-dbl9egijnfac73f9r16g`, release `avatar-performance-20261104-barrier22`; existing URL and Gemma + Microsoft HiuMaan F0 remain unchanged. The selected character and every original case, model, memory marker, control flag, ledger, event, Operations record (including VRoid) and historical quota period were retained.
+
+The resident PCM stream now feeds one stable analysis bus into AIRI's native VRM/Live2D lip driver. The installed wLipSync worklet and WASM are served from this origin without weakening CSP. Switching analysis cannot disconnect audible playback. Speech completion closes the mouth, and gentle head/chest gestures follow conversation while respecting reduced motion and the original idle pose. No webcam or resident face tracking is enabled.
+
+430 backend tests, 60 Node tests, network faults, Chromium/WebKit workbench flows and 36 dialogue evaluations passed for the runtime source. Frontend80 lint/typecheck/build passed and native sources were restored byte-for-byte. Actual published Miku VRM mesh expressions and Live2D mouth inputs animated in silent synthetic-PCM loopback HTTPS tests and returned to zero. Thirty-nine exact production HTTPS program/assets and auth rejection checks passed; no actual provider, microphone, playback or EP calls were made. New human lip-sync/iPhone acceptance is not claimed. Old writer exit and the sole inert new instance were independently verified before a new signed release approval.
+
+This README and bundle update is documentation only; do not redeploy it.
+
+## Earlier 2026-11-04: responsive resident interface
+
+
+The previous runtime was `9412ad86d14a2600fee150753f188d0152a14a5e`, official CLI deploy `dep-dbl84o6tlv9c73b9agt0`, release `resident-responsive-20261104-barrier21`. The public URL is unchanged. Conversation and speech provider/model/voice IDs, selected character and stored data are preserved; the visible voice name is now “Microsoft 語音服務”.
 
 The resident view uses proportional desktop columns instead of squeezing the avatar beside a fixed 600px chat column. Bounded grid rows and a scrollable notice area keep the composer accessible when the viewport is short or follow-up/speech errors are long. Mobile retains the translucent chat panel. Public model attribution moves into the concise top privacy menu, with active-frame/origin checks, safe public URLs and an acknowledged standalone fallback outside the chat. Original author and Live2D notices remain accessible.
 
@@ -33,3 +44,19 @@ For the original 2026-10-31 repair, the old process was confirmed stopped before
 Native startup remains fenced; the launcher opens the new cloud URL. EP hardware requires a separate site connection and is outside this cloud repair. Keep the original local hardware files and audit intact. Future runtime deploys or restores still require stopping the sole formal writer; the in-process gate is not a distributed lease. Documentation-only commits do not require deployment.
 
 This private repository contains program and synthetic test assets only. Resident databases, photos, memories, credentials, native models, and execution files are excluded. Private operational evidence lives outside Git. See deploy/cloud/README.zh-Hant.md and deploy/cloud/REPAIR-2026-10-31.zh-Hant.md for implementation and limitations.
+
+## wLipSync 1.3.0 license
+
+The native audio-analysis dependency is retained under its original MIT license:
+
+The MIT License (MIT)
+
+Copyright (c) 2021 hecomi
+Copyright (c) 2024 Noeri Huisman
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
