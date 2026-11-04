@@ -4,9 +4,24 @@ Current service: https://neighbour-yuenhk-live.onrender.com/ . Residents enter d
 
 The reviewed program runs on Render Free in Singapore with one instance and automatic deployment disabled. It uses the existing Turso Free durable databases, Cloudflare Gemma dialogue, Azure HiuMaan F0 speech, Cloudflare Whisper speech recognition, and Tavily search. No paid upgrade, quota reset, or automatic provider substitution is enabled.
 
-## 2026-11-04: expressive arm and upper-body gestures are live
+## 2026-11-04: local camera interaction and bounded startup recovery are live
 
-Current runtime `44b326619389b575777e1af002b14b3af5972c8e`, official CLI deploy `dep-dblaehrm8hqs738n2ecg`, release `avatar-body-20261104-barrier23`. Existing URL, selected model, accepted lip sync, Gemma and Microsoft HiuMaan F0 remain unchanged. No ENV, credentials, schema or resident-data migration.
+Current runtime `735e1a124ba99d9fad25f455c4fa9f62e60f996e`, official CLI deploy `dep-dblbao0u01pc739nagm0`, release `avatar-interaction-20261104-barrier24`. Existing URL, selected model, accepted lip sync, Gemma, Microsoft HiuMaan F0, Whisper and Tavily remain unchanged. Free/Singapore/one instance, autoDeploy=no.
+
+The entry wave now starts after the loading handoff, and quiet idle greetings occur at most every 45 seconds with no active conversation/draft/speech. Optional local-only face-position tracking moves the head and eyes without identity matching. Resident-only hand navigation, adapted from the user's QingmingPortal project, requires stable hover and pinch confirmation and cannot control robots or staff pages. Camera permissions require the user's browser grant, with no bypass. MediaPipe 1.2.2 is self-hosted with retained Apache-2.0 license and a narrow documented modification disabling its performance/usage telemetry; see `cloud_frontend/assets/face-1.2.2/NOTICE.json`.
+
+Case photos require a delivered same-session case, clear purpose, preview and explicit confirmation. Cancelling uploads nothing. The server sanitizes a <=40KB JPEG, encrypts it under the existing durable Operations boundary, allows only authenticated staff viewing, and applies the original independent-ledger 90-day completion rule to live data and managed backups/restores. No identity matching or hidden/mandatory photo capture is enabled.
+
+Initialization retries are bounded: same-origin program preloads retry once, a safe inactive frame reloads at most once, and available text service can open while another component needs attention. Active drafts/conversations are never reloaded and unknown chat/upload/case outcomes are not replayed. Provider outages, exhausted quotas and denied browser permissions are not claimed to be repairable by restarting the page.
+
+449 backend tests, 68 Node tests, 36 dialogue evaluations, network fault tests and Chromium/WebKit workbench flows passed with an unchanged source fingerprint. Frontend87 lint/typecheck/build and native byte restoration passed. Real native avatar rendering, actual MediaPipe WASM with synthetic blank input, synthetic hand-button selection and confirmed/cancelled synthetic camera-photo paths were verified in isolation, without actual camera/microphone/audio/EP/provider calls or formal test cases. 48 exact HTTPS assets and auth rejection checks passed; all original 10 cases, numbers, models/settings, memory marker, controls, ledger, events, Operations including VRoid and historical quotas were preserved. Human camera/hand accuracy, real voluntary-photo flow, mobile notification delivery and EP acceptance remain pending; 227 models from 126 VRoid authors are not 20 independent platforms.
+
+This README and bundle update is documentation only; do not redeploy it.
+
+## Earlier 2026-11-04: expressive arm and upper-body gestures
+
+
+The previous runtime `44b326619389b575777e1af002b14b3af5972c8e`, official CLI deploy `dep-dblaehrm8hqs738n2ecg`, release `avatar-body-20261104-barrier23`. Existing URL, selected model, accepted lip sync, Gemma and Microsoft HiuMaan F0 remain unchanged. No ENV, credentials, schema or resident-data migration.
 
 The VRM driver adds a shoulder-height greeting wave, alternating open-hand speech gestures with quiet beats, a slight listening lean and gentler two-hand care gestures. Eleven upper-body bones blend over the native idle pose, return smoothly without drift and restore on reduced motion, hidden pages or model switches. The root, legs, camera, mouth and eyes are untouched. Other model rigs may expose fewer moving parts. These client-side gestures add no AI requests.
 

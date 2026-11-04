@@ -1,7 +1,7 @@
 {
   "format": "neighbour-cloud-preparation-v1",
   "kind": "source-only",
-  "deployed": false,
+  "deployed": true,
   "contains_resident_data": false,
   "contains_credentials": false,
   "requires": [
@@ -1689,5 +1689,20 @@
       "bytes": 4746,
       "sha256": "8bf3ecc3f05d619df53c09d93bbc9abfe76a0356f1a7487a4b20cdfdf94d1bce"
     }
-  ]
+  ],
+  "current_runtime": {
+    "origin": "https://neighbour-yuenhk-live.onrender.com",
+    "runtime": "735e1a124ba99d9fad25f455c4fa9f62e60f996e",
+    "deploy": "dep-dblbao0u01pc739nagm0",
+    "release": "avatar-interaction-20261104-barrier24",
+    "service": "srv-dbii3qijnfac73cgabd0",
+    "instance": "srv-dbii3qijnfac73cgabd0-hkzvh",
+    "PID": 59,
+    "ready_utc": "2026-11-04T04:36:49.68098023Z",
+    "Free_Singapore_instances": 1,
+    "autoDeploy": "no",
+    "original_data_preserved": true,
+    "optional_camera_and_confirmed_photos": true,
+    "docs_only_no_redeploy": true
+  }
 }
