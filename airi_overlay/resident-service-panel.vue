@@ -8,7 +8,9 @@ import { useProvidersStore } from '@proj-airi/stage-ui/stores/providers'
 import { useSpeechOutputControlStore } from '@proj-airi/stage-ui/stores/speech-output-control'
 import { useSpeechRuntimeStore } from '@proj-airi/stage-ui/stores/speech-runtime'
 import { storeToRefs } from 'pinia'
-import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+
+import ResidentConversationState from './resident-conversation-state.vue'
 
 import { createResidentApi } from './resident-api.js'
 import { ResidentGaze } from './resident-gaze.js'
@@ -17,6 +19,7 @@ import { ResidentIdle } from './resident-idle.js'
 import { ResidentPcm, ResidentTiming } from './resident-pcm.js'
 import { createResidentTextFilter, readResidentReply, residentMessageParts, residentPlainText, residentSpeechText } from './resident-response.js'
 import { ResidentSession } from './resident-session.js'
+import { residentUiPhase } from './resident-ui-state.js'
 
 defineProps<{ listening: boolean, voiceUnavailable?: boolean, voiceRecovering?: boolean, inputStatus?: string }>()
 const emit = defineEmits<{ microphone: [], endSession: [], speaking: [boolean] }>()
@@ -71,6 +74,13 @@ const speechOutput = useSpeechOutputControlStore()
 const { nowSpeaking } = storeToRefs(useSpeakingStore())
 const { audioContext: residentAudioContext } = useAudioContext()
 const speechActive = ref(false)
+const conversationPhase = computed(() => residentUiPhase({
+  busy: busy.value,
+  streaming: messages.value.at(-1)?.role === 'assistant',
+  preparingSpeech: speechActive.value,
+  speaking: nowSpeaking.value,
+  status: status.value,
+}))
 let activeCare = false
 watch(nowSpeaking, active => residentSpeechGesture(active, activeCare), { flush: 'sync' })
 watch(speechActive, (active) => {
@@ -641,9 +651,7 @@ function checkIdle() {
       </div>
     </div>
     <div class="resident-panel-notices" tabindex="0" aria-label="服務提示">
-      <p class="resident-panel-status" role="status">
-        {{ status }}
-      </p>
+      <ResidentConversationState :phase="conversationPhase" :message="status" />
       <p v-if="followupNotice" class="resident-panel-status" role="status">
         {{ followupNotice }}
       </p>

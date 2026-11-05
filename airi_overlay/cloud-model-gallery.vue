@@ -388,16 +388,22 @@ async function prepareOwnArchive() {
         </option>
       </select>
     </div>
+    <div class="model-picker-results">
+      <span>{{ filtered.length }} 款符合條件<span v-if="filtered.length !== choices.length"> · 共 {{ choices.length }} 款</span></span>
+      <button v-if="query || platform !== 'all' || format !== 'all'" type="button" @click="query = ''; platform = 'all'; format = 'all'">
+        清除篩選
+      </button>
+    </div>
     <label class="model-picker-license"><input v-model="accepted" type="checkbox">我已閱讀所選模型的授權及署名要求，只在鄰伴作數字人學習使用，保留原條款，不作素材轉發。</label>
     <p class="model-picker-message" role="status">
       {{ localReady ? message : '正在整理此裝置模型，避免重複顯示…' }}
     </p>
     <div class="model-picker-grid">
-      <article v-for="row in visible" :key="row.id" :class="{ current: props.selectedModel?.id === row.id }">
-        <button type="button" :disabled="!!busy || (!!row.gallery || !!row.vroid || !!row.reviewed) && !accepted" :aria-label="`選擇 ${row.name}`" @click="choose(row)">
+      <article v-for="row in visible" :key="row.id" :class="{ current: props.selectedModel?.id === row.id, preparing: busy === row.id }" :aria-busy="busy === row.id">
+        <button type="button" :disabled="!!busy || (!!row.gallery || !!row.vroid || !!row.reviewed) && !accepted" :aria-pressed="props.selectedModel?.id === row.id" :aria-label="`選擇 ${row.name}`" @click="choose(row)">
           <img v-if="row.image && !imagesFailed.has(row.id)" :src="row.image" :alt="row.name" loading="lazy" @error="imagesFailed.add(row.id)">
           <span v-else class="model-picker-placeholder" aria-hidden="true">♧</span>
-          <strong>{{ row.name }}</strong><span class="model-picker-tag">{{ row.platform }}{{ row.format === 'vrm' ? ' · 3D' : '' }}</span>
+          <strong :title="row.name">{{ row.name }}</strong><span class="model-picker-tag">{{ row.platform }}{{ row.format === 'vrm' ? ' · 3D' : '' }}</span>
           <small>{{ busy === row.id ? '準備中…' : props.selectedModel?.id === row.id ? '目前選擇' : '選擇預覽' }}</small>
         </button>
         <details v-if="row.reviewed" class="model-picker-terms">
@@ -498,4 +504,6 @@ async function prepareOwnArchive() {
 
 <style>
 .model-picker-filters input[type=search]{width:auto;flex:1 1 0;min-width:0}.model-picker-filters select{width:180px;flex:0 0 180px;min-width:0}.model-picker-grid button:disabled{opacity:1}.model-picker-grid button:disabled small{color:#72877b}@media(max-width:500px){.model-picker-filters input[type=search],.model-picker-filters select{width:100%;flex:0 0 auto}}
+
+.model-picker-results{display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:30px;font-size:13px;color:#5f756b}.model-picker-results button{padding:6px 10px;min-height:36px;border:1px solid #cbded4;border-radius:9px;background:white;color:#245f51}.model-picker-grid article{transition:border-color .18s ease,box-shadow .18s ease;background:#fff}.model-picker-grid article.current{background:#f2f8f4;border-color:#438b73;box-shadow:0 0 0 1px #438b73}.model-picker-grid article>button{gap:9px;padding:14px 12px;text-align:center;cursor:pointer}.model-picker-grid article>button:disabled{cursor:default}.model-picker-grid img,.model-picker-placeholder{background:linear-gradient(160deg,#f4f8f6,#edf4f0);border-radius:10px}.model-picker-grid article:not(.current):has(>button:not(:disabled):hover){border-color:#8ab7a4;box-shadow:0 4px 12px #204f3e0c}.model-picker-grid strong{line-height:1.5;min-height:3em;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}.model-picker-grid small{display:block;min-height:20px;line-height:20px;font-weight:600}.model-picker-grid .preparing small{animation:picker-prepare 1.2s ease-in-out infinite}.model-picker-message{padding:10px 12px;background:#edf5f0;border-radius:10px;margin:0}.model-picker-terms summary{min-height:28px;line-height:28px}.model-picker-grid{align-items:start}.model-picker-grid button:focus-visible{outline-offset:-3px}.model-picker-filters input,.model-picker-filters select{min-height:44px}@keyframes picker-prepare{0%,100%{opacity:.5}50%{opacity:1}}@media(prefers-reduced-motion:reduce){.model-picker-grid article{transition:none}.model-picker-grid .preparing small{animation:none}}
 </style>

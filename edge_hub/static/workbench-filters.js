@@ -53,6 +53,8 @@
     const to = make(make(dates, 'label', '至（包括當日）'), 'input'); to.type = 'date'
     make(advanced, 'small', '日期可留空；選好日期後按「搜尋」。', 'service-muted')
     const error = make(form, 'p', '', 'workbench-filter-error'); error.setAttribute('role', 'alert')
+    const context = make(form, 'p', '', 'workbench-filter-context')
+    context.setAttribute('aria-live', 'polite')
     function paint() {
       search.value = applied.q; sort.value = applied.sort; field.value = applied.date_field
       from.value = applied.date_from; to.value = applied.date_to
@@ -60,6 +62,8 @@
       const count = Number(applied.state !== defaults.state) + Number(applied.sort !== defaults.sort)
         + Number(!!(applied.date_from || applied.date_to))
       summary.textContent = count ? `篩選及排序（${count}）` : '篩選及排序'
+      const stateLabel = choices.find(([value]) => value === applied.state)?.[1] || '全部'
+      context.textContent = `${stateLabel}${events ? '回報' : '個案'} · ${sort.selectedOptions[0]?.textContent || ''}${applied.date_from || applied.date_to ? ' · 已限定日期' : ''}`
       clear.hidden = !applied.q && count === 0 && applied.date_field === defaults.date_field
       error.textContent = ''
     }

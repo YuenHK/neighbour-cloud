@@ -181,8 +181,8 @@
     },
     {
       "path": "airi_overlay/cloud-model-gallery.vue",
-      "bytes": 31188,
-      "sha256": "2b739c8a3b031cc70f714e59e43c61e869ce664046cb5b72d00c3d86f282b317"
+      "bytes": 33395,
+      "sha256": "6f1bdb97d761ef9916d23cbd8cd8b0bb033c19d19b46ae19da392498e47f854e"
     },
     {
       "path": "airi_overlay/cloud-model-library.vue",
@@ -415,6 +415,11 @@
       "sha256": "560b87a58c393efe381fe407ff7fdbfbd690dc9f3e5190419ffc7fd29a42cb54"
     },
     {
+      "path": "airi_overlay/resident-conversation-state.vue",
+      "bytes": 2929,
+      "sha256": "362fc390162d738aa63d25c4b549cd45383a5c9478aaaeac68135b9a3e35b75f"
+    },
+    {
       "path": "airi_overlay/resident-entry.js",
       "bytes": 244,
       "sha256": "675b1cf3b9b15fe46ec1fa2375ed4a96060fbf11466c1ec75a7d89382bdfd64d"
@@ -481,13 +486,18 @@
     },
     {
       "path": "airi_overlay/resident-service-panel.vue",
-      "bytes": 35244,
-      "sha256": "d6e39029352f700dc334b4d6100214e40e66163f70d5ab41b7dda758a1844451"
+      "bytes": 35623,
+      "sha256": "9787e52851e775688584966a45425de8f28da82d913fe536e8e8c4c4712ee09b"
     },
     {
       "path": "airi_overlay/resident-session.js",
       "bytes": 3261,
       "sha256": "69c1f2ff20807eb0c87bbafc1ffd74277193ace29a7069a3ad63336dd0e1229d"
+    },
+    {
+      "path": "airi_overlay/resident-ui-state.js",
+      "bytes": 417,
+      "sha256": "7fc3a780ec1b6ab68f5504603421e07be160247f650376f09c81ee4d3ebf380c"
     },
     {
       "path": "airi_overlay/resident-view-guard.js",
@@ -817,7 +827,7 @@
     {
       "path": "deploy/cloud/rollout.py",
       "bytes": 9188,
-      "sha256": "c0113eba1ec2af40522a020e1a347df716e993f2cfe6ef7c8070c9e778e8602b"
+      "sha256": "8393f9da8c72afd9b3d63c334acb969270765eeca724bdb2f9e8310ec619d378"
     },
     {
       "path": "deploy/cloud/runtime_storage.py",
@@ -1136,8 +1146,8 @@
     },
     {
       "path": "docs/neighbour-fwft-introduction-2026-11-05.md",
-      "bytes": 5019,
-      "sha256": "e3b0cb20f7fb88dfcb02133b1fa85eab609a47cb0536feaae273d5eb5650902f"
+      "bytes": 5034,
+      "sha256": "49873d3dfbab0d2ba68faab97bf7ab058d901e65d71b227b2f2c2aef7284c3b2"
     },
     {
       "path": "edge_hub/__init__.py",
@@ -1721,8 +1731,8 @@
     },
     {
       "path": "edge_hub/static/latest-photo.js",
-      "bytes": 1695,
-      "sha256": "6065b19bdd3cb99beed47d8bdfea67b3dae939893c2ea22a1de60ead73a28e26"
+      "bytes": 1684,
+      "sha256": "ef667b62e218dbf8caf8685b777a7b0aed8cbbb0a5f7f2a8890574aaede52302"
     },
     {
       "path": "edge_hub/static/photo-privacy.js",
@@ -1751,8 +1761,8 @@
     },
     {
       "path": "edge_hub/static/service-shell.css",
-      "bytes": 28361,
-      "sha256": "d7774ac9f6a62f95f91f1316cb48f8905a98f3bb1fd471223ca24de64fc0b3d8"
+      "bytes": 30576,
+      "sha256": "56dc02d6483dd0f53de089cb8514288226df2fc08dc9dccff04b9807aedb4d93"
     },
     {
       "path": "edge_hub/static/service-shell.js",
@@ -1761,8 +1771,8 @@
     },
     {
       "path": "edge_hub/static/service-workbench.js",
-      "bytes": 20005,
-      "sha256": "7460bebbe90e036f04c1561f8cdd2ea8ed70e64835d3b5b5a6067a30faede477"
+      "bytes": 20259,
+      "sha256": "e81da4047bf3e3764eb090ecc15cd876aa10686557df8893c7545053ae871755"
     },
     {
       "path": "edge_hub/static/simulation-control.html",
@@ -1786,8 +1796,8 @@
     },
     {
       "path": "edge_hub/static/workbench-filters.js",
-      "bytes": 5459,
-      "sha256": "bfe1d8ee2e356334fa8cbad45f6fe45cbe57a325e25ac6715ea8031b0c8e60c3"
+      "bytes": 5860,
+      "sha256": "7fbc9c7c7eb246bb1b2c00561338d22c4fb492b27346298bcf84a3979eaf333a"
     },
     {
       "path": "edge_hub/static/workspace-navigation.js",

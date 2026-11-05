@@ -29,3 +29,16 @@ test('a failed new view retains the current image for verification',async()=>{
  h.jobs[0]({ok:false});await assert.rejects(task,/photo_unavailable/)
  assert.deepEqual(h.revoked,[]);assert.equal(h.view.activeUrl,'blob:first')
 })
+
+test('default photo requests use the cloud module identity adapter rather than native fetch',async()=>{
+ const calls=[],shown=[]
+ const context={AbortController,AbortSignal,URL:{createObjectURL:()=> 'blob:left',revokeObjectURL:()=>{}},
+  fetch:()=>{throw new Error('unidentified_native_fetch')},
+  cloudFetch:async(...args)=>{calls.push(args);return response('left')}}
+ // CloudAdminAssets adds a lexical `cloudFetch as fetch` import to this native module.
+ vm.runInNewContext('const fetch = cloudFetch;\n'+fs.readFileSync('edge_hub/static/latest-photo.js','utf8'),context)
+ const view=new context.NeighbourLatestPhoto('blob:first')
+ assert.equal(await view.load('/api/v1/patrol/events/a/photo?side=left',{},url=>shown.push(url)),true)
+ assert.equal(calls.length,1);assert.equal(calls[0][0],'/api/v1/patrol/events/a/photo?side=left')
+ assert.deepEqual(shown,['blob:left']);view.close()
+})

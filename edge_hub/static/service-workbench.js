@@ -101,6 +101,8 @@
       previous?.remove()
       const card = document.createElement('article')
       card.className = 'service-case'
+      if (!previous) card.className += ' service-case-arriving'
+      card.dataset.state = row.status
       card.dataset.caseId = row.id
       card.dataset.revision = String(row.revision)
       card.caseSnapshot = JSON.stringify(row)
@@ -235,17 +237,18 @@
       }
       const summary = append(card, 'div', '', 'service-case-summary')
       const top = append(summary, 'div', '', 'service-case-summary-heading')
-      append(top, 'strong', `#${row.case_number || row.id.slice(0, 8)} · ${labels[row.kind]}`)
+      append(top, 'strong', `#${row.case_number || row.id.slice(0, 8)} · ${labels[row.kind]}`, 'service-case-title')
       append(top, 'span', `${urgentCare ? '需即時關懷 · ' : ''}${states[row.status]}`,
-        `service-badge${row.overdue || urgentCare ? ' warning' : ''}`)
+        `service-badge${urgentCare ? ' warning' : ''}`)
       const quote = row.message.includes('居民原話：') ? row.message.split('居民原話：').slice(1).join('居民原話：').split('\n主動分流')[0]
         : row.message.replace(/^【[^】]*】/, '')
       append(summary, 'p', quote, 'service-case-preview')
-      append(summary, 'small', `${row.unit || row.location || '待補充位置'} · ${row.team || labels[row.kind]}`)
-      append(summary, 'small', `建立：${new Date(row.created_at_ms).toLocaleString('zh-HK', { timeZone: 'Asia/Hong_Kong', hour12: false })}`)
-      if (row.updated_at_ms && row.updated_at_ms !== row.created_at_ms)
-        append(summary, 'small', `最近更新：${new Date(row.updated_at_ms).toLocaleString('zh-HK', { timeZone: 'Asia/Hong_Kong', hour12: false })}`)
-      if (row.due_at_ms) append(summary, 'small', `${row.overdue ? '已過跟進期限' : '跟進期限'}：${new Date(row.due_at_ms).toLocaleString('zh-HK', { hour12: false })}`)
+      const metadata = append(summary, 'div', '', 'service-case-metadata')
+      append(metadata, 'span', row.unit || row.location || '待補充位置', 'service-case-location')
+      append(metadata, 'span', row.team || labels[row.kind])
+      const changedAt = row.updated_at_ms && row.updated_at_ms !== row.created_at_ms ? row.updated_at_ms : row.created_at_ms
+      append(summary, 'small', `${changedAt !== row.created_at_ms ? '最近更新' : '建立'}：${new Date(changedAt).toLocaleString('zh-HK', { timeZone: 'Asia/Hong_Kong', hour12: false })}`, 'service-case-time')
+      if (row.due_at_ms) append(summary, 'small', `${row.overdue ? '已過跟進期限' : '跟進期限'}：${new Date(row.due_at_ms).toLocaleString('zh-HK', { hour12: false })}`, `service-case-due${row.overdue ? ' overdue' : ''}`)
       const open = append(card, 'button', '查看及跟進', 'service-case-open')
       open.type = 'button'
       open.addEventListener('click', () => dialog.showModal())

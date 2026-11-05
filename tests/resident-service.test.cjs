@@ -4,6 +4,18 @@ const path = require('node:path')
 const test = require('node:test')
 const vm = require('node:vm')
 const source = fs.readFileSync(path.join(__dirname, '../airi_overlay/resident-session.js'), 'utf8')
+// The VM executes the real panel script but deliberately has no browser media.
+// Keep its presentation/browser globals current without starting a camera.
+function panelPresentationGlobals(now) {
+  const phaseSource = fs.readFileSync(path.join(__dirname, '../airi_overlay/resident-ui-state.js'), 'utf8')
+  return {
+    computed: read => ({ get value() { return read() } }),
+    residentUiPhase: vm.runInNewContext(phaseSource.replace('export function ', 'function ') + '; residentUiPhase'),
+    performance: { now: () => now.value },
+    ResidentGaze: class { stop() {} dispose() {} },
+    setInterval: () => 1, clearInterval() {},
+  }
+}
 function session(request) {
   const sandbox = vm.createContext({ AbortController, crypto: require('node:crypto').webcrypto })
   vm.runInContext(source.replace('export class ResidentSession', 'globalThis.ResidentSession = class ResidentSession'), sandbox)
@@ -150,6 +162,7 @@ test('actual cloud panel without a native speech host keeps three-turn context, 
     createBufferSource() { const node = { connect() {}, disconnect() {}, start() {}, stop() { node.stopped = true } }; this.nodes.push(node); return node } }
   const sandbox = vm.createContext({
     __NEIGHBOUR_CLOUD__: true,
+    ...panelPresentationGlobals(now),
     __NEIGHBOUR_CLOUD_TRANSPORT__: { fetch: async (url, init) => {
       const body = JSON.parse(init.body); calls.push({ url, body, headers: init.headers, signal: init.signal })
       if (url === '/api/v1/resident/transcription') return new Promise(resolve => { finishInput = resolve })
@@ -180,7 +193,7 @@ test('actual cloud panel without a native speech host keeps three-turn context, 
   for (const file of ['resident-session.js', 'resident-idle.js', 'resident-pcm.js', 'resident-api.js']) {
     vm.runInContext(fs.readFileSync(path.join(__dirname, '../airi_overlay/' + file), 'utf8').replaceAll('export class ', 'class ').replace('export function createResidentApi', 'function createResidentApi'), sandbox)
   }
-  vm.runInContext(ts.transpileModule(script + '\nglobalThis.panel = {sendMessage,transcribeAudio,session,checkIdle,draft,messages,get player(){return pcmPlayer}}', { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS } }).outputText, sandbox)
+  vm.runInContext(ts.transpileModule(script + '\nglobalThis.panel = {sendMessage,transcribeAudio,residentVisible,session,checkIdle,draft,messages,get player(){return pcmPlayer}}', { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS } }).outputText, sandbox)
   mounted.forEach(callback => callback())
   for (const text of ['今日同阿媽整蛋糕', '整咗香蕉味', '頭先同邊個整']) {
     await sandbox.panel.sendMessage(text)
@@ -195,6 +208,9 @@ test('actual cloud panel without a native speech host keeps three-turn context, 
   assert.ok(models.every((c, i) => c.body.model === 'gemma-4-26b-a4b-it' && c.headers['X-Resident-Turn'] === chats[i].body.submission_id))
   assert.ok(voices.every(c => c.body.model === 'azure-hiumaan-f0' && c.body.voice === 'zh-HK-HiuMaanNeural' && c.body.speed === 1))
   assert.equal(handshake[0][1], 'https://neighbour.example')
+  assert.equal(await sandbox.panel.transcribeAudio(new Blob([new Uint8Array(8044)],{type:'audio/wav'})), '')
+  assert.equal(calls.filter(c=>c.url === '/api/v1/resident/transcription').length, 0)
+  sandbox.panel.residentVisible({ origin: 'https://neighbour.example', source: sandbox.window.parent, data: { type: 'neighbour-resident-visible' } })
   const replacedInput = sandbox.panel.transcribeAudio(new Blob([new Uint8Array(8044)],{type:'audio/wav'}))
   await new Promise(resolve=>setImmediate(resolve))
   const replaced = calls.filter(c=>c.url === '/api/v1/resident/transcription').at(-1)
@@ -394,6 +410,7 @@ test('actual resident panel expires draft, profile and pending speech without re
   const nativeSelection = { activeProvider: 'native-test', activeModel: 'native-model' }
   const sandbox = vm.createContext({
     AbortController, AbortSignal, Event, crypto: require('node:crypto').webcrypto,
+    ...panelPresentationGlobals(now),
     Date: { now: () => now.value },
     setTimeout: (callback, delay) => { const id = ++sequence; timers.set(id, { callback, due: now.value + delay }); return id },
     clearTimeout: id => timers.delete(id), ref: value => ({ value }),

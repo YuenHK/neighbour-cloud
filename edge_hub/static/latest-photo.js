@@ -1,6 +1,6 @@
 // Only the latest selected view may replace an image; closed dialogs own no URLs.
 globalThis.NeighbourLatestPhoto = class {
-  constructor(initialUrl, request = (...args) => globalThis.fetch(...args), urls = URL) {
+  constructor(initialUrl, request = (...args) => fetch(...args), urls = URL) {
     this.activeUrl = initialUrl
     this.request = request
     this.urls = urls

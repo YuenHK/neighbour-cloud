@@ -305,3 +305,25 @@ body[data-estate-kiosk] { --chromatic-hue: 165; }
 .service-case-dialog-body .service-case-controls textarea { min-height:90px; }
 .service-case-dialog-body .service-case-correction { padding-top:16px; border-top:1px solid var(--service-border); }
 @media(max-width:680px){ .service-case-open{justify-self:start} .service-case-dialog-heading,.service-case-dialog-body{padding:16px} .service-case-dialog{max-height:calc(100dvh - 24px);border-radius:14px} }
+
+/* Stageshow layout principles: a consistent reading edge and one main action.
+   Motion is feedback only; it never changes fetch timing or case ordering. */
+.service-theme .service-case { padding:20px 4px; column-gap:24px; align-items:center; }
+.service-case-title { font-size:18px; line-height:1.4; }
+.service-case-summary-heading .service-badge { font-size:12px; padding:5px 10px; }
+.service-case-metadata { display:flex; align-items:baseline; flex-wrap:wrap; gap:6px 14px; font-size:14px; color:var(--service-muted); }
+.service-case-location { color:var(--service-text); font-weight:550; }
+.service-case-summary .service-case-time { margin-top:8px; font-size:12px; color:var(--service-muted); }
+.service-case-summary .service-case-due { margin-top:4px; font-size:12px; color:var(--service-muted); }
+.service-case-summary .service-case-due.overdue { color:#92552e; }
+.service-theme .service-case-open { align-self:center; padding:10px 16px; min-height:44px; border-radius:12px; transition:background .16s ease,border-color .16s ease; }
+.service-theme .service-case-open:hover { background:#eaf3ee; border-color:#8cb9a8; }
+.service-case-arriving { animation:service-case-arrive .24s cubic-bezier(.25,.8,.25,1); }
+.workbench-filter-context { margin:0; font-size:13px; color:var(--service-muted); }
+.workbench-filters { gap:10px; padding:16px; border-radius:16px; background:#f2f7f4; }
+.workbench-filter-error:empty { display:none; }
+.service-case-dialog[open] { animation:service-dialog-arrive .18s cubic-bezier(.25,.8,.25,1); }
+@keyframes service-case-arrive { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:translateY(0); } }
+@keyframes service-dialog-arrive { from { opacity:.4; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+@media(max-width:680px) { .service-theme .service-case{padding:18px 0;gap:12px}.service-theme .service-case-open{justify-self:stretch;width:100%}.service-case-title{font-size:17px}.workbench-filters{padding:12px}.service-case-metadata{gap:4px 12px} }
+@media(prefers-reduced-motion:reduce) { .service-case-arriving,.service-case-dialog[open]{animation:none}.service-theme .service-case-open{transition:none} }
