@@ -12,7 +12,15 @@
 
 ---
 
-## 最新已部署：認識鄰伴協作圓盤入口
+## 最新已部署：圓盤及載入畫面一頁顯示
+
+入口：[鄰伴智慧社區平台](https://neighbour-yuenhk-live.onrender.com/)。版本 `f1fc0ddb66aa11c60c252dec69f091d01e1aaf5d`／barrier30，Render Free Singapore 單實例。
+
+協作圓盤、清單／3D、載入及冷啟動頁隨可用寬高調整；私隱文字及角色來源正常換行。兩瀏覽器 16 組尺寸及完整部署檢查通過，原有資料與歷史用量核對保留，Gemma＋Microsoft 語音服務不變。
+
+[本次版面修正及驗證](docs/viewport-fit-2026-11-05.md)。文件提交不會再次部署。
+
+## 先前部署：認識鄰伴協作圓盤入口
 
 入口：[鄰伴智慧社區平台](https://neighbour-yuenhk-live.onrender.com/)。版本 `8cc09841fb776b7a09d6eed12761f0f7bca3ab46`／barrier29，保留 Render Free Singapore 單實例。
 
