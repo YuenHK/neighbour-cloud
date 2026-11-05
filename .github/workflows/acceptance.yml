@@ -1,10 +1,6 @@
 name: Isolated pre-release acceptance
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
 permissions:
   contents: read
 concurrency:
@@ -12,8 +8,8 @@ concurrency:
   cancel-in-progress: true
 jobs:
   free-isolated-checks:
-    # Evaluated before allocating a hosted runner. Enable this repository
-    # variable only after an account-level $0 hard-stop budget is verified.
+    # Automatic push/PR testing was cancelled by the user on 2026-11-05.
+    # Manual use remains guarded before allocating any hosted runner.
     if: >-
       github.repository == 'YuenHK/neighbour-cloud' &&
       vars.NEIGHBOUR_CI_FREE_ONLY == 'confirmed-zero-dollar-hard-stop' &&

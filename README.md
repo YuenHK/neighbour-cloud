@@ -1,3 +1,13 @@
+# 2026-11-05 鄰伴：圖庫、巡查規劃及智能屏幕
+
+正式入口：https://neighbour-yuenhk-live.onrender.com/ 。本批runtime `537e3bb0ef94980f450880fbbc9d423899b5c818`，Render官方CLI／Free Singapore單實例，原有10個案、模型、設定、記憶標記及歷史用量保留。
+
+新增BOOTH／itch公開目錄讀取，連同原3個metadata來源及VRoid連接。20來源只是研究／搜尋登記，不代表20個全部已接通或授權可匯入；原227可用模型保留。機械人分頁新增加密地圖及安全距離路線模擬，不會連線或移動EP；S1只列官方Lab能力，真正外部遙控及自主行車未完成。巡查驗證加入可見線索及有界時間／機體核對，實景準確率待驗收。服務用量新增網頁智能屏幕準備，不能代批准鏡頭或咪。
+
+516後端／77Node／Chromium與WebKit／36組對話評估及frontend88建置通過，50個正式HTTPS資產核對相同。Spine因免費限制未新增正式共享。用戶已取消GitHub每次更新自動測試，push／PR觸發已移除；本機部署前隔離測試繼續保留。這個文件／workflow提交不更改runtime，不另部署健康服務。
+
+---
+
 # 鄰伴 / Neighbour — private cloud deployment
 
 Current service: https://neighbour-yuenhk-live.onrender.com/ . Residents enter directly; management uses the configured shared password. The former neighbour-yuenhk.onrender.com service remains suspended and must not be resumed alongside this writer.
