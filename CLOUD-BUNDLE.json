@@ -816,8 +816,8 @@
     },
     {
       "path": "deploy/cloud/rollout.py",
-      "bytes": 9194,
-      "sha256": "a41c26fe9ecc85605d18951fe0e784ac21c5f033795893ba36c262e38b1d3fc2"
+      "bytes": 9190,
+      "sha256": "48d7017232e91b1b86728b14077ddf5f72b918fa7de706da8a47207d974784a6"
     },
     {
       "path": "deploy/cloud/runtime_storage.py",
@@ -961,8 +961,8 @@
     },
     {
       "path": "deploy/cloud/web/community-about.js",
-      "bytes": 1628,
-      "sha256": "0a30cf2b1391a3de715699b581e92f4cfcc9a1955704cc486673b257781cc813"
+      "bytes": 1238,
+      "sha256": "eb157abba44111d840d52c5cb6bc7ef9d4c7a288a34e4956b978172d1323552e"
     },
     {
       "path": "deploy/cloud/web/community-introduction.css",
@@ -1006,8 +1006,8 @@
     },
     {
       "path": "deploy/cloud/web/index.html",
-      "bytes": 13475,
-      "sha256": "27f25dc5f6c3be22b1ade6406a1134201cc459dca4d5bbd1eeb58007fd82548c"
+      "bytes": 6640,
+      "sha256": "239df671469b9aa132b24f6987b328c63274c8a9645eccdb43182380aac0a952"
     },
     {
       "path": "deploy/cloud/web/kiosk.css",
@@ -1096,8 +1096,8 @@
     },
     {
       "path": "deploy/cloud/web/shell.css",
-      "bytes": 5227,
-      "sha256": "b53f6a94dcaef2e9095eb9215076606e826314828fcd56fa092cfe58071fd188"
+      "bytes": 6164,
+      "sha256": "f286725a3676c16dce0b8e9c4295a463eb5ca88af3c9147460dbff63cad4ce02"
     },
     {
       "path": "deploy/cloud/web/shell.js",

@@ -1,7 +1,7 @@
 // Real launch, shell and cold-boot UI against a wholly intercepted synthetic HTTPS origin.
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path')
 const {chromium,webkit}=require(path.resolve(process.env.NODE_PATH||'.experiments/optimization-lab-20261029/node/node_modules','playwright'))
-const origin='https://community-launch.fixture.test',base=path.resolve('deploy/cloud/web'),area=path.resolve('.runtime/original-libraries-20261105/launch')
+const origin='https://community-launch.fixture.test',base=path.resolve('deploy/cloud/web'),area=path.resolve('.runtime/community-menu-20261105/launch')
 const results=[],outside=[],errors=[],cspViolations=[]
 const csp="default-src 'none';script-src 'self';style-src 'self';connect-src 'self';img-src 'self' data:;frame-src 'self';base-uri 'none';object-src 'none'"
 const headers={'Content-Security-Policy':csp}
@@ -55,31 +55,51 @@ async function direct(browser,engine,viewport,reduced=false){
   assert.equal(await state(page,'hephaestus'),'offline');assert.equal(await state(page,'aether'),'offline')
   assert.equal(await page.locator('#launchSystems .community-system-node[data-system=minerva] .community-system-symbol').evaluate(n=>getComputedStyle(n).animationName),reduced?'none':'community-node-pulse')
   await page.locator('#platformIntro').focus();await page.keyboard.press('Enter')
-  await page.locator('#communityIntroduction[open]').waitFor();assert.equal(await page.locator('[data-community-function]').count(),9)
-  assert.match(await page.locator('#communityIntroduction').textContent(),/具備情境理解與情感回應能力/)
-  await page.locator('#introSystems .community-systems[data-presentation=overview]').waitFor()
+  await page.locator('#communityIntroduction[open]').waitFor()
+  assert.equal(await page.locator('#platformIntro').getAttribute('aria-expanded'),'true')
+  assert.equal(await page.locator('[data-community-function],.community-introduction__lead,.community-introduction__transcript,#replayCommunitySystems').count(),0)
+  assert.equal(await page.locator('#introSystems .community-systems').getAttribute('data-presentation'),'orbit')
+  assert.equal(await page.locator('#introSystems .community-system-node').count(),9)
+  assert.equal(await page.locator('.header-links > #platformIntro + .privacy').count(),1)
+  assert.equal(await page.locator('.platform-brand small,.platform-brand button').count(),0)
+  assert.deepEqual(await page.evaluate(()=>{
+   const style=n=>{const s=getComputedStyle(n);return [s.fontSize,s.color,s.backgroundColor,s.borderWidth,s.padding]}
+   return style(document.querySelector('#platformIntro')).map((x,i)=>x===style(document.querySelector('.privacy>summary'))[i])
+  }),[true,true,true,true,true])
+  if(engine==='chromium')await page.screenshot({path:path.join(area,`${tag}-collaboration-disk.png`),fullPage:true,caret:'initial'})
   const introIdentity=await page.locator('#introSystems .community-systems').getAttribute('aria-labelledby')
   await page.locator('#introSystems').getByRole('button',{name:'查看赫淮斯托斯 · 機械工坊',exact:true}).click()
   assert.match(await page.locator('#introSystems .community-overview-limit').textContent(),/S1.*待現場驗收/)
   assert.match(await page.locator('#introSystems .community-product').textContent(),/示意/)
   assert.equal(await page.locator('#introSystems .community-product__canvas').count(),1)
-  if(viewport.width===1280||reduced){
-   await page.locator('#replayCommunitySystems').click()
-   if(!reduced)assert.equal(await page.locator('#introSystems .community-systems').getAttribute('data-presentation'),'entrance')
-   await page.locator('#introSystems .community-systems[data-presentation=overview]').waitFor()
-  }
   await page.locator('#introSystems').getByRole('button',{name:'查看阿耳忒彌斯 · 生態共處',exact:true}).click()
   assert.match(await page.locator('#introSystems .community-overview-limit').textContent(),/尚未實裝/)
   await page.locator('#introSystems').getByRole('button',{name:'返回協作圓盤',exact:true}).click()
   assert.equal(await page.locator('#introSystems .community-systems').getAttribute('data-presentation'),'orbit')
   await page.keyboard.press('Escape');assert.equal(await page.locator('#communityIntroduction').getAttribute('open'),null)
   await page.locator('#introSystems .community-systems[data-paused=true]').waitFor({state:'attached'})
+  assert.equal(await page.locator('#platformIntro').getAttribute('aria-expanded'),'false')
+  assert.equal(await page.locator('#platformIntro').evaluate(n=>n===document.activeElement),true)
   assert.equal(await page.locator('#introSystems .community-systems').getAttribute('data-paused'),'true')
   await page.locator('#platformIntro').focus();await page.keyboard.press('Enter')
+  assert.equal(await page.locator('#introSystems .community-systems').getAttribute('data-presentation'),'orbit')
   assert.equal(await page.locator('#introSystems .community-systems').getAttribute('aria-labelledby'),introIdentity)
   assert.equal(await page.locator('#introSystems .community-product').count(),1)
   await page.locator('#closeCommunityIntroduction').focus();await page.keyboard.press('Enter')
   assert.equal(await page.locator('#communityIntroduction').getAttribute('open'),null)
+  await page.evaluate(()=>{document.getElementById('navigation').hidden=false;document.getElementById('staff').hidden=false})
+  for(const width of [320,390,768,958,1280]){
+   await page.setViewportSize({width,height:900})
+   assert.deepEqual(await page.evaluate(()=>{
+    const brand=document.querySelector('.platform-brand').getBoundingClientRect(),links=document.querySelector('.header-links').getBoundingClientRect(),intro=document.querySelector('#platformIntro').getBoundingClientRect(),privacy=document.querySelector('.privacy>summary').getBoundingClientRect()
+    return {overflow:document.documentElement.scrollWidth>innerWidth,overlap:brand.right>links.left,aligned:Math.abs(intro.y-privacy.y)<1,within:privacy.right<=innerWidth}
+   }),{overflow:false,overlap:false,aligned:true,within:true},`${tag} header ${width}`)
+  }
+  await page.setViewportSize(viewport)
+  await page.locator('.privacy>summary').click()
+  assert.equal(await page.locator('.privacy').getAttribute('open'),'')
+  assert.equal(await page.locator('.privacy-notes').isVisible(),true)
+  await page.locator('.privacy>summary').click()
   await page.evaluate(()=>{launch.connected();launch.phase('interface')})
   assert.equal(await state(page,'minerva'),'ready');assert.equal(await page.locator('#launchProgress').getAttribute('aria-valuenow'),'1')
   await page.evaluate(checks=>launch.checks({textReady:true,checks:{...checks,input:'action'}}),ready)
