@@ -12,7 +12,8 @@ function panelPresentationGlobals(now) {
     computed: read => ({ get value() { return read() } }),
     residentUiPhase: vm.runInNewContext(phaseSource.replace('export function ', 'function ') + '; residentUiPhase'),
     performance: { now: () => now.value },
-    ResidentGaze: class { stop() {} dispose() {} },
+    URLSearchParams,
+    ResidentGaze: class { start() {} stop() {} dispose() {} },
     setInterval: () => 1, clearInterval() {},
   }
 }

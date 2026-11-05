@@ -104,7 +104,8 @@ def test_transport_failure_rolls_back_entire_intent_batch(db):
 
     ledger.db = Failing()
     with pytest.raises(sqlite3.OperationalError, match='synthetic_transport_failure'):
-        ledger.append([intent(), intent('next-case')])
+        # Fail after one successful bounded INSERT, then verify it rolls back.
+        ledger.append([intent('batch-' + str(i)) for i in range(101)])
     assert ledger.checkpoint()['seq'] == 0
 
 

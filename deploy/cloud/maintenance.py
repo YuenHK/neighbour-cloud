@@ -94,8 +94,8 @@ class CloudMaintenance:
         with services.scope(), closing(self.backup_connect()) as backup_db:
             backups = BackupStore(backup_db, self.key)  # Never initialize an empty backup DB at boot.
             records = ledger.records(ledger.checkpoint())
-            done_cases = {row['target'] for row in records if row['kind'] == 'case'}
-            done_events = {row['target'] for row in records if row['kind'] == 'event'}
+            done_cases = {row['target'] for row in records if row['kind'] in ('case', 'case_purge')}
+            done_events = {row['target'] for row in records if row['kind'] in ('event', 'event_purge')}
             due = []
             rows = services.cases.db.execute("SELECT c.id,c.revision FROM service_cases c WHERE c.status='resolved' "
                 'AND c.updated_at_ms<=? AND NOT EXISTS (SELECT 1 FROM case_privacy_expiry x WHERE x.id=c.id) '
@@ -126,9 +126,12 @@ class CloudMaintenance:
                     applied = {row[0] for row in db.execute('SELECT id FROM case_privacy_expiry')}
                 elif role == 'events':
                     applied = {row[0] for row in db.execute("SELECT id FROM events WHERE json_extract(details_json,'$.retention_erased')=1")}
+                    remaining = {row[0] for row in db.execute('SELECT id FROM events')}
+                    applied.update(row['target'] for row in records if row['kind'] == 'event_purge' and row['target'] not in remaining)
                 else:
                     applied = {row[0] for row in db.execute('SELECT event_id FROM cloud_erased_events')}
-                selected = [row for row in records if row['kind'] == ('case' if role == 'cases' else 'event')
+                kinds = ('case', 'case_purge') if role == 'cases' else ('event', 'event_purge')
+                selected = [row for row in records if row['kind'] in kinds
                             and row['target'] not in applied]
                 if not selected:
                     continue

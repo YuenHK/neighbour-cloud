@@ -14,6 +14,7 @@ export function placeModelCredit(document, credit) {
     return true
   }
   const applicationSources=new Map([
+    ["https://github.com/jupiterbjy/Live2DPractice-Cyannyan", "https://github.com/jupiterbjy/Live2DPractice-Cyannyan/blob/898d849e594712cd6afb3bb81c07ecc58c59e024/LICENSE.md"],
     ['https://tyc.rei-yumesaki.net/material/avatar/3d-a/','https://tyc.rei-yumesaki.net/material/avatar/3d-a/'],
     ['https://miko.aituberonair.com/downloads/','https://miko.aituberonair.com/'],
     ['https://github.com/pixiv/three-vrm','https://vrm.dev/en/licenses/1.0/'],

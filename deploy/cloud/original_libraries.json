@@ -414,6 +414,41 @@
           "channel": "static",
           "id": "desktop-companion-snow-lolita",
           "sha256": "9f1ae1e4860d6c3eaeeaf4f48198f38996ceb65dcb775a9b4d6daafb79f9db86"
+        },
+        {
+          "channel": "static",
+          "id": "desktop-companion-gothic-pastel",
+          "sha256": "448b5fad226dfc8ce244ac44d0fb4bc295d890180b842e24720082a49b025fc3"
+        },
+        {
+          "channel": "static",
+          "id": "desktop-companion-pink-angel",
+          "sha256": "f61a267a58d40975391b361026fe436e7521bb8b12c184352f477140167103f3"
+        },
+        {
+          "channel": "static",
+          "id": "desktop-companion-snow-kawaii",
+          "sha256": "db08e256d076e9004661f021a01ef042f4a647278a739bf7ee4b74116725404c"
+        }
+      ]
+    },
+    {
+      "id": "cyannyan-original",
+      "name": "jupiterbjy · Cyannyan SD 原創 Live2D",
+      "maintainer_id": "jupiterbjy",
+      "url": "https://github.com/jupiterbjy/Live2DPractice-Cyannyan",
+      "rights_urls": [
+        "https://github.com/jupiterbjy/Live2DPractice-Cyannyan/blob/898d849e594712cd6afb3bb81c07ecc58c59e024/LICENSE.md",
+        "https://github.com/jupiterbjy/Live2DPractice-Cyannyan/blob/898d849e594712cd6afb3bb81c07ecc58c59e024/README.md"
+      ],
+      "repository": "https://github.com/jupiterbjy/Live2DPractice-Cyannyan",
+      "original_material": true,
+      "verification": "licensed-native-import-verified",
+      "models": [
+        {
+          "channel": "static",
+          "id": "cyannyan-sd-original",
+          "sha256": "3e199a79f3122c227a8da457f3fa93159a0fd2766938a33eba279bc855f03100"
         }
       ]
     }

@@ -24,7 +24,7 @@ export async function createResidentHandDetector() {
   })
 }
 
-/** Camera is requested only from a deliberate resident click, never on import. */
+/** Construction never captures. A visible resident page may start with browser permission. */
 export class ResidentGaze {
   constructor(onState) {
     this.onState = onState
@@ -49,7 +49,7 @@ export class ResidentGaze {
       this.stop('unavailable')
       return
     }
-    // Keep native permission UX attached to the click, even while assets prepare.
+    // Use native permission UX; do not infer consent or bypass a denied prompt.
     const requested = navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: 'user', width: { ideal: 320 }, height: { ideal: 240 }, frameRate: { ideal: 8, max: 10 } } })
     requested.then((stream) => {
       if (epoch !== this.generation)

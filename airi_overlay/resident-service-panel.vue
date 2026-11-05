@@ -54,13 +54,24 @@ let avatarMounted = Reflect.get(globalThis, '__NEIGHBOUR_AVATAR_READY__') === tr
 let entranceGreeted = false
 let lastWelcome = performance.now()
 let welcomeTimer: ReturnType<typeof setInterval> | undefined
+let automaticCameraAttempted = false
+function startDefaultInteraction() {
+  if (!cloudResident || !gaze || !avatarVisible || !avatarMounted || document.hidden
+    || new URLSearchParams(location.search).get('settings') === '1' || automaticCameraAttempted) {
+    return
+  }
+  automaticCameraAttempted = true
+  void gaze.start(true)
+}
 function toggleGaze() {
+  automaticCameraAttempted = true
   if (['off', 'unavailable'].includes(gazeState.value))
-    void gaze?.start()
+    void gaze?.start(true)
   else
     gaze?.stop()
 }
 function startHandControl() {
+  automaticCameraAttempted = true
   void gaze?.start(true)
 }
 const transcript = ref<HTMLElement>()
@@ -535,6 +546,7 @@ function greetAvatar() {
     residentGesture('greeting')
     lastWelcome = performance.now()
   }
+  startDefaultInteraction()
 }
 function welcomeIfIdle() {
   if (shouldResidentWelcome({ visible: avatarVisible, mounted: avatarMounted, hidden: document.hidden, busy: busy.value, speaking: speechActive.value || nowSpeaking.value, messages: messages.value.length, draft: draft.value, lastAt: lastWelcome }, performance.now())) {
@@ -617,11 +629,11 @@ function checkIdle() {
     </header>
     <details v-if="cloudResident" class="resident-gaze-options">
       <summary data-hand-action="camera-options">
-        視線互動{{ gazeState === 'tracking' ? ' · 已跟隨你' : gazeState === 'searching' ? ' · 尋找位置中' : '' }}
+        視像與手勢{{ gazeState === 'tracking' ? ' · 已跟隨你' : gazeState === 'searching' ? ' · 尋找位置中' : gazeState === 'starting' ? ' · 正在啟動' : gazeState === 'unavailable' ? ' · 未啟用' : ' · 已關閉' }}
       </summary>
-      <p>允許鏡頭後，角色會望向你。影像只喺此裝置即時處理，不拍照、不上傳、不儲存，亦不辨認身份。視線模式按「下一位」會關閉；手勢導覽模式會保持鏡頭，直到關閉或離開居民頁。</p>
+      <p>進入居民頁會嘗試啟動視線互動及手勢；首次仍須允許瀏覽器鏡頭權限。影像只喺此裝置即時處理，不拍照、不上傳、不儲存，亦不辨認身份。按「下一位」可繼續用手勢；關閉、離開居民頁或切到背景便停止鏡頭。</p>
       <button type="button" data-hand-action="camera-toggle" :aria-pressed="!['off', 'unavailable'].includes(gazeState)" @click="toggleGaze">
-        {{ ['off', 'unavailable'].includes(gazeState) ? '允許鏡頭並啟用視線互動' : '關閉鏡頭及視線互動' }}
+        {{ ['off', 'unavailable'].includes(gazeState) ? '啟用鏡頭、視線及手勢' : '關閉鏡頭及手勢' }}
       </button>
       <button v-if="!gaze?.hands" type="button" @click="startHandControl">
         啟用鏡頭手勢導覽

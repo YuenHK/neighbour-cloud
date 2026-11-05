@@ -22,7 +22,7 @@ def canonical(value):
 
 def validate(record):
     if (not isinstance(record, dict) or set(record) != {'kind', 'target', 'revision', 'erased_ms'}
-            or record['kind'] not in ('case', 'event')
+            or record['kind'] not in ('case', 'event', 'case_purge', 'event_purge')
             or not isinstance(record['target'], str) or not re.fullmatch(r'[A-Za-z0-9_-]{1,120}', record['target'])
             or type(record['revision']) is not int or not 1 <= record['revision'] < 2**63
             or type(record['erased_ms']) is not int or not 0 <= record['erased_ms'] < 2**63):
@@ -129,13 +129,16 @@ class DeletionLedger:
                 raise ValueError('deletion_ledger_requires_dedicated_connection')
             with self.db:
                 self.db.execute('BEGIN IMMEDIATE')
-                head, _ = self._verified()
+                head, verified = self._verified()
+                # The verified chain already contains every identity. Avoid a
+                # separate remote SELECT and INSERT for each of a large purge.
+                known = {identity(record): record for record in verified}
+                additions = []
                 for record in batch:
                     item_id = identity(record)
-                    old = self.db.execute('SELECT payload FROM cloud_deletion_receipts WHERE identity=?', (item_id,)).fetchone()
-                    if old:
+                    prior = known.get(item_id)
+                    if prior is not None:
                         # A delayed retry keeps the first durable intent time.
-                        prior = validate(json.loads(old[0]))
                         if any(prior[key] != record[key] for key in ('kind', 'target', 'revision')):
                             raise ValueError('deletion_ledger_identity_conflict')
                         continue
@@ -143,9 +146,14 @@ class DeletionLedger:
                         raise ValueError('deletion_ledger_capacity_requires_review')
                     payload = canonical(record)
                     value, seq = digest(head['digest'], payload), head['seq'] + 1
-                    self.db.execute('INSERT INTO cloud_deletion_receipts VALUES(?,?,?,?,?)',
-                                    (seq, item_id, head['digest'], value, payload))
+                    additions.append((seq, item_id, head['digest'], value, payload))
+                    known[item_id] = record
                     head = {'seq': seq, 'digest': value, 'signature': self._sign(seq, value)}
+                for start in range(0, len(additions), 100):
+                    group = additions[start:start + 100]
+                    self.db.execute('INSERT INTO cloud_deletion_receipts VALUES '
+                                    + ','.join('(?,?,?,?,?)' for _ in group),
+                                    tuple(value for row in group for value in row))
                 self.db.execute('UPDATE cloud_deletion_head SET seq=?,digest=?,signature=? WHERE id=1',
                                 (head['seq'], head['digest'], head['signature']))
             # Only a successfully committed intent may precede data deletion.

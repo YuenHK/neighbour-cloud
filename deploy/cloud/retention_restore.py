@@ -41,9 +41,62 @@ def require_schema(db, scope):
         raise ValueError('unrecognised_retention_restore_schema')
 
 
+def purge_records(db, scope, records):
+    """Bounded operator purge; no N+1 remote PRAGMAs or photo round trips."""
+    kind = 'case_purge' if scope in ('cases', 'estate') else 'event_purge'
+    selected = [r for r in records if r['kind'] == kind]
+    changed = 0
+    if not selected:
+        return changed
+    children = [(table, field) for table, field in [('service_case_activity','case_id'), ('patrol_case_links','case_id'),
+        ('resident_session_cases','case_id'), ('resident_session_turns','case_id'), ('resident_support_links','case_id')]
+        if scope == 'cases' and field in columns(db, table)]
+    legacy = scope == 'photos' and bool(columns(db, 'native_evidence_bindings'))
+    completion = scope == 'events' and bool(columns(db, 'event_completion'))
+    photo_retention = scope == 'photos' and bool(columns(db, 'cloud_photo_retention'))
+    if scope == 'cases':
+        db.execute('CREATE TABLE IF NOT EXISTS case_privacy_expiry(id TEXT PRIMARY KEY,erased_at_ms INTEGER NOT NULL)')
+    if scope == 'photos':
+        db.execute('CREATE TABLE IF NOT EXISTS cloud_erased_events(event_id TEXT PRIMARY KEY,erased_ms INTEGER NOT NULL)')
+    for start in range(0, len(selected), 200):
+        batch = selected[start:start+200]
+        targets = [r['target'] for r in batch]
+        marks = ','.join('?' for _ in batch)
+        pairs = ','.join('(?,?)' for _ in batch)
+        values = tuple(value for r in batch for value in (r['target'], r['erased_ms']))
+        if scope == 'cases':
+            for table, field in children:
+                db.execute(f'DELETE FROM {table} WHERE {field} IN ({marks})', targets)
+            changed += db.execute(f'DELETE FROM service_cases WHERE id IN ({marks})', targets).rowcount
+            db.execute('INSERT OR IGNORE INTO case_privacy_expiry VALUES ' + pairs, values)
+        elif scope == 'events':
+            if completion:
+                db.execute(f'DELETE FROM event_completion WHERE event_id IN ({marks})', targets)
+            changed += db.execute(f'DELETE FROM events WHERE id IN ({marks})', targets).rowcount
+        elif scope == 'estate':
+            changed += db.execute(f'DELETE FROM cloud_operations WHERE namespace=? AND identity IN ({marks})',
+                                  ('resident-case-photo-v1', *targets)).rowcount
+        else:
+            db.execute('WITH purges(event_id,erased_ms) AS (VALUES ' + pairs + ') '
+                'INSERT OR IGNORE INTO cloud_photo_tombstones '
+                'SELECT p.key,p.event_id,r.erased_ms FROM cloud_photos p JOIN purges r ON r.event_id=p.event_id', values)
+            db.execute('INSERT OR IGNORE INTO cloud_erased_events VALUES ' + pairs, values)
+            changed += db.execute(f'DELETE FROM cloud_photos WHERE event_id IN ({marks})', targets).rowcount
+            if photo_retention:
+                db.execute(f'DELETE FROM cloud_photo_retention WHERE event_id IN ({marks})', targets)
+            if legacy:
+                changed += db.execute(f'DELETE FROM native_evidence_bindings WHERE event_id IN ({marks})', targets).rowcount
+                db.execute(f'DELETE FROM native_evidence_missing WHERE event_id IN ({marks})', targets)
+    if legacy:
+        db.execute('DELETE FROM native_evidence_blobs WHERE NOT EXISTS '
+                   '(SELECT 1 FROM native_evidence_bindings b WHERE b.key=native_evidence_blobs.key)')
+    return changed
+
+
 def reconcile(db, scope, records):
     require_schema(db, scope)
-    changed = 0
+    changed = purge_records(db, scope, records)
+    records = [r for r in records if r['kind'] not in ('case_purge', 'event_purge')]
     if scope == 'estate':
         if columns(db, 'cloud_operations'):
             for record in records:

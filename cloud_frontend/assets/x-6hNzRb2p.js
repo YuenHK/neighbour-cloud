@@ -1,0 +1,2 @@
+import{C as e,Nt as t,X as n,j as r}from"./vue.runtime.esm-bundler-BpXz90Lz.js";import{N as i}from"./components-BPcq4dsN.js";import{t as a}from"./route-block-yVb9Knfw.js";var o=r({__name:`x`,setup(r){return(r,a)=>(n(),e(t(i)))}});typeof a==`function`&&a(o);var s=o;export{s as default};
+//# sourceMappingURL=x-6hNzRb2p.js.map
