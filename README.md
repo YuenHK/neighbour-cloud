@@ -12,6 +12,21 @@
 
 ---
 
+## 最新已部署：九子功能展示與原創圖庫
+
+入口：[鄰伴智慧社區平台](https://neighbour-yuenhk-live.onrender.com/)。版本 `b6f2c990d26985e103b4e78180857a8e66306c30`／barrier28，Render Free Singapore 單實例，autoDeploy=no。
+
+- 旋轉核心展開九項分工，真實燈號、有限安全重連、清單與原創 3D 示意、柔和淡出；可立即進入或從標題重播。未來／待驗收保持灰色。
+- 載入畫面未揭開前不送 ASR，保留 Gemma＋Microsoft 曉曼 F0。
+- 八款新模型，原233保留，共241個不同檔案；目前15個合資格獨立來源，20目標仍差5，沒有用鏡像湊數。
+- 820後端／112Node／36離線題庫、兩瀏覽器及frontend94三檢通過；74正式HTTPS資源同，原十個個案、短號、設定、記憶與歷史用量核對保留。沒有實際AI／聲畫／EP操作。
+
+![九項分工示意，非即時監控](docs/assets/neighbour-nine-systems-20261105.png)
+
+[本次更新及驗收範圍](docs/community-launch-2026-11-05.md)。下方為歷史版本紀錄；文件提交不會重新部署健康服務。
+
+---
+
 # 2026-11-05 鄰伴：模型與多標記定位／離機行車
 
 正式入口：https://neighbour-yuenhk-live.onrender.com/ 。runtime `5e0def858f45f3037d05da52d7810e01dac30691`，官方 CLI deploy `dep-dbluimtg1s2s73bhpkag`／barrier27，Render Free Singapore 單實例；autoDeploy=no。下面是歷史紀錄，毋須為文件重新部署。
