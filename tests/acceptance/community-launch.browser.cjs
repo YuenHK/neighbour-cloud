@@ -1,7 +1,7 @@
 // Real launch, shell and cold-boot UI against a wholly intercepted synthetic HTTPS origin.
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path')
 const {chromium,webkit}=require(path.resolve(process.env.NODE_PATH||'.experiments/optimization-lab-20261029/node/node_modules','playwright'))
-const origin='https://community-launch.fixture.test',base=path.resolve('deploy/cloud/web'),area=path.resolve('.runtime/community-menu-20261105/launch')
+const origin='https://community-launch.fixture.test',base=path.resolve('deploy/cloud/web'),area=path.resolve('.runtime/viewport-fit-20261105/launch')
 const results=[],outside=[],errors=[],cspViolations=[]
 const csp="default-src 'none';script-src 'self';style-src 'self';connect-src 'self';img-src 'self' data:;frame-src 'self';base-uri 'none';object-src 'none'"
 const headers={'Content-Security-Policy':csp}

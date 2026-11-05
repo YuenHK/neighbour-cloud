@@ -3,3 +3,5 @@
 body main{max-width:1040px;width:100%;padding:20px}#bootSystems{width:100%;margin:0 auto 14px}
 
 body{background:radial-gradient(ellipse at 12% 10%,#183954,transparent 60%),#0c1829;color:#e8f3ff}.brand,.note{color:#b3c8d8}#bootStatus{color:#c8e8f8}.track{background:#1b3448}.track i{background:#65baf8}@media(max-width:600px){body{padding:16px 12px}body main{padding:0}#bootSystems{margin-top:16px}}
+
+body{height:100dvh;min-height:0;overflow:clip;display:flex;align-items:center;justify-content:center;padding:12px}body main{flex:none;margin:0;padding:0;max-width:940px}.brand{margin:0 0 6px}h1{margin:6px 0;font-size:clamp(20px,3vw,28px)}#bootStatus{margin:6px 0;font-size:13px}.track{margin:10px auto}.note{margin:6px 0;font-size:12px}#bootSystems{margin:8px auto}

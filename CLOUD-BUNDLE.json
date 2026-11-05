@@ -816,8 +816,8 @@
     },
     {
       "path": "deploy/cloud/rollout.py",
-      "bytes": 9190,
-      "sha256": "48d7017232e91b1b86728b14077ddf5f72b918fa7de706da8a47207d974784a6"
+      "bytes": 9188,
+      "sha256": "c0113eba1ec2af40522a020e1a347df716e993f2cfe6ef7c8070c9e778e8602b"
     },
     {
       "path": "deploy/cloud/runtime_storage.py",
@@ -916,13 +916,13 @@
     },
     {
       "path": "deploy/cloud/web/boot-wait.css",
-      "bytes": 1772,
-      "sha256": "5fdf94f5849729c4cabfd7706d05ee4619c8fb7ad85009faab4a9698a05be55a"
+      "bytes": 2141,
+      "sha256": "219d6f54c7eea9563857936f8edac4a1e2011bdcf3a01de4958300b490c42588"
     },
     {
       "path": "deploy/cloud/web/boot-wait.html",
-      "bytes": 921,
-      "sha256": "bf4c0ae1019b4e26147656961ed9228dc3ad5d3ed83070b057876f6cc34918f7"
+      "bytes": 939,
+      "sha256": "432d42fd616cc05139a105e79eb45d4bea5153c2b9a045557bc004eacdc68dde"
     },
     {
       "path": "deploy/cloud/web/boot-wait.js",
@@ -986,13 +986,13 @@
     },
     {
       "path": "deploy/cloud/web/community-systems.css",
-      "bytes": 18485,
-      "sha256": "1937711215442069c80e61ee3540f4c84cdc53236e9bf66d84381e78246e4b02"
+      "bytes": 23187,
+      "sha256": "8219e759a7a67a50964a22d09b0df33c1941febdc16fb463ca1243da962102df"
     },
     {
       "path": "deploy/cloud/web/community-systems.js",
-      "bytes": 17570,
-      "sha256": "b94dcbcc92209c7a701c783488d7de7802224a050a30ad3d5bb73daeb6223f53"
+      "bytes": 19346,
+      "sha256": "8802081b76ad81cb93d037c95e4698a42c61fe0172d6ad22b5d23e7f380627b6"
     },
     {
       "path": "deploy/cloud/web/frame-entry.js",
@@ -1006,8 +1006,8 @@
     },
     {
       "path": "deploy/cloud/web/index.html",
-      "bytes": 6640,
-      "sha256": "239df671469b9aa132b24f6987b328c63274c8a9645eccdb43182380aac0a952"
+      "bytes": 6717,
+      "sha256": "468d01b66e859118da51f2b9ce2bca00d0118187fd10edb6198999591aeea71d"
     },
     {
       "path": "deploy/cloud/web/kiosk.css",
@@ -1026,8 +1026,8 @@
     },
     {
       "path": "deploy/cloud/web/launch-screen.css",
-      "bytes": 13939,
-      "sha256": "5a8830b04be78b6d00f6f3103a7d6efe8c62f96102309c020c6aba6b443709f4"
+      "bytes": 15125,
+      "sha256": "4ad3855eaa66020dca61c07b3b0c371b7734a4336b7c245ec20244cc2db84d9c"
     },
     {
       "path": "deploy/cloud/web/launch-screen.js",
@@ -1096,8 +1096,8 @@
     },
     {
       "path": "deploy/cloud/web/shell.css",
-      "bytes": 6164,
-      "sha256": "f286725a3676c16dce0b8e9c4295a463eb5ca88af3c9147460dbff63cad4ce02"
+      "bytes": 8106,
+      "sha256": "6af3b20ebcebb9ede74efda8d1e25368c191253e1a288012b8cdc5a8aea87443"
     },
     {
       "path": "deploy/cloud/web/shell.js",

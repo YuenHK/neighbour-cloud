@@ -12,12 +12,12 @@
 </div></details></div>
 <nav id="navigation" hidden><button id="resident" type="button">居民服務台</button><button id="staff" type="button" hidden>管理工作台</button><button id="signOut" type="button">登出</button></nav>
 </div></header>
-<dialog id="communityIntroduction" aria-label="鄰伴協作圓盤"><button id="closeCommunityIntroduction" class="intro-close" type="button" aria-label="關閉協作圓盤">關閉 ✕</button><div id="introSystems"></div></dialog>
+<dialog id="communityIntroduction" aria-label="鄰伴協作圓盤"><div class="community-dialog-card" data-viewport-fit><button id="closeCommunityIntroduction" class="intro-close" type="button" aria-label="關閉協作圓盤">關閉 ✕</button><div id="introSystems"></div></div></dialog>
 <div id="workspace">
 <main id="login" hidden><h1>歡迎使用鄰伴</h1><p id="loginHint">正在準備居民服務台…</p><div id="googleButton"></div><p id="status" role="status">正在連接…</p></main>
 <main id="staffLogin" hidden><div class="login-card-heading"><span class="login-mark" aria-hidden="true">鄰</span><p class="login-eyebrow">職員入口</p><h1>管理工作台</h1><p>查看居民需要、跟進個案，同團隊一齊照顧社區。</p></div><form id="staffLoginForm"><label for="staffPassword">管理口令</label><input id="staffPassword" type="password" autocomplete="current-password" maxlength="128" placeholder="輸入管理口令" required><p id="staffLoginStatus" role="status"></p><div class="login-actions"><button id="cancelStaffLogin" type="button">返回居民服務台</button><button id="staffSubmit" type="submit">進入管理工作台</button></div></form></main>
 <section id="service" aria-label="服務畫面"></section>
-<section id="launchScreen" aria-labelledby="launchTitle" aria-busy="true"><div class="launch-card">
+<section id="launchScreen" aria-labelledby="launchTitle" aria-busy="true"><div class="launch-card" data-viewport-fit>
 <div id="launchSystems"></div>
 <div class="launch-copy"><p class="launch-brand">鄰伴 · 智慧社區平台</p><h1 id="launchTitle">今日，一齊開心傾吓！</h1>
 <div class="launch-modules" aria-label="背景預載程式"><div data-warm-chip="services"><b>居民服務台</b><span class="warm-state">預載程式中</span></div><div data-warm-chip="settings"><b>數字人設定</b><span class="warm-state">預載程式中</span></div><div data-warm-chip="robots"><b>機械人控制台</b><span class="warm-state">預載程式中</span></div></div>

@@ -9,6 +9,55 @@
 @container(max-width:600px){.community-systems{padding:17px 12px 13px;border-radius:21px}.community-systems-heading{font-size:15px;letter-spacing:.09em}.community-systems-scene{aspect-ratio:auto;padding-top:10px}.community-system-links{display:none}.community-systems-core{position:relative;left:auto;top:auto;transform:none;width:104px;height:104px;max-width:none;margin:8px auto 21px}.community-core-mascot{width:60px;height:60px}.community-core-name{font-size:19px}.community-core-caption{font-size:9px}.community-systems-nodes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.community-system-node{position:relative;left:auto;top:auto;transform:none;width:auto;max-width:none;min-width:0;border-radius:13px;padding:9px 3px 8px}.community-system-symbol{width:30px;height:30px}.community-system-symbol svg{width:23px;height:23px}.community-system-code{font-size:8px;letter-spacing:.06em}.community-system-name{font-size:12px}.community-system-role,.community-system-status{font-size:9px}.community-system-detail{display:none}.community-systems-legend{font-size:10px;gap:6px 11px;margin-top:13px}.community-systems-note{font-size:9px;margin-left:0;margin-right:0}.community-systems--compact .community-systems-core{width:86px;height:86px;margin-bottom:17px}.community-systems--compact .community-core-mascot{width:46px;height:46px}.community-systems--compact .community-systems-nodes{gap:6px}.community-systems--compact .community-system-role{font-size:8px}}
 @media(prefers-reduced-motion:reduce){.community-systems *,.community-systems *::before,.community-systems *::after{animation:none!important;transition:none!important}}
 
+/* Static fitting changes layout size, never the real subsystem health state. */
+[data-viewport-fit]{transform:scale(var(--viewport-scale,1));transform-origin:center center}
+[data-viewport-fit] .community-overview-eyebrow{display:none}
+[data-viewport-fit] .community-system-overview{padding:12px}
+[data-viewport-fit] .community-overview-role{margin-bottom:8px}
+[data-viewport-fit] .community-overview-purpose{margin-bottom:8px}
+[data-viewport-fit] .community-product-host{min-height:0;margin:8px 0}
+[data-viewport-fit] .community-product__canvas{height:clamp(110px,21vh,180px)!important;min-height:110px!important;max-height:none!important}
+[data-viewport-fit] .community-product__label{display:block;font-size:11px;text-align:center}
+[data-viewport-fit] .community-product__note{font-size:10px;line-height:1.5;margin:4px 0}
+[data-viewport-fit] .community-overview-limit{margin:6px 0 10px;line-height:1.6}
+@container(max-width:600px){
+ [data-viewport-fit] .community-systems-core{width:76px;height:76px;margin:6px auto 12px}
+ [data-viewport-fit] .community-core-mascot{width:44px;height:44px}
+ [data-viewport-fit] .community-core-name{font-size:16px}
+ [data-viewport-fit] .community-core-caption{font-size:8px}
+ [data-viewport-fit] .community-system-node{padding:6px 3px;gap:1px}
+ [data-viewport-fit] .community-system-symbol{width:25px;height:25px}
+ [data-viewport-fit] .community-system-name{font-size:11px}
+ [data-viewport-fit] .community-systems-legend{margin-top:9px}
+ [data-viewport-fit] .community-systems[data-presentation=overview] .community-system-node{display:flex;flex-direction:row;justify-content:center;min-height:34px;padding:5px 3px;gap:4px}
+ [data-viewport-fit] .community-systems[data-presentation=overview] .community-system-symbol{width:18px;height:18px}
+ [data-viewport-fit] .community-systems[data-presentation=overview] .community-system-name{font-size:10px}
+ [data-viewport-fit] .community-systems[data-presentation=overview] .community-system-status{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+ [data-viewport-fit] .community-systems[data-presentation=overview] .community-systems-scene{gap:8px;margin-top:8px}
+}
+@media(max-height:650px){[data-viewport-fit] .community-systems{padding-top:12px;padding-bottom:10px}[data-viewport-fit] .community-systems-heading{font-size:16px}[data-viewport-fit] .community-systems-note{margin-top:5px}[data-viewport-fit] .community-overview-purpose{font-size:12px;line-height:1.5}}
+/* Short screens use denser navigation before any final card fitting. */
+@media(max-width:600px) and (max-height:650px){
+ [data-viewport-fit] .community-systems[data-presentation=overview] .community-systems-nodes{grid-template-columns:repeat(9,minmax(0,1fr));gap:3px}
+ [data-viewport-fit] .community-systems[data-presentation=overview] .community-system-node{min-height:30px;padding:4px 1px}
+ [data-viewport-fit] .community-systems[data-presentation=overview] .community-system-name{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+ [data-viewport-fit] .community-overview-code{display:none}
+}
+@media(min-width:560px) and (max-height:520px){
+ [data-viewport-fit] .community-systems[data-presentation=overview] .community-systems-scene{grid-template-columns:minmax(160px,.55fr) minmax(0,1.45fr);gap:10px}
+ [data-viewport-fit] .community-systems[data-presentation=overview] .community-systems-nodes{grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
+ [data-viewport-fit] .community-systems[data-presentation=overview] .community-system-node{display:flex;flex-direction:column;text-align:center;min-height:60px;padding:5px 2px;gap:2px}
+ [data-viewport-fit] .community-systems[data-presentation=overview] .community-system-symbol{width:20px;height:20px}
+ [data-viewport-fit] .community-systems[data-presentation=overview] .community-system-name{font-size:10px}
+ [data-viewport-fit] .community-systems[data-presentation=overview] .community-system-role{display:none}
+ [data-viewport-fit] .community-systems[data-presentation=overview] .community-system-status{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+ [data-viewport-fit] .community-system-overview{display:grid;grid-template-columns:minmax(0,1fr) minmax(120px,.85fr);gap:5px 10px;align-content:start}
+ [data-viewport-fit] .community-system-overview>*{grid-column:1;min-width:0;margin-top:0;margin-bottom:0}
+ [data-viewport-fit] .community-system-overview .community-product-host{grid-column:2;grid-row:1/9;align-self:center;margin:0}
+ [data-viewport-fit] .community-overview-title{font-size:22px}
+ [data-viewport-fit] .community-overview-role{font-size:12px}
+}
+
 
 
 /* Compact layouts retain the repair runner even when radial links are hidden. */

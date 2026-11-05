@@ -61,6 +61,38 @@ function icon(document, name) {
   return node
 }
 
+// Fit the complete card, including actions and legends. Measure untransformed
+// layout so changing the scale cannot trigger a resize feedback loop.
+function fitViewportCard(card) {
+  const window = card?.ownerDocument?.defaultView
+  const parent = card?.parentElement
+  if (!window || !parent || typeof window.ResizeObserver !== 'function') return null
+  let closed = false, frame = null
+  function refresh() {
+    if (closed || !parent.clientWidth || !parent.clientHeight || !card.offsetHeight) return
+    const style = window.getComputedStyle(parent)
+    const width = parent.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight)
+    const height = parent.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom)
+    const scale = Math.max(.1, Math.min(1, width / Math.max(card.offsetWidth, card.scrollWidth), height / Math.max(card.offsetHeight, card.scrollHeight)))
+    card.style.setProperty('--viewport-scale', scale.toFixed(5))
+  }
+  function schedule() {
+    if (closed || frame !== null) return
+    frame = window.requestAnimationFrame(() => { frame = null; refresh() })
+  }
+  const observer = new window.ResizeObserver(schedule)
+  observer.observe(parent); observer.observe(card)
+  window.addEventListener('resize', schedule)
+  window.visualViewport?.addEventListener('resize', schedule)
+  refresh()
+  return { refresh, destroy() {
+    closed = true; observer.disconnect()
+    if (frame !== null) window.cancelAnimationFrame(frame)
+    window.removeEventListener('resize', schedule)
+    window.visualViewport?.removeEventListener('resize', schedule)
+  } }
+}
+
 export function mountCommunitySystems(host, { compact = false, label = '鄰伴 · 九大協作子功能', productFactory = mountCommunityProduct } = {}) {
   if (!host?.ownerDocument || typeof host.append !== 'function') throw new TypeError('community systems host required')
   const document = host.ownerDocument
@@ -238,6 +270,7 @@ export function mountCommunitySystems(host, { compact = false, label = '鄰伴 �
     if (paused) product.pause()
     else product.resume()
     if (changed) animateLayout(previous)
+    fit?.refresh()
   }
   function orbit({ replay = false } = {}) {
     if (destroyed) return
@@ -248,6 +281,7 @@ export function mountCommunitySystems(host, { compact = false, label = '鄰伴 �
     root.dataset.presentation = 'orbit'
     if (replay && !paused) beginIntroduction()
     else finishIntroduction()
+    fit?.refresh()
   }
   function pause() {
     if (destroyed || paused) return
@@ -258,6 +292,7 @@ export function mountCommunitySystems(host, { compact = false, label = '鄰伴 �
     product?.pause()
   }
   function resume() {
+    fit?.refresh()
     if (destroyed || !paused) return
     paused = false
     root.removeAttribute('data-paused')
@@ -290,7 +325,9 @@ export function mountCommunitySystems(host, { compact = false, label = '鄰伴 �
     }
     if (root.dataset.presentation === 'overview') selection()
     if (root.dataset.spotlight) spotlightStatus.textContent = STATES[refs.get(root.dataset.spotlight).state][0]
+    fit?.refresh()
   }
+  const fit = fitViewportCard(root.closest?.('[data-viewport-fit]'))
   update()
   beginIntroduction()
   return {
@@ -298,7 +335,7 @@ export function mountCommunitySystems(host, { compact = false, label = '鄰伴 �
     update,
     overview, orbit, pause, resume,
     whenIntroduced() { return introduced || destroyed ? Promise.resolve(!destroyed) : new Promise(resolve => introWaiters.push(resolve)) },
-    destroy() { if (destroyed) return; destroyed = true; finishIntroduction(); product?.destroy(); for (const item of motion) item.cancel?.(); root.remove(); refs.clear() },
+    destroy() { if (destroyed) return; destroyed = true; fit?.destroy(); finishIntroduction(); product?.destroy(); for (const item of motion) item.cancel?.(); root.remove(); refs.clear() },
   }
 }
 
