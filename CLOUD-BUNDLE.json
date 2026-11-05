@@ -596,8 +596,8 @@
     },
     {
       "path": "deploy/cloud/case_photo.py",
-      "bytes": 7168,
-      "sha256": "f71e58eab05c7dfcf68fb4bd73815a915d73d38f690a8fa0bd7a41444fd34725"
+      "bytes": 7332,
+      "sha256": "04e03fc3136f46805ffee10f57566256dd553d923faa72ff9b6019f8fa5c731c"
     },
     {
       "path": "deploy/cloud/closed_backup.py",
@@ -741,8 +741,8 @@
     },
     {
       "path": "deploy/cloud/patrol_ingest.py",
-      "bytes": 8184,
-      "sha256": "ef6ee9980694ffc7c7c68d19cfe3203aac336f23cc13707e9ff85b3db332fae5"
+      "bytes": 8378,
+      "sha256": "f43c3a1d4f0c990ea767f1e69202e2f2f090512e5ba20d7bc33e6c16e9b184d7"
     },
     {
       "path": "deploy/cloud/patrol_kit.py",
@@ -756,8 +756,8 @@
     },
     {
       "path": "deploy/cloud/photo_api.py",
-      "bytes": 6433,
-      "sha256": "de280b6d79e64e642e0ff6261307fbbd3d1675b257eabdceeee739e1e0f5adbd"
+      "bytes": 6585,
+      "sha256": "78e1f8e9840aca6c6dc1de1c2500750ed2d199d0a27376ce51f5ac252006ac0f"
     },
     {
       "path": "deploy/cloud/photo_store.py",
@@ -851,8 +851,8 @@
     },
     {
       "path": "deploy/cloud/staff_api.py",
-      "bytes": 8374,
-      "sha256": "1d0912bb9caa8f486d69464859f42fee533bd356cc1d63501e96ab4f488f53c5"
+      "bytes": 8554,
+      "sha256": "403ba7f7fed53952d5023acd90e9373f1679bf1109a85da655bf3d0fd8f13e6e"
     },
     {
       "path": "deploy/cloud/staff_push.py",

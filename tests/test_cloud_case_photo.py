@@ -77,12 +77,13 @@ def test_auth_no_public_image_no_false_consent(prepared):
     assert client.post('/api/v1/resident/case-photo', json=payload).status_code == 403
 
 
-def test_expiry_ledger_and_estate_backup_scrub_only_this_case_namespace(prepared):
+@pytest.mark.parametrize('erasure_kind', ['case', 'case_purge'])
+def test_expiry_ledger_and_estate_backup_scrub_only_this_case_namespace(prepared, erasure_kind):
     services, ops, records, body = prepared
     photos = CasePhotos(services, ops, now=lambda: 100 * 86_400_000)
     photos.put(body)
     ops.put('vroid-library', CASE, {'preserve': True})
-    records.append({'kind': 'case', 'target': CASE, 'erased_ms': 123, 'revision': 1})
+    records.append({'kind': erasure_kind, 'target': CASE, 'erased_ms': 123, 'revision': 1})
     with pytest.raises(HTTPException) as error:
         photos.read(CASE)
     assert error.value.status_code == 410

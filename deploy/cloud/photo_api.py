@@ -64,7 +64,7 @@ class StaffPhotos:
             head = ledger.checkpoint()
             records = ledger.records(head)
             budget()
-            if any(record['kind'] == 'event' and record['target'] == event_id for record in records):
+            if any(record['kind'] in ('event', 'event_purge') and record['target'] == event_id for record in records):
                 raise PhotoUnavailable(410)
             event, completion, fingerprint = self.event_snapshot(event_id)
             selected = next((photo for photo in event.details['photos'] if photo['side'] == side), None)

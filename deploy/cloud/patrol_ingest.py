@@ -84,7 +84,7 @@ class PatrolIngest:
                 raise ValueError('delivery_identity_conflict')
             if old and old.get('delivered'):
                 return old
-            if any(r['kind'] == 'event' and r['target'] == event.id for r in
+            if any(r['kind'] in ('event', 'event_purge') and r['target'] == event.id for r in
                    self.services.ledger.records(self.services.ledger.checkpoint())):
                 raise ValueError('event_was_erased')
             if not old:

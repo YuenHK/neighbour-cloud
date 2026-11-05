@@ -119,6 +119,17 @@ def test_partial_effect_recovers_after_restart_without_duplicate(system, monkeyp
     assert system.services.cases.summary()['counts']['new'] == 2
 
 
+@pytest.mark.parametrize('erasure_kind', ['event', 'event_purge'])
+def test_deleted_event_cannot_be_redelivered_into_a_new_case(system, erasure_kind):
+    site=system.ingest.pair()['site'];item=payload();event_id=item['event']['id']
+    before=system.services.cases.summary()['counts']
+    system.services.ledger.append([{'kind':erasure_kind,'target':event_id,'revision':1,'erased_ms':1}])
+    with pytest.raises(ValueError,match='event_was_erased'):
+        system.ingest.accept(site,item)
+    assert system.services.events.get_event(event_id) is None
+    assert system.services.cases.summary()['counts']==before
+
+
 def test_offline_and_unknown_response_outbox_reuses_identity(system, tmp_path):
     pair = system.ingest.pair()
     item = payload(tmp_path)

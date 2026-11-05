@@ -149,6 +149,14 @@ def test_incomplete_deleted_or_changed_photo_bundle_cannot_create_case(photograp
     assert api.services.cases.list()['counts'] == before
 
 
+def test_purged_event_cannot_generate_a_staff_followup(photographs):
+    api,_,_=photographs
+    before=api.services.cases.list()['counts']
+    api.services.ledger.append([{'kind':'event_purge','target':EVENT,'revision':1,'erased_ms':2}])
+    assert api.client.post(FOLLOW,headers=api.staff).status_code==410
+    assert api.services.cases.list()['counts']==before
+
+
 def test_unexpected_review_fields_or_resident_claims_never_update(api):
     path = '/api/v1/events/synthetic-event'
     assert api.client.patch(path, headers=api.resident, json={'status': 'resolved'}).status_code == 403

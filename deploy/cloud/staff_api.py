@@ -61,7 +61,7 @@ class CloudFollowup(PatrolFollowup):
                 return
             try:
                 records = self.ledger.records(self.ledger.checkpoint())
-                if any(row['kind'] == 'event' and row['target'] == link['event_id'] for row in records):
+                if any(row['kind'] in ('event', 'event_purge') and row['target'] == link['event_id'] for row in records):
                     return  # An outstanding signed erasure must not be revived.
                 event = self.events.get_event(link['event_id'])
                 if event is None or event.details.get('source') != 'ep_patrol_local':

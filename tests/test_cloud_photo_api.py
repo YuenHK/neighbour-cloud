@@ -128,9 +128,10 @@ def test_missing_or_inconsistent_retention_fails_closed(photographs, damage):
     assert response.status_code == 503 and 'sqlite' not in response.text.lower()
 
 
-def test_committed_deletion_intent_blocks_even_before_photo_cleanup(photographs):
+@pytest.mark.parametrize('erasure_kind', ['event', 'event_purge'])
+def test_committed_deletion_intent_blocks_even_before_photo_cleanup(photographs, erasure_kind):
     api, _, _ = photographs
-    api.services.ledger.append([{'kind': 'event', 'target': EVENT, 'revision': 1, 'erased_ms': 1}])
+    api.services.ledger.append([{'kind': erasure_kind, 'target': EVENT, 'revision': 1, 'erased_ms': 1}])
     assert api.client.get(URL, headers=api.staff).status_code == 410
     assert api.services.photos.db.execute('SELECT COUNT(*) FROM cloud_photos').fetchone()[0] == 3
 

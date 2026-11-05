@@ -66,7 +66,7 @@ class CasePhotos:
         cases, ledger = self.services.cases, self.services.ledger
         head = ledger.checkpoint()
         records = ledger.records(head)
-        if any(row['kind'] == 'case' and row['target'] == case_id for row in records):
+        if any(row['kind'] in ('case', 'case_purge') and row['target'] == case_id for row in records):
             raise HTTPException(410, '個案相片已到期或清除。')
         with cases.lock:
             row = cases.db.execute('SELECT status,updated_at_ms,revision FROM service_cases WHERE id=?', (case_id,)).fetchone()
