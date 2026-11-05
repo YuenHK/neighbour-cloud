@@ -1,3 +1,19 @@
+# 2026-11-05 鄰伴：模型與多標記定位／離機行車
+
+正式入口：https://neighbour-yuenhk-live.onrender.com/ 。runtime `5e0def858f45f3037d05da52d7810e01dac30691`，官方 CLI deploy `dep-dbluimtg1s2s73bhpkag`／barrier27，Render Free Singapore 單實例；autoDeploy=no。下面是歷史紀錄，毋須為文件重新部署。
+
+- 新 Cat1 與 Godette 的授權、固定檔案、原生嘴眼／構圖、匯入、獨立居民讀回、署名及去重已隔離核對。原231款清單保留，共233款；未代人改正式模型。20個真正獨立、可共享匯入平台仍未達，不以研究連結、作者數或鏡像湊數。
+- 加入 BoardLocaliser，明確以 --method board 分析已保存JPEG；至少兩標記、保留多解拒絕。54合成幀中，共同接受50幀的平均位置誤差由2.36cm降至0.875cm；並非真機精度／速度保證。
+- 管理地圖下載套件含8個合成行車場景、遮擋感測及有限煞車積分；15cm/s故障測例300ms停定、1.95cm煞車位移只屬理想模擬。沒有硬件輸出；S1韌體／接線、真定位、避障及行車仍待現場驗收。
+- 759後端／97Node、36離線題庫、網絡故障／兩瀏覽器及frontend92三檢通過；59HTTPS資產與inert冷啟資產同。10原個案／短號、設定模型、所有Opsflagsledger事件／MB842及歷史quota保留，沒有ENV／DDL／匯入或provider／聲畫／EP操作。
+- GAIA蓋亞及九項子功能只屬[架構介紹提案](docs/gaia-community-architecture-2026-11-05.md)，未改品牌或新增九個大模型。
+
+詳情：[本批進度](docs/gaia-expansion-2026-11-05.md)、[多標記定位](docs/board-localisation-2026-11-05.md)。Gemma＋Microsoft曉曼F0、免費及90日保存規則不變；舊服務保持暫停，本機維持cloud主資料來源。
+
+這次後續README／docs提交只有文件，不另部署。
+
+---
+
 # 2026-11-05 鄰伴：免費模型、骨架動畫與 S1／定位準備
 
 最新正式入口：https://neighbour-yuenhk-live.onrender.com/ 。runtime `dd54a31b66422006b26aa04fa971297460920784`，官方 CLI deploy `dep-dbltpe5g1s2s73bf6sr0`／barrier26，Render Free Singapore 單實例。下面各日期章節是歷史版本，不代表需要重新部署。
