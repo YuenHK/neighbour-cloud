@@ -1,8 +1,8 @@
 <!doctype html>
 <html lang="zh-Hant">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>鄰伴智慧社區平台</title><link rel="icon" type="image/png" sizes="32x32" href="/assets/brand/favicon-32.png"><link rel="apple-touch-icon" sizes="180x180" href="/assets/brand/apple-touch-icon-180.png"><link rel="stylesheet" href="/cloud/shell.css"><link rel="stylesheet" href="/cloud/launch-screen.css"><link rel="stylesheet" href="/cloud/mascot.css"></head>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>鄰伴智慧社區平台</title><link rel="icon" type="image/png" sizes="32x32" href="/assets/brand/favicon-32.png"><link rel="apple-touch-icon" sizes="180x180" href="/assets/brand/apple-touch-icon-180.png"><link rel="stylesheet" href="/cloud/shell.css"><link rel="stylesheet" href="/cloud/launch-screen.css"><link rel="stylesheet" href="/cloud/mascot.css"><link rel="stylesheet" href="/cloud/community-systems.css"><link rel="stylesheet" href="/cloud/community-introduction.css"></head>
 <body>
-<header><strong><img class="brand-mark" src="/assets/brand/icon-192.png" width="32" height="32" alt="">鄰伴智慧社區平台</strong><div class="header-actions">
+<header><button id="platformIntro" class="platform-intro-trigger" type="button" aria-haspopup="dialog"><img class="brand-mark" src="/assets/brand/icon-192.png" width="32" height="32" alt="">鄰伴智慧社區平台 <small>認識鄰伴</small></button><div class="header-actions">
 <details class="privacy"><summary>資料與私隱</summary><div>
 <p class="privacy-intro">對話與資料</p>
 <ul class="privacy-notes"><li>對話及語音由雲端處理，請勿提供身份證等非必要資料。</li><li>鏡頭互動只在裝置內處理位置，不辨認身份；只有你預覽並確認的個案相片才會上傳供職員跟進。不附相亦可求助。</li><li>閒置後清除本輪對話；已提交個案及你同意保存的記憶會保留。</li><li>個案及附相完成後保存九十日，包括平台管理的備份；可向職員要求查閱、更正或刪除資料。</li></ul>
@@ -11,21 +11,64 @@
 </div></details>
 <nav id="navigation" hidden><button id="resident" type="button">居民服務台</button><button id="staff" type="button" hidden>管理工作台</button><button id="signOut" type="button">登出</button></nav>
 </div></header>
+<dialog id="communityIntroduction" aria-labelledby="communityIntroTitle"><button id="closeCommunityIntroduction" class="intro-close" type="button" aria-label="關閉平台介紹">關閉 ✕</button><article class="community-introduction" aria-labelledby="communityIntroTitle">
+  <p class="community-introduction__eyebrow">FWFT 團隊 · 一齊照顧社區</p>
+  <h2 id="communityIntroTitle">認識鄰伴</h2>
+  <p class="community-introduction__lead">鄰伴智慧社區平台，是具備情境理解與情感回應能力的統籌與主控 AI 平台。我們希望讓居民有人聆聽，讓職員更容易接手，讓支援更早到達。</p>
+  <p>我們把社區看成一個需要共同照顧的小生態圈：鄰伴了解居民需要，機械人提供現場線索，各子功能整理知識、關懷需要及環境問題，再由管理人員核實和跟進。</p>
+  <p class="community-introduction__hint">參考《地平線》蓋亞的分工構思，九個子功能一起協作。點開卡片，了解各自的工作及目前進度。</p>
+  <button id="replayCommunitySystems" type="button">重播系統介紹</button><div id="introSystems"></div>
+  <details class="community-introduction__transcript"><summary>閱讀完整分工文字</summary>
+  <div class="community-introduction__grid">
+    <details data-community-function="minerva">
+      <summary><span class="community-introduction__code">MINERVA</span><span class="community-introduction__name">密涅瓦</span><span class="community-introduction__role">權限與通訊</span><span class="community-introduction__stage" data-stage="available">已有軟件功能</span></summary>
+      <div><p>職員登入、工作提示、控制保護及停止流程，讓資料及操作交到合適的人手上。</p><p class="community-introduction__limit">機械人的實際停止效果仍需現場核實。</p></div>
+    </details>
+    <details data-community-function="hades">
+      <summary><span class="community-introduction__code">HADES</span><span class="community-introduction__name">黑底斯</span><span class="community-introduction__role">故障隔離與復原</span><span class="community-introduction__stage" data-stage="available">已有軟件功能</span></summary>
+      <div><p>隔離出錯部件，嘗試安全重連，並支援維護及備份恢復，保留原有資料與用量紀錄。</p><p class="community-introduction__limit">修復有次數及時間限制，不保證任何故障都能自動解決。</p></div>
+    </details>
+    <details data-community-function="hephaestus">
+      <summary><span class="community-introduction__code">HEPHAESTUS</span><span class="community-introduction__name">赫淮斯托斯</span><span class="community-introduction__role">機械工坊</span><span class="community-introduction__stage" data-stage="field">部分待現場驗收</span></summary>
+      <div><p>管理機械人、安排巡查工作，以及整理數字人的角色模型。</p><p class="community-introduction__limit">S1 接入、真實定位及自主行車仍待現場測試，不能視為已可自主巡邏。</p></div>
+    </details>
+    <details data-community-function="poseidon">
+      <summary><span class="community-introduction__code">POSEIDON</span><span class="community-introduction__name">波塞頓</span><span class="community-introduction__role">水務觀察</span><span class="community-introduction__stage" data-stage="field">辨識待實景驗收</span></summary>
+      <div><p>整理漏水、積水線索，建立或更新跟進個案，交由職員安排處理。</p><p class="community-introduction__limit">居民回報流程已有；影像線索仍需職員核實。</p></div>
+    </details>
+    <details data-community-function="demeter">
+      <summary><span class="community-introduction__code">DEMETER</span><span class="community-introduction__name">得墨忒耳</span><span class="community-introduction__role">社區環境</span><span class="community-introduction__stage" data-stage="field">辨識待實景驗收</span></summary>
+      <div><p>整理垃圾、清潔及公共地方的異常回報，讓職員掌握需要跟進的地方。</p><p class="community-introduction__limit">回報流程已有；巡查辨識的準確度仍需實景驗收。</p></div>
+    </details>
+    <details data-community-function="artemis">
+      <summary><span class="community-introduction__code">ARTEMIS</span><span class="community-introduction__name">阿耳忒彌斯</span><span class="community-introduction__role">生態共處</span><span class="community-introduction__stage" data-stage="planned">未來發展</span></summary>
+      <div><p>將來支援動物受困、寵物及社區生態需要，讓社區不同生命都得到照顧。</p><p class="community-introduction__limit">專門動物服務尚未實裝。</p></div>
+    </details>
+    <details data-community-function="eleuthia">
+      <summary><span class="community-introduction__code">ELEUTHIA</span><span class="community-introduction__name">艾莉提亞</span><span class="community-introduction__role">居民關懷</span><span class="community-introduction__stage" data-stage="available">已有服務流程</span></summary>
+      <div><p>透過數字人溫暖對話，了解生活與情緒需要，提供初步支援，再交給職員跟進。</p><p class="community-introduction__limit">情緒分流是關懷提示，並非醫療診斷，也不代表職員已聯絡居民。</p></div>
+    </details>
+    <details data-community-function="aether">
+      <summary><span class="community-introduction__code">AETHER</span><span class="community-introduction__name">埃涅特</span><span class="community-introduction__role">煙霧與空氣觀察</span><span class="community-introduction__stage" data-stage="field">部分待實景驗收</span></summary>
+      <div><p>整理煙霧或火警候選線索，提醒職員及早到場核實。</p><p class="community-introduction__limit">影像辨識待實景驗收，不能代替消防設備；空氣感測器屬未來發展。</p></div>
+    </details>
+    <details data-community-function="apollo">
+      <summary><span class="community-introduction__code">APOLLO</span><span class="community-introduction__name">阿波羅</span><span class="community-introduction__role">知識與記憶</span><span class="community-introduction__stage" data-stage="available">已有服務流程</span></summary>
+      <div><p>整理屋苑資料、網上搜尋及本輪對話內容，並保存居民明確要求記住的資料。</p><p class="community-introduction__limit">閒置後清除本輪對話與稱呼；明確長期記憶及已提交個案按原有規則保留。</p></div>
+    </details>
+  </div>
+  <p class="community-introduction__closing">重新連結居民與社區，讓每一份需要更早被看見。</p>
+  <p class="community-introduction__footnote">九個子功能代表協作分工，並非九個獨立大模型。平台沿用 Gemma 及 Microsoft 語音服務；重要判斷與實際支援由職員核實和跟進。</p>
+  </details>
+</article>
+</dialog>
 <div id="workspace">
 <main id="login" hidden><h1>歡迎使用鄰伴</h1><p id="loginHint">正在準備居民服務台…</p><div id="googleButton"></div><p id="status" role="status">正在連接…</p></main>
 <main id="staffLogin" hidden><div class="login-card-heading"><span class="login-mark" aria-hidden="true">鄰</span><p class="login-eyebrow">職員入口</p><h1>管理工作台</h1><p>查看居民需要、跟進個案，同團隊一齊照顧社區。</p></div><form id="staffLoginForm"><label for="staffPassword">管理口令</label><input id="staffPassword" type="password" autocomplete="current-password" maxlength="128" placeholder="輸入管理口令" required><p id="staffLoginStatus" role="status"></p><div class="login-actions"><button id="cancelStaffLogin" type="button">返回居民服務台</button><button id="staffSubmit" type="submit">進入管理工作台</button></div></form></main>
 <section id="service" aria-label="服務畫面"></section>
 <section id="launchScreen" aria-labelledby="launchTitle" aria-busy="true"><div class="launch-card">
-<div class="launch-portal" aria-hidden="true"><div class="launch-window-bar"><i></i><i></i><i></i><span>NEIGHBOUR</span></div><div class="launch-scene"><div class="launch-journey" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div><img class="launch-mascot" src="/assets/brand/neighbour-house-apricot-v1.webp" width="150" height="150" alt="" fetchpriority="high"><svg viewBox="0 0 360 176">
-<g class="launch-sun"><path d="M287 9v-5m0 70v-5m30-30h5m-70 0h5m52-22 4-4m-52 52 4-4m0-44-4-4m52 52-4-4"/><circle cx="287" cy="39" r="21"/><path d="M279 38v1m16-1v1m-15 6q7 6 14 0"/></g>
-<path class="launch-cloud" d="M34 58c-17 0-16-20-3-22 3-18 29-19 35-2 20-8 28 21 8 24Z"/><path class="launch-cloud launch-cloud-two" d="M262 96c-13 0-13-15-2-17 3-14 22-14 27-2 15-5 20 19 4 19Z"/>
-<ellipse class="launch-ground" cx="177" cy="151" rx="126" ry="15"/><path class="launch-path" d="M162 145h31l18 17h-66Z"/>
-<g class="launch-tree"><path d="M69 147v-41m0 15-12-8m12 18 12-12"/><circle cx="67" cy="91" r="20"/><circle cx="52" cy="106" r="16"/><circle cx="82" cy="109" r="17"/></g>
-<g class="launch-house"><path class="launch-house-wall" d="M127 90h100v57H127Z"/><path class="launch-house-roof" d="m115 94 62-49 62 49Z"/><rect class="launch-window" x="140" y="101" width="18" height="18" rx="5"/><rect class="launch-window" x="196" y="101" width="18" height="18" rx="5"/><path class="launch-door" d="M166 147v-22a11 11 0 0 1 22 0v22Z"/><g class="launch-face"><circle cx="165" cy="95" r="2"/><circle cx="189" cy="95" r="2"/><path d="M171 101q6 6 12 0"/></g><ellipse class="launch-blush" cx="159" cy="102" rx="5" ry="2.5"/><ellipse class="launch-blush" cx="195" cy="102" rx="5" ry="2.5"/></g>
-<g class="launch-bubble"><rect x="236" y="55" width="42" height="32" rx="12"/><path d="m247 85-5 8 14-7m-9-17q3-6 7 0 4-6 7 0-1 4-7 8-6-4-7-8"/></g>
-<path class="launch-spark" d="m111 42 3 7 7 3-7 3-3 7-3-7-7-3 7-3Z"/><path class="launch-spark launch-spark-two" d="m258 125 2 5 5 2-5 2-2 5-2-5-5-2 5-2Z"/>
-</svg></div><div class="launch-window-foot"><span></span><span></span><span></span></div></div>
-<p class="launch-brand">鄰伴 · 智慧社區平台</p><h1 id="launchTitle">今日，一齊開心傾吓！</h1>
+<div id="launchSystems"></div>
+<div class="launch-copy"><p class="launch-brand">鄰伴 · 智慧社區平台</p><h1 id="launchTitle">今日，一齊開心傾吓！</h1>
 <div class="launch-modules" aria-label="背景預載程式"><div data-warm-chip="services"><b>居民服務台</b><span class="warm-state">預載程式中</span></div><div data-warm-chip="settings"><b>數字人設定</b><span class="warm-state">預載程式中</span></div><div data-warm-chip="robots"><b>機械人控制台</b><span class="warm-state">預載程式中</span></div></div>
 <div class="launch-current"><span class="launch-live-dot" aria-hidden="true"></span><span id="launchStep">第 1 / 3 步</span></div>
 <h2 id="launchStatus" role="status">連接服務</h2><p id="launchDetail">同鄰伴服務台接通，準備開始。</p>
@@ -35,7 +78,7 @@
 <li data-launch-step="interface"><span class="launch-step-number">02</span><span class="launch-step-title">載入畫面</span><span class="launch-step-state">稍後開始</span></li>
 <li data-launch-step="avatar"><span class="launch-step-number">03</span><span class="launch-step-title">準備角色</span><span class="launch-step-state">稍後開始</span></li>
 </ol></div></div><p id="launchNote">畫面準備好，就會自動帶你入去。</p>
-<div class="launch-actions"><button id="launchContinue" type="button" hidden>先用文字開始</button><button id="launchRetry" type="button" hidden>重新連接</button></div>
-</div></section>
+<div class="launch-actions"><button id="launchEnterNow" type="button" hidden>立即進入</button><button id="launchContinue" type="button" hidden>先用文字開始</button><button id="launchRetry" type="button" hidden>重新連接</button></div>
+</div></div></section>
 </div><script type="module" src="/cloud/shell.js"></script>
 </body></html>

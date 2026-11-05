@@ -1,8 +1,8 @@
 """Reviewed source identities, not a list of licensed/ready model binaries.
 
-One provider/catalogue counts once, never once per author, colour or mirror.
-Five metadata adapters, existing VRoid OAuth and three pinned runtime sources
-have distinct status. A pinned sample does not imply a whole-site catalogue.
+Metadata adapters, OAuth catalogues and admitted originals have distinct status.
+The user allows independently maintained original GitHub model libraries to
+count; one creator/team still counts once, never once per mirror or colour.
 """
 import re
 from urllib.parse import urlsplit
@@ -93,13 +93,20 @@ def source_id(value):
 
 
 def registry_snapshot():
+    from .original_libraries import snapshot as originals_snapshot
+    from .reviewed_model_imports import reviewed_models
+    originals = originals_snapshot()
+    models = reviewed_models()
     return {'items': [dict(row) for row in SOURCES], 'target_sources': 20,
             'registered_sources': len(SOURCES), 'metadata_adapters': 5,
-            'existing_oauth_sources': 1, 'target_complete': False,
-            'reviewed_runtime_sources': 3, 'reviewed_runtime_models': 5,
-            'reviewed_original_github_models': 2,
+            'existing_oauth_sources': 1, 'target_complete': originals['target_complete'],
+            'reviewed_runtime_sources': len({row.source for row in models}), 'reviewed_runtime_models': len(models),
+            'reviewed_original_github_models': sum(row['model_count'] for row in originals['verified_libraries'] if row['repository']),
             'all_sources_one_click': False,
-            'counting_rule': 'Connected catalogues only; creators, mirrors and links do not count as connected platforms.'}
+            'verified_independent_sources': originals['verified_independent_sources'],
+            'verified_import_libraries': originals['verified_libraries'],
+            'github_original_sources': originals['github_original_sources'],
+            'counting_rule': 'Independently maintained original libraries with licensed native imports count, including GitHub. One team once; mirrors, reuploads and profile-only pages excluded.'}
 
 
 def safe_title(value):

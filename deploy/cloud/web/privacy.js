@@ -19,6 +19,16 @@ export function placeModelCredit(document, credit) {
     ['https://github.com/pixiv/three-vrm','https://vrm.dev/en/licenses/1.0/'],
     ['https://github.com/SirRichard94/low-poly-godette','https://github.com/V-Sekai/godot-vrm/blob/e15199f980064028bfa4fbee5e70dddb82dd55c3/vrm_samples/LICENSE_SAMPLES.txt'],
     ['https://github.com/DenpaBorisu/Live2D_Android_Demo/tree/395bcd5b907fd5f1da68992d63f2666a1bea94ca/AndroidSample/Live2dModels/Cat1','https://github.com/DenpaBorisu/Live2D_Android_Demo/blob/395bcd5b907fd5f1da68992d63f2666a1bea94ca/README.md']
+,
+    ["https://github.com/MjGjVtube/free-filipino-vtuber-template", "https://github.com/MjGjVtube/free-filipino-vtuber-template/blob/e1c70b0c0ccaaf4274bc537384e9341f80046775/LICENSE"],
+    ["https://github.com/Ariakage/live2d-agent-kit", "https://github.com/Ariakage/live2d-agent-kit/blob/354d95800b7d498246dfb658e0e2ee379c29caa4/examples/pink-sakura/LICENSE.md"],
+    ["https://github.com/yamato3010/live2d-nadeshiko", "https://github.com/yamato3010/live2d-nadeshiko/blob/0a27301bf249c230cd24c697e2fb1f8a3ae59a9b/README.md"],
+    ["https://github.com/elainyilanchen/blender-vrm-perfect-sync/tree/d812944595e3ba25cab60649319c79fefac59dc0/samples", "https://github.com/elainyilanchen/blender-vrm-perfect-sync/blob/d812944595e3ba25cab60649319c79fefac59dc0/samples/README.md"],
+    ["https://github.com/elainyilanchen/blender-vrm-perfect-sync/tree/d812944595e3ba25cab60649319c79fefac59dc0/samples", "https://github.com/elainyilanchen/blender-vrm-perfect-sync/blob/d812944595e3ba25cab60649319c79fefac59dc0/samples/README.md"],
+    ["https://github.com/yuna0x0/AliceChan", "https://github.com/yuna0x0/AliceChan/blob/68850a304e5ae0f7b39fc2d75ed21134e6f5a715/LICENSE.md"],
+    ["https://github.com/tegnike/deepseek-chan-vrm", "https://github.com/tegnike/deepseek-chan-vrm/blob/3b28db3bdde8d2e73b698a060044e0d8ebdf8b7b/LICENSE"]
+,
+    ["https://github.com/xShiroeNguyenx/desktop-companion", "https://github.com/xShiroeNguyenx/desktop-companion/blob/4ab4ae6461949aa4f1b6cfb6fcf5a1b8ac42f18c/ASSETS-LICENSE.md"]
   ])
   if (!credit || typeof credit.name !== 'string' || typeof credit.author !== 'string'
     || !credit.name.trim() || !credit.author.trim() || credit.name.length>500 || credit.author.length>500

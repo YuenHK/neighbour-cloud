@@ -1,15 +1,20 @@
+import { mountCommunitySystems } from '/cloud/community-systems.js'
+import { createCommunityState } from '/cloud/community-state.js'
 // Progress follows real service milestones. Animation never invents a percentage.
 export function createLaunchScreen(document, { onRetry, onContinue }) {
   const node = id => document.getElementById(id)
   const root = node('launchScreen')
+  const systemsView = node('launchSystems') ? mountCommunitySystems(node('launchSystems')) : undefined
+  const systems = createCommunityState(value => systemsView?.update(value))
   const text = node('launchStatus')
   const retry = node('launchRetry')
   const skip = node('launchContinue')
+  const enter = node('launchEnterNow')
   const steps = [...document.querySelectorAll('[data-launch-step]')]
   const phases = ['connect', 'interface', 'avatar']
   const titles = ['連接服務', '載入畫面', '準備角色']
   const descriptions = ['同鄰伴服務台接通，準備開始。', '正在載入對話介面同必要資料。', '準備數字人、表情同對話畫面。']
-  let timer, ticker, active = false, area = 'resident', textAvailable = false, index = 0, startedAt = 0, generation = 0
+  let timer, ticker, active = false, area = 'resident', textAvailable = false, index = 0, startedAt = 0, generation = 0, finishNow
   function stopTimers() { clearTimeout(timer); clearInterval(ticker) }
   function elapsed() {
     const seconds = Math.max(0, Math.floor((performance.now() - startedAt) / 1000))
@@ -44,9 +49,11 @@ export function createLaunchScreen(document, { onRetry, onContinue }) {
     const continuing = active && area === nextArea && value !== 'connect'
     stopTimers()
     generation++
+    finishNow = undefined
     area = nextArea
     active = true
-    if (!continuing) { index = 0; startedAt = performance.now() }
+    systemsView?.resume()
+    if (!continuing) { index = 0; startedAt = performance.now(); if (value === 'connect') systems.reset(); systemsView?.orbit({ replay: true }) }
     textAvailable = false
     root.hidden = false
     root.dataset.state = 'loading'
@@ -56,6 +63,7 @@ export function createLaunchScreen(document, { onRetry, onContinue }) {
     node('launchNote').textContent = '畫面準備好，就會自動帶你入去。'
     retry.hidden = true
     skip.hidden = true
+    if (enter) enter.hidden = true
     phase(value)
     elapsed()
     ticker = setInterval(elapsed, 1000)
@@ -67,12 +75,12 @@ export function createLaunchScreen(document, { onRetry, onContinue }) {
       skip.hidden = !textAvailable
     }, Math.max(0, 30000 - (performance.now() - startedAt)))
   }
-  function hide() { generation++; stopTimers(); active = false; root.hidden = true; root.setAttribute('aria-busy', 'false') }
+  function hide() { generation++; stopTimers(); finishNow = undefined; active = false; systemsView?.pause(); root.hidden = true; root.setAttribute('aria-busy', 'false') }
   function finish(complete) {
     if (!active) return
     const own = ++generation
     stopTimers(); active = false
-    root.dataset.state = 'handoff'
+    root.dataset.state = 'ready-overview'
     root.setAttribute('aria-busy', 'false')
     const total = area === 'staff' ? 2 : 3
     node('launchProgress').setAttribute('aria-valuenow', String(total))
@@ -86,13 +94,37 @@ export function createLaunchScreen(document, { onRetry, onContinue }) {
       step.removeAttribute('aria-current')
     })
     const reduced = document.defaultView.matchMedia('(prefers-reduced-motion: reduce)').matches
-    timer = setTimeout(() => {
+    const completeOnce = () => {
       if (own !== generation) return
+      generation++
+      stopTimers(); finishNow = undefined
+      if (enter) enter.hidden = true
+      systemsView?.pause()
       root.hidden = true
       complete()
-    }, reduced ? 0 : 560)
+    }
+    finishNow = completeOnce
+    retry.hidden = true; skip.hidden = true
+    if (enter) enter.hidden = reduced
+    const glow = () => {
+      if (own !== generation) return
+      root.dataset.state = 'handoff'
+      timer = setTimeout(completeOnce, reduced ? 0 : 560)
+    }
+    const overview = () => {
+      if (own !== generation) return
+      systemsView?.overview('eleuthia')
+      node('launchDetail').textContent = '必要畫面已就緒；九項分工可在「認識鄰伴」詳細查看。'
+      timer = setTimeout(glow, reduced ? 0 : 900)
+    }
+    if (reduced) timer = setTimeout(overview, 0)
+    else if (systemsView?.whenIntroduced) void systemsView.whenIntroduced().then(() => overview())
+    else timer = setTimeout(overview, Math.max(0, 2600 - (performance.now() - startedAt)))
   }
-  function fail(message) {
+  function fail(message, key = index === 0 ? 'minerva' : 'eleuthia') {
+    generation++; finishNow = undefined
+    if (enter) enter.hidden = true
+    systems.fail(key)
     stopTimers()
     active = true
     root.hidden = false
@@ -107,9 +139,11 @@ export function createLaunchScreen(document, { onRetry, onContinue }) {
     skip.hidden = !textAvailable
   }
   retry.addEventListener('click', onRetry)
+  enter?.addEventListener('click', () => finishNow?.())
   skip.addEventListener('click', () => { if (active && textAvailable) onContinue() })
   function checks(value) {
     if (!active || area !== 'resident') return
+    systems.checks(value.checks || {})
     textAvailable = value.textReady === true
     const labels = { interface: '對話介面', runtime: '對話及語音設定', avatar: '角色及背景', input: '語音收音' }
     const pending = Object.entries(labels).filter(([key]) => value.checks?.[key] !== 'ready')
@@ -121,17 +155,19 @@ export function createLaunchScreen(document, { onRetry, onContinue }) {
       node('launchNote').textContent = '若瀏覽器未允許收音，可先用文字進入，再按咪高峰啟用。此檢查不會試用 API 或扣除 AI 額度。'
     }
   }
-  return { start, phase, hide, finish, fail, checks, repair(message) {
+  return { start, phase, hide, finish, fail, checks, snapshot: systems.snapshot, connected: systems.connected, repairState: systems.repair, repair(message, key = 'eleuthia') {
     if (!active) return
+    systems.repair(key, 'retrying')
     root.dataset.state = 'repairing'
     text.textContent = '正在自動重新連接'
     node('launchDetail').textContent = message
     node('launchNote').textContent = '只處理未完成的載入，不會重複傳送對話或建立個案。'
   }, moduleState(key, state) {
+    systems.module(key, state)
     const chip = document.querySelector(`[data-warm-chip="${key}"]`)
     if (!chip) return
     chip.dataset.state = state
-    chip.querySelector('.warm-state').textContent = state === 'loaded' ? '程式已預載' : state === 'failed' ? '開啟時再載入' : '預載程式中'
+    chip.querySelector('.warm-state').textContent = state === 'loaded' ? '程式已預載' : state === 'failed' ? '開啟時再載入' : state === 'repairing' ? '安全重連中' : '預載程式中'
   }, staffSettings() {
     if (!active || area !== 'staff') return
     phase('interface')

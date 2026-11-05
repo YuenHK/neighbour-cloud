@@ -162,10 +162,10 @@ def test_time_budget_is_bounded_and_gate_released():
 
 def test_production_manifest_is_fixed_nonduplicated_and_carries_original_permissions():
     rows = reviewed_models()
-    assert len(rows) == 5 and len({row.sha256 for row in rows}) == 5
-    assert len({row.source for row in rows}) == 4
+    assert len(rows) == 9 and len({row.sha256 for row in rows}) == 9
+    assert len({row.source for row in rows}) == 7
     assert all(row.credit and row.license_url and row.notice for row in rows)
-    assert all(row.application_only for row in rows if row.source not in ('vrmconsortium', 'godette-original'))
+    assert all(row.application_only for row in rows if row.source in ('tsukuyomi', 'aituber-onair'))
     with pytest.raises(dataclasses.FrozenInstanceError):
         rows[0].download_url = 'https://127.0.0.1/private'
 

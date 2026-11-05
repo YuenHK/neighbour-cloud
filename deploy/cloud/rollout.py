@@ -18,7 +18,7 @@ from pathlib import Path
 from starlette.responses import JSONResponse, Response
 
 SERVICE = 'srv-dbii3qijnfac73cgabd0'
-RELEASE = 'gaia-expansion-20261105-barrier27'
+RELEASE = 'original-libraries-20261105-barrier28'
 RECORD = hashlib.sha256(('rollout:' + RELEASE).encode()).hexdigest()
 DOMAIN = b'neighbour-stopped-writer-rollout-v1\0'
 FIELDS = {'format', 'release', 'service_id', 'stop_event_id', 'stopped_instance',
@@ -152,6 +152,10 @@ class RolloutHost:
             boot_files = {'/': ('boot-wait.html', 'text/html'),
                 '/cloud/boot-wait.js': ('boot-wait.js', 'text/javascript'),
                 '/cloud/boot-wait.css': ('boot-wait.css', 'text/css'),
+                '/cloud/community-systems.js': ('community-systems.js', 'text/javascript'),
+                '/cloud/community-state.js': ('community-state.js', 'text/javascript'),
+                '/cloud/community-products.js': ('community-products.js', 'text/javascript'),
+                '/cloud/community-systems.css': ('community-systems.css', 'text/css'),
                 '/cloud/mascot.css': ('mascot.css', 'text/css'),
                 '/assets/brand/neighbour-house-apricot-v1.webp': ('brand/neighbour-house-apricot-v1.webp', 'image/webp'),
                 '/assets/brand/favicon-32.png': ('brand/favicon-32.png', 'image/png')}

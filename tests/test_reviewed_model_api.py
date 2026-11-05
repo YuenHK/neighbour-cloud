@@ -39,7 +39,7 @@ def test_catalogue_and_preview_are_staff_only_and_do_not_fetch_in_background(mod
     assert client.get(PATH, headers=resident).status_code == 403
     result = client.get(PATH, headers=staff)
     assert result.status_code == 200
-    assert len(result.json()['items']) == 5 and result.json()['auto_publish'] is False
+    assert len(result.json()['items']) == 9 and result.json()['auto_publish'] is False
     assert all('download_url' not in row for row in result.json()['items'])
     for headers, status in (({'Origin': staff['Origin']}, 401), (resident, 403)):
         response = client.post(PATH + '/onair-miko/preview', json=AGREEMENT, headers=headers)

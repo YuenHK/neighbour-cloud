@@ -82,6 +82,11 @@ def test_cold_boot_shows_a_waiting_page_but_never_exposes_api_or_ready_early():
         assert 'no-store' in page.headers['cache-control']
         assert client.get('/cloud/boot-wait.js').status_code == 200
         assert client.get('/cloud/boot-wait.css').status_code == 200
+        for suffix in ('community-state.js', 'community-systems.js', 'community-systems.css', 'community-products.js'):
+            reply = client.get('/cloud/' + suffix)
+            assert reply.status_code == 200
+            assert 'no-store' in reply.headers['cache-control']
+        assert 'id="bootSystems"' in page.text
         assert client.get('/health').status_code == 503
         assert client.post('/api/v1/chat', json={}).status_code == 503
         assert client.get('/cloud/admin').status_code == 503

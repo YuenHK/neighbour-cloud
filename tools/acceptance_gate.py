@@ -27,6 +27,8 @@ TESTS = ['test_community_operations.py', 'test_cloud_http_app.py', 'test_cloud_s
          'test_fiducial_localisation.py', 'test_board_localisation.py',
          'test_route_follower.py', 'test_navigation_scenarios.py', 'test_navigation_kit.py', 'test_s1_free_paths.py',
          'test_reviewed_model_api.py', 'test_reviewed_model_imports.py',
+         'test_original_libraries.py', 'test_reviewed_vrm_prepare.py', 'test_reviewed_import_preparation.py',
+         'test_cloud_gallery_budget.py',
          'test_cloud_free_skeletal.py', 'test_cloud_free_skeletal_wiring.py', 'test_acceptance_fingerprint.py']
 
 
@@ -59,7 +61,7 @@ def main():
                 ['node', '--test', 'tests/resident-pcm.test.cjs', 'tests/resident-avatar-audio.test.cjs', 'tests/resident-camera.test.cjs', 'tests/staff-pwa.test.cjs',
                  'tests/cloud-transport.test.cjs', 'tests/admin-request.test.cjs', 'tests/workbench-live.test.cjs', 'tests/model-dedup.test.cjs',
                  'tests/cloud-privacy.test.cjs', 'tests/kiosk.test.cjs', 'tests/patrol-planner-review.test.cjs',
-                 'tests/free_skeletal.test.mjs']]
+                 'tests/free_skeletal.test.mjs', 'tests/community-state.test.cjs', 'tests/test_community_systems_visual.mjs', 'tests/test_community_products.mjs']]
     commands[0][0] = sys.executable
     if args.network_faults:
         commands.append([sys.executable, 'tools/toxiproxy_acceptance.py', '--output', str(output / 'network.json')])

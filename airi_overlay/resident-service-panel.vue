@@ -478,6 +478,10 @@ function cancelTranscription() {
 async function transcribeAudio(audio: Blob) {
   if (!residentApi.cloud)
     throw new Error('cloud_transcription_only')
+  // Input may warm locally behind the launch screen. Do not send background
+  // speech or spend ASR quota before the parent actually reveals this resident.
+  if (!avatarVisible)
+    return ''
   touch()
   const epoch = session.generation
   const controller = new AbortController()

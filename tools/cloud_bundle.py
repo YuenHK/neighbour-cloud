@@ -23,6 +23,8 @@ ROOT_FILES = ('pyproject.toml', 'package.json', 'pnpm-lock.yaml', 'pnpm-workspac
               'deploy/cloud/web/brand/neighbour-house-apricot-v1.webp',
               'deploy/cloud/web/brand/favicon-32.png', 'deploy/cloud/web/brand/apple-touch-icon-180.png',
               'deploy/cloud/web/brand/icon-192.png', 'deploy/cloud/web/brand/icon-512.png')
+ROOT_FILES += ('docs/neighbour-fwft-introduction-2026-11-05.md',
+               'docs/gaia-community-architecture-2026-11-05.md')
 TOOLS = ('tools/cloud_bundle.py', 'tools/cloud_preflight.py', 'tools/cloud_frontend_assets.py',
          'tools/acceptance_gate.py', 'tools/check_release_gate.py', 'tools/toxiproxy_acceptance.py',
          'tools/vision_anomaly_lab.py', 'tools/localisation_replay.py',

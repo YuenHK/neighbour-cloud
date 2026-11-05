@@ -14,7 +14,9 @@ async function main(){
   if(u.pathname==='/api/v1/resident/session')return route.fulfill({json:{authenticated:true,role:'resident',storage_acceptance:false}})
   if(u.pathname==='/cloud/resident')return route.fulfill({contentType:'text/html',body:'<p>合成居民畫面</p><script>parent.postMessage({type:"neighbour-service-stage",state:"mounted"},location.origin);parent.postMessage({type:"estate-assistant-ready"},location.origin)</script>'})
   const files={'/':'deploy/cloud/web/index.html','/cloud/launch-screen.js':'deploy/cloud/web/launch-screen.js','/cloud/launch-screen.css':'deploy/cloud/web/launch-screen.css','/cloud/module-warmup.js':'deploy/cloud/web/module-warmup.js','/cloud/shell.js':'deploy/cloud/web/shell.js','/cloud/privacy.js':'deploy/cloud/web/privacy.js','/cloud/shell.css':'deploy/cloud/web/shell.css','/cloud/cloud-session.js':'airi_overlay/cloud-session.js','/cloud/cloud-frame.js':'airi_overlay/cloud-frame.js'}
-  if(files[u.pathname])return route.fulfill({contentType:u.pathname.endsWith('.js')?'text/javascript':u.pathname.endsWith('.css')?'text/css':'text/html',body:fs.readFileSync(files[u.pathname])})
+  for(const file of ['community-systems.js','community-products.js','community-state.js','community-systems.css','community-about.js','community-introduction.css','startup-repair.js','mascot.css'])files['/cloud/'+file]='deploy/cloud/web/'+file
+  for(const file of ['neighbour-house-apricot-v1.webp','icon-192.png','favicon-32.png','apple-touch-icon-180.png'])files['/assets/brand/'+file]='deploy/cloud/web/brand/'+file
+  if(files[u.pathname])return route.fulfill({contentType:u.pathname.endsWith('.js')?'text/javascript':u.pathname.endsWith('.css')?'text/css':u.pathname.endsWith('.webp')?'image/webp':u.pathname.endsWith('.png')?'image/png':'text/html',body:fs.readFileSync(files[u.pathname])})
   throw Error('Unexpected '+u.pathname)
  })
  try{

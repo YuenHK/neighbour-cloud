@@ -28,6 +28,12 @@ SHELL = {
     '/cloud/launch-screen.css': (WEB / 'launch-screen.css', 'text/css'),
     '/cloud/module-warmup.js': (WEB / 'module-warmup.js', 'text/javascript'),
     '/cloud/startup-repair.js': (WEB / 'startup-repair.js', 'text/javascript'),
+    '/cloud/community-systems.js': (WEB / 'community-systems.js', 'text/javascript'),
+    '/cloud/community-systems.css': (WEB / 'community-systems.css', 'text/css'),
+    '/cloud/community-state.js': (WEB / 'community-state.js', 'text/javascript'),
+    '/cloud/community-products.js': (WEB / 'community-products.js', 'text/javascript'),
+    '/cloud/community-about.js': (WEB / 'community-about.js', 'text/javascript'),
+    '/cloud/community-introduction.css': (WEB / 'community-introduction.css', 'text/css'),
     # A browser can request these after the real app becomes ready midway
     # through loading the independent cold-start document.
     '/cloud/boot-wait.js': (WEB / 'boot-wait.js', 'text/javascript'),
@@ -56,6 +62,22 @@ SUFFIX_TYPES = {'.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'te
     '.woff': 'font/woff', '.woff2': 'font/woff2'}
 
 
+MAX_PROGRAM_BYTES = 256 * 1024 * 1024
+# Fixed public packages occupy disk and stream on demand, not the separate
+# 64 MiB resident-upload store. The reviewed 31-item set is ~68 MiB.
+MAX_REVIEWED_GALLERY_BYTES = 96 * 1024 * 1024
+
+
+def reviewed_gallery_paths():
+    """Optional on-demand gallery files, never arbitrary directory contents."""
+    root = Path(__file__).resolve().parents[2]
+    static = json.loads((root/'airi_overlay/cloud-model-gallery.json').read_text(encoding='utf-8'))['models']
+    vroid = json.loads((root/'deploy/cloud/vroid_reviewed.json').read_text(encoding='utf-8'))['models']
+    return {value.lstrip('/') for row in static+vroid for key in ('archive', 'image')
+            if isinstance(value := row.get(key), str) and value.startswith('/assets/gallery/')
+            and Path(value).suffix in ('.zip', '.webp')}
+
+
 class CloudWebAssets:
     def __init__(self, resident_root=None, *, governance=False, public_resident=False):
         if type(public_resident) is not bool:
@@ -74,7 +96,8 @@ class CloudWebAssets:
                 or not isinstance(manifest['files'], list) or not 1 <= len(manifest['files']) <= 2000
                 or root.is_symlink() or any(p.is_symlink() for p in root.parents)):
             raise ValueError('cloud_assets_manifest_required')
-        total = 0
+        program_total, gallery_total = 0, 0
+        optional_gallery = reviewed_gallery_paths()
         seen = set()
         for item in manifest['files']:
             name = item.get('path')
@@ -93,8 +116,13 @@ class CloudWebAssets:
                 if hashlib.file_digest(source, 'sha256').hexdigest() != item['sha256']:
                     raise ValueError('cloud_assets_digest_mismatch')
             seen.add(name)
-            total += item['bytes']
-            if total > 256 * 1024 * 1024:
+            if name in optional_gallery:
+                gallery_total += item['bytes']
+            else:
+                program_total += item['bytes']
+            # Keep the original program budget; separately bound approved
+            # gallery downloads. These are not preloaded at resident startup.
+            if program_total > MAX_PROGRAM_BYTES or gallery_total > MAX_REVIEWED_GALLERY_BYTES:
                 raise ValueError('cloud_assets_too_large')
             if name == 'resident.html':
                 self.resident = path

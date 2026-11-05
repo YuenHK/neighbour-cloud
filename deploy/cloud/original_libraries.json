@@ -1,0 +1,421 @@
+{
+  "version": 1,
+  "counting_rule": "independent-original-libraries-v1",
+  "user_confirmed_original_github_libraries": true,
+  "libraries": [
+    {
+      "id": "live2d-original",
+      "name": "Live2D 官方樣本",
+      "maintainer_id": "live2d-inc",
+      "url": "https://www.live2d.com/en/learn/sample/",
+      "rights_urls": [
+        "https://www.live2d.com/eula/live2d-free-material-license-agreement_en.html"
+      ],
+      "repository": "https://github.com/Live2D/CubismWebSamples",
+      "original_material": true,
+      "verification": "licensed-native-import-verified",
+      "models": [
+        {
+          "channel": "static",
+          "id": "mark",
+          "sha256": "a2e0af907b2febdb6c5a9ed7563710ca7a2eeb8ca4683d1fad60fe183e33173b"
+        },
+        {
+          "channel": "static",
+          "id": "wanko",
+          "sha256": "a3c6ab8490641f9e6882173288973886baddd4012c9fc20380dd9ca9e50574f8"
+        },
+        {
+          "channel": "static",
+          "id": "haru",
+          "sha256": "b880fbafe5ffca9155e44b1c7480ba520d1d0a2bc7f2a020d05f83567a86db6c"
+        },
+        {
+          "channel": "static",
+          "id": "hiyori",
+          "sha256": "8584af6c6ec834a8bac48076511e36b59b6f8f7545fb649ff8d55859c8d5666d"
+        },
+        {
+          "channel": "static",
+          "id": "mao",
+          "sha256": "7a4baaad0ea68f12984b0c04bef2093789cfb8dbf1be0b42c5e3d9611077438c"
+        },
+        {
+          "channel": "static",
+          "id": "kei-kei-basic-free",
+          "sha256": "bd836a341c85da73d3b66574e10aaf52ceb62348286e707718b8b81b675f0b97"
+        },
+        {
+          "channel": "static",
+          "id": "kei-kei-vowels-pro",
+          "sha256": "5c442214c944071bb4920c54e8780f5999f1cd29f6dd5a23adc6a5ff9559216d"
+        },
+        {
+          "channel": "static",
+          "id": "miara",
+          "sha256": "344763d6b6ed33a1231042043147679d32c9f71f86a7712529610628df6a64b7"
+        },
+        {
+          "channel": "static",
+          "id": "tororo-hijiki-tororo",
+          "sha256": "24c82a3d7a1e5ae7c23b5b755e5bd8d0777d49d01467bbc801472706f16633aa"
+        },
+        {
+          "channel": "static",
+          "id": "tororo-hijiki-hijiki",
+          "sha256": "5c2698171cefcd96b4c0b4702d05f188f0e5cb96c30a173469fdbec1e98b51a8"
+        },
+        {
+          "channel": "static",
+          "id": "simple-model",
+          "sha256": "daf89ed0d425a706249efd8cd7fe1bd0803dbd485bc8f346a87ed2ce65c9ae1a"
+        },
+        {
+          "channel": "static",
+          "id": "chitose",
+          "sha256": "2869e233186261e2ca5023613153c0504f3ab87dcc95d60922e774958e3ace00"
+        },
+        {
+          "channel": "static",
+          "id": "koharu-haruto-haruto",
+          "sha256": "b1b9dad30d9f3fd30ecb9c9216c94e1ca5c18312ac3d48bdfb17a2aecec42452"
+        },
+        {
+          "channel": "static",
+          "id": "koharu-haruto-koharu",
+          "sha256": "33d8ea74578ac807447e7521c34f1c3e0ef1f731f431fe58d201d12bde320215"
+        },
+        {
+          "channel": "static",
+          "id": "nito-ni-j",
+          "sha256": "92b33864e7cdbe5023a038dc0f02f350032be511f1c94500233ffe25b0548a31"
+        },
+        {
+          "channel": "static",
+          "id": "nito-nico",
+          "sha256": "996664f74367d5253862ed32d62ea5498c354fe0fbd7dd0acba5081b0d64b6d5"
+        },
+        {
+          "channel": "static",
+          "id": "nito-nietzsche",
+          "sha256": "30e79c6ce41d4fb88817614d05613d8b2ace9fced3c8cb599fb2d8e07794e7a4"
+        },
+        {
+          "channel": "static",
+          "id": "nito-nipsilon",
+          "sha256": "b31de38919347895dbc97da515d6f696c81f745686ce122c508b9e21647e50ec"
+        },
+        {
+          "channel": "static",
+          "id": "nito-nito",
+          "sha256": "f96fa246698ee34f5a81b64b22ba988708a9d14526aa3b71b02df0e479e10680"
+        },
+        {
+          "channel": "static",
+          "id": "rice-glassfield",
+          "sha256": "92ace90a1b735ef2b01f8fb36f4737eeab74cfd9189d015723b705fe35a2e2b5"
+        },
+        {
+          "channel": "static",
+          "id": "zundamon-education",
+          "sha256": "d76b8dea6c5e4f692990082c72fb3632b3160ada027e17bf28258be8b66064fb"
+        }
+      ]
+    },
+    {
+      "id": "puercatena-original",
+      "name": "puercatena／kenkipi 原創",
+      "maintainer_id": "kenkipi-puercatena",
+      "url": "https://puercatena.itch.io/",
+      "rights_urls": [
+        "https://puercatena.itch.io/radium-model",
+        "https://puercatena.itch.io/puer-in-catenis"
+      ],
+      "repository": null,
+      "original_material": true,
+      "verification": "licensed-native-import-verified",
+      "models": [
+        {
+          "channel": "static",
+          "id": "radium",
+          "sha256": "e22589bcc6ed853e9f585538ab6d4454cdb8bc94544267aa81013add5cda49bb"
+        },
+        {
+          "channel": "static",
+          "id": "puer",
+          "sha256": "b6f200d3ef6875611b07f2b0d0bb5fb0246f2b72780e3e38f0ce3f3b56ca0824"
+        }
+      ]
+    },
+    {
+      "id": "luna-arch-original",
+      "name": "LunaTheFoxgirl · Arch Chan",
+      "maintainer_id": "lunathefoxgirl",
+      "url": "https://github.com/LunaTheFoxgirl/archlive2d",
+      "rights_urls": [
+        "https://github.com/LunaTheFoxgirl/archlive2d/blob/31664b6e5dbdb32fddb7c253b1b559259ed483d2/LICENSE.md"
+      ],
+      "repository": "https://github.com/LunaTheFoxgirl/archlive2d",
+      "original_material": true,
+      "verification": "licensed-native-import-verified",
+      "models": [
+        {
+          "channel": "static",
+          "id": "arch-chan",
+          "sha256": "63b2f78cc9ff84fe2cdb2545ad0bf36ecc93172217c7e5f251190a9d4fad0d1c"
+        }
+      ]
+    },
+    {
+      "id": "denpaborisu-original",
+      "name": "DenpaBorisu · Cat1",
+      "maintainer_id": "denpaborisu",
+      "url": "https://github.com/DenpaBorisu/Live2D_Android_Demo",
+      "rights_urls": [
+        "https://github.com/DenpaBorisu/Live2D_Android_Demo/blob/395bcd5b907fd5f1da68992d63f2666a1bea94ca/README.md"
+      ],
+      "repository": "https://github.com/DenpaBorisu/Live2D_Android_Demo",
+      "original_material": true,
+      "verification": "licensed-native-import-verified",
+      "models": [
+        {
+          "channel": "static",
+          "id": "denpaborisu-cat1",
+          "sha256": "bc35f1bdbf503abace04cadb524eddbdee5945f717ba265b71505aabde71792f"
+        }
+      ]
+    },
+    {
+      "id": "pixiv-original",
+      "name": "pixiv 官方 VRoid／VRM 樣本",
+      "maintainer_id": "pixiv-inc",
+      "url": "https://github.com/pixiv/three-vrm",
+      "rights_urls": [
+        "https://vrm.dev/en/licenses/1.0/",
+        "https://vroid.pixiv.help/hc/en-us/articles/360014788554-Sakurada-Fumiriya",
+        "https://vroid.pixiv.help/hc/en-us/articles/360013482714-Sendagaya-Shino"
+      ],
+      "repository": "https://github.com/pixiv/three-vrm",
+      "original_material": true,
+      "verification": "licensed-native-import-verified",
+      "models": [
+        {
+          "channel": "static",
+          "id": "vroid-fumiriya",
+          "sha256": "d8fb05f33e377df028cb6b9d58c441ce68326c41fa23f6c735d40c65ae3dc710"
+        },
+        {
+          "channel": "static",
+          "id": "vroid-shino",
+          "sha256": "1e177c1a7b14f783a9c48395831db8616260d3bddd4154cb2784b779adca49b5"
+        },
+        {
+          "channel": "reviewed",
+          "id": "vrm-consortium-constraint",
+          "sha256": "12c2b97e95e700783a6a550dc0eee2d7880aeedccef9ae67bc4c5a2f0f2631a2"
+        }
+      ]
+    },
+    {
+      "id": "godette-original",
+      "name": "SirRichard94／Lyuma · Godette",
+      "maintainer_id": "sirrichard94-lyuma",
+      "url": "https://github.com/SirRichard94/low-poly-godette",
+      "rights_urls": [
+        "https://github.com/V-Sekai/godot-vrm/blob/e15199f980064028bfa4fbee5e70dddb82dd55c3/vrm_samples/LICENSE_SAMPLES.txt"
+      ],
+      "repository": "https://github.com/SirRichard94/low-poly-godette",
+      "original_material": true,
+      "verification": "licensed-native-import-verified",
+      "models": [
+        {
+          "channel": "reviewed",
+          "id": "godette-original-vrm",
+          "sha256": "0b008f60c808eb1c83781c650e654a70d512574932e3867f80609c62d7052c6c"
+        }
+      ]
+    },
+    {
+      "id": "tsukuyomi-original",
+      "name": "夢前黎 · つくよみちゃん",
+      "maintainer_id": "rei-yumesaki",
+      "url": "https://tyc.rei-yumesaki.net/material/avatar/3d-a/",
+      "rights_urls": [
+        "https://tyc.rei-yumesaki.net/material/avatar/3d-a/"
+      ],
+      "repository": null,
+      "original_material": true,
+      "verification": "licensed-native-import-verified",
+      "models": [
+        {
+          "channel": "reviewed",
+          "id": "tsukuyomi-official-spats",
+          "sha256": "ca73476640926dc52a9eb99bdd7e70ece8eb124398e34b8f926f139a30ef84a7"
+        }
+      ]
+    },
+    {
+      "id": "onair-original",
+      "name": "新藤勇樹 · Miko",
+      "maintainer_id": "yuki-shindo",
+      "url": "https://miko.aituberonair.com/",
+      "rights_urls": [
+        "https://miko.aituberonair.com/"
+      ],
+      "repository": null,
+      "original_material": true,
+      "verification": "licensed-native-import-verified",
+      "models": [
+        {
+          "channel": "reviewed",
+          "id": "onair-miko",
+          "sha256": "417b787e63e8f0c49b2a3515367171f449d33603cb059ac27a796061dbbf3ef8"
+        },
+        {
+          "channel": "reviewed",
+          "id": "onair-miko-cheer",
+          "sha256": "68a0cebd4d1b32363de05579f6a213e4814d1a747454221f40b2c9e28bca7a35"
+        }
+      ]
+    },
+    {
+      "id": "fili-original",
+      "name": "Fili 原創模型庫",
+      "maintainer_id": "mjgjvtube",
+      "url": "https://github.com/MjGjVtube/free-filipino-vtuber-template",
+      "rights_urls": [
+        "https://github.com/MjGjVtube/free-filipino-vtuber-template/blob/e1c70b0c0ccaaf4274bc537384e9341f80046775/LICENSE"
+      ],
+      "repository": "https://github.com/MjGjVtube/free-filipino-vtuber-template",
+      "original_material": true,
+      "verification": "licensed-native-import-verified",
+      "models": [
+        {
+          "channel": "static",
+          "id": "fili-original",
+          "sha256": "0332885fb6f39558557576b87a0da7bd2487f288d657d6202895c1745635dfed"
+        }
+      ]
+    },
+    {
+      "id": "pink-sakura-original",
+      "name": "Pink Sakura 原創模型庫",
+      "maintainer_id": "ariakage",
+      "url": "https://github.com/Ariakage/live2d-agent-kit",
+      "rights_urls": [
+        "https://github.com/Ariakage/live2d-agent-kit/blob/354d95800b7d498246dfb658e0e2ee379c29caa4/examples/pink-sakura/LICENSE.md"
+      ],
+      "repository": "https://github.com/Ariakage/live2d-agent-kit",
+      "original_material": true,
+      "verification": "licensed-native-import-verified",
+      "models": [
+        {
+          "channel": "static",
+          "id": "pink-sakura-original",
+          "sha256": "04870a7a2e2b0c85c5d3df9e1cccf3785c22187322b144099649df3bc8bac1f5"
+        }
+      ]
+    },
+    {
+      "id": "nadeshiko-original",
+      "name": "Nadeshiko 原創模型庫",
+      "maintainer_id": "yamato3010",
+      "url": "https://github.com/yamato3010/live2d-nadeshiko",
+      "rights_urls": [
+        "https://github.com/yamato3010/live2d-nadeshiko/blob/0a27301bf249c230cd24c697e2fb1f8a3ae59a9b/README.md"
+      ],
+      "repository": "https://github.com/yamato3010/live2d-nadeshiko",
+      "original_material": true,
+      "verification": "licensed-native-import-verified",
+      "models": [
+        {
+          "channel": "static",
+          "id": "nadeshiko-original",
+          "sha256": "e43e9d8ac2fdc3e7860ed6dd33f7b8b7177373909b5178ead8593d382711e82d"
+        }
+      ]
+    },
+    {
+      "id": "elain-original",
+      "name": "Elain C 原創模型庫",
+      "maintainer_id": "elain-c",
+      "url": "https://github.com/elainyilanchen/blender-vrm-perfect-sync",
+      "rights_urls": [
+        "https://github.com/elainyilanchen/blender-vrm-perfect-sync/blob/d812944595e3ba25cab60649319c79fefac59dc0/samples/README.md"
+      ],
+      "repository": "https://github.com/elainyilanchen/blender-vrm-perfect-sync",
+      "original_material": true,
+      "verification": "licensed-native-import-verified",
+      "models": [
+        {
+          "channel": "reviewed",
+          "id": "elain-perfect-sync-female",
+          "sha256": "007264f1d342ea3d565118ab53170c93e995a91294a1f143ba5333d7e35a168a"
+        },
+        {
+          "channel": "reviewed",
+          "id": "elain-perfect-sync-male",
+          "sha256": "8ef9a261c3f8bf9bbe8117a3a1a262c859c0675c81792dbe1736e359e715a3c0"
+        }
+      ]
+    },
+    {
+      "id": "alice-original",
+      "name": "Alice Chan · edisonlee55／yuna0x0",
+      "maintainer_id": "edisonlee55-yuna0x0",
+      "url": "https://github.com/yuna0x0/AliceChan",
+      "rights_urls": [
+        "https://github.com/yuna0x0/AliceChan/blob/68850a304e5ae0f7b39fc2d75ed21134e6f5a715/LICENSE.md"
+      ],
+      "repository": "https://github.com/yuna0x0/AliceChan",
+      "original_material": true,
+      "verification": "licensed-native-import-verified",
+      "models": [
+        {
+          "channel": "reviewed",
+          "id": "alice-chan-original-uniform",
+          "sha256": "f04f0585aa73d47843ffe1a3042e776d679e345a3d7301c349f4d81e641b19bd"
+        }
+      ]
+    },
+    {
+      "id": "deepseek-original",
+      "name": "ニケ · DeepSeek-chan 原創 VRM",
+      "maintainer_id": "tegnike-nike",
+      "url": "https://github.com/tegnike/deepseek-chan-vrm",
+      "rights_urls": [
+        "https://github.com/tegnike/deepseek-chan-vrm/blob/3b28db3bdde8d2e73b698a060044e0d8ebdf8b7b/LICENSE"
+      ],
+      "repository": "https://github.com/tegnike/deepseek-chan-vrm",
+      "original_material": true,
+      "verification": "licensed-native-import-verified",
+      "models": [
+        {
+          "channel": "reviewed",
+          "id": "deepseek-chan-original",
+          "sha256": "1e90a402e61e7861da56073ff682640176f2936c9a8eb0e92a8668550032f8e6"
+        }
+      ]
+    },
+    {
+      "id": "desktop-companion-original",
+      "name": "xShiroeNguyenx · Desktop Companion",
+      "maintainer_id": "xshiroenguyenx",
+      "url": "https://github.com/xShiroeNguyenx/desktop-companion",
+      "rights_urls": [
+        "https://github.com/xShiroeNguyenx/desktop-companion/blob/4ab4ae6461949aa4f1b6cfb6fcf5a1b8ac42f18c/ASSETS-LICENSE.md",
+        "https://github.com/xShiroeNguyenx/desktop-companion/blob/4ab4ae6461949aa4f1b6cfb6fcf5a1b8ac42f18c/README.md"
+      ],
+      "repository": "https://github.com/xShiroeNguyenx/desktop-companion",
+      "original_material": true,
+      "verification": "licensed-native-import-verified",
+      "models": [
+        {
+          "channel": "static",
+          "id": "desktop-companion-snow-lolita",
+          "sha256": "9f1ae1e4860d6c3eaeeaf4f48198f38996ceb65dcb775a9b4d6daafb79f9db86"
+        }
+      ]
+    }
+  ]
+}

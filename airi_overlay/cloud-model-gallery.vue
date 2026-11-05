@@ -39,6 +39,7 @@ const sourceUpdates = ref<SourceUpdate[]>([])
 const sourceLoaded = ref(false)
 const sourceBusy = ref(false)
 const sourceMessage = ref('')
+const verifiedSourceCount = ref<number | null>(null)
 const discoverySource = ref('all')
 const discoveryQuery = ref('')
 const discoveryFormat = ref('all')
@@ -71,6 +72,10 @@ async function readSources(event: Event) {
       throw new Error('source_unavailable')
     sourceUpdates.value = value.sources
     sourceRegistry.value = value.registry.items
+    verifiedSourceCount.value = Number.isInteger(value.registry.verified_independent_sources)
+      && value.registry.verified_independent_sources >= 0
+      ? value.registry.verified_independent_sources
+      : null
     sourceLoaded.value = true
     sourceMessage.value = '進入後台會在背景檢查已接通目錄；檢查失敗保留舊清單。'
   }
@@ -431,6 +436,9 @@ async function prepareOwnArchive() {
     </details>
     <details class="model-picker-sources" @toggle="readSources">
       <summary>圖庫更新狀態及尋找新資源</summary>
+      <p v-if="verifiedSourceCount !== null">
+        已核可一鍵匯入來源 {{ verifiedSourceCount }} / 20；獨立原創庫可計入，同一團隊只計一次。
+      </p>
       <p role="status">
         {{ sourceBusy ? '正在查閱圖庫…' : sourceMessage }}
       </p>

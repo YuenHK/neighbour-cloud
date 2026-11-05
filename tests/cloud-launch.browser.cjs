@@ -11,7 +11,8 @@ async function main(){
   const u=new URL(r.request().url());if(u.origin!==origin){unexpected.push(u.href);return r.abort()}
   if(u.pathname==='/')return r.fulfill({contentType:'text/html',body:fs.readFileSync('deploy/cloud/web/index.html','utf8').replace('<script type="module" src="/cloud/shell.js"></script>','<script type="module" src="/harness.js"></script>')})
   if(u.pathname==='/harness.js')return r.fulfill({contentType:'text/javascript',body:`import {createLaunchScreen} from '/cloud/launch-screen.js';window.launch=createLaunchScreen(document,{onRetry(){window.retry=true},onContinue(){window.continued=true}});launch.start('resident');`})
-  if(['/cloud/shell.css','/cloud/launch-screen.css','/cloud/launch-screen.js'].includes(u.pathname))return r.fulfill({contentType:u.pathname.endsWith('.js')?'text/javascript':'text/css',body:fs.readFileSync('deploy/cloud/web/'+u.pathname.split('/').pop())})
+  if(['/cloud/shell.css','/cloud/launch-screen.css','/cloud/launch-screen.js','/cloud/mascot.css','/cloud/community-systems.js','/cloud/community-products.js','/cloud/community-state.js','/cloud/community-systems.css','/cloud/community-introduction.css'].includes(u.pathname))return r.fulfill({contentType:u.pathname.endsWith('.js')?'text/javascript':'text/css',body:fs.readFileSync('deploy/cloud/web/'+u.pathname.split('/').pop())})
+  if(['/assets/brand/neighbour-house-apricot-v1.webp','/assets/brand/icon-192.png','/assets/brand/favicon-32.png','/assets/brand/apple-touch-icon-180.png'].includes(u.pathname))return r.fulfill({contentType:u.pathname.endsWith('.webp')?'image/webp':'image/png',body:fs.readFileSync('deploy/cloud/web/brand/'+u.pathname.split('/').pop())})
   unexpected.push(u.pathname);return r.abort()
  })
  // Advance only the long-wait deadline; elapsed time and phase updates remain real.
@@ -21,7 +22,7 @@ async function main(){
   await page.locator('#launchScreen[data-phase=connect]').waitFor()
   assert.equal(await page.locator('#launchProgress').getAttribute('aria-valuenow'),'0')
   assert.equal(await page.locator('#launchStep').textContent(),'第 1 / 3 步')
-  assert.ok((await page.locator('.launch-house').evaluate(n=>getComputedStyle(n).animationName))!=='none')
+  assert.ok((await page.locator('.community-core-mascot').evaluate(n=>getComputedStyle(n).animationName))!=='none')
   await page.screenshot({path:path.join(area,'launch-desktop-connect.png')})
   await page.waitForTimeout(1100)
   await page.evaluate(()=>launch.start('resident','interface'))
@@ -50,7 +51,7 @@ async function main(){
   assert.equal(await page.locator('#launchStep').textContent(),'第 2 / 2 步')
   assert.equal(await page.locator('[data-launch-step=avatar]').isVisible(),false)
   await page.emulateMedia({reducedMotion:'reduce'})
-  assert.equal(await page.locator('.launch-house').evaluate(n=>getComputedStyle(n).animationName),'none')
+  assert.equal(await page.locator('.community-core-mascot').evaluate(n=>getComputedStyle(n).animationName),'none')
   await page.evaluate(()=>launch.hide())
   const stopped=await page.locator('#launchElapsed').textContent()
   await page.waitForTimeout(1200)

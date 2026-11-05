@@ -27,7 +27,7 @@ function preloadOnce(document, modules, { onState = () => {}, timeoutMs = 10000,
       resolve({ key, state })
     }
     const loaded = () => finish('loaded'), failed = () => finish('failed')
-    onState(key, 'loading')
+    onState(key, fresh ? 'repairing' : 'loading')
     link.addEventListener('load', loaded, { once: true })
     link.addEventListener('error', failed, { once: true })
     timer = setTimeout(failed, timeoutMs)

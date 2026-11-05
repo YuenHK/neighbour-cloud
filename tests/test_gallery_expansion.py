@@ -28,8 +28,9 @@ def test_source_registry_distinguishes_metadata_and_pinned_runtime_sources_from_
     assert len({row['domains'][0] for row in value['items']}) == 21
     assert value['target_complete'] is False and value['all_sources_one_click'] is False
     assert value['metadata_adapters'] == 5 and value['existing_oauth_sources'] == 1
-    assert value['reviewed_runtime_sources'] == 3 and value['reviewed_runtime_models'] == 5
-    assert value['reviewed_original_github_models'] == 2
+    assert value['reviewed_runtime_sources'] == 7 and value['reviewed_runtime_models'] == 9
+    assert value['reviewed_original_github_models'] == 35
+    assert value['verified_independent_sources'] == 15 and value['github_original_sources'] == 12
     assert {row['id'] for row in value['items'] if row['one_click_verified']} == {'vrmconsortium', 'tsukuyomi', 'aituber-onair'}
     for row in value['items']:
         assert valid_source_link(row['url'], row['id'])

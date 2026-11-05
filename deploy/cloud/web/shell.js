@@ -4,6 +4,7 @@ import { createLaunchScreen } from '/cloud/launch-screen.js'
 import { preloadModules } from '/cloud/module-warmup.js'
 import { placeModelCredit, preparePrivacy } from '/cloud/privacy.js'
 import { StartupRepair } from '/cloud/startup-repair.js'
+import { prepareCommunityIntroduction } from '/cloud/community-about.js'
 
 const node = id => document.getElementById(id)
 preparePrivacy(document)
@@ -17,7 +18,8 @@ let currentArea = 'resident'
 let startupTimer, startupTextReady = false
 const startupRepair = new StartupRepair({ onState(key, state) {
   if (key !== 'frame' || !frame?.classList.contains('is-warming')) return
-  if (state === 'retrying') launch.repair('畫面暫時未能啟動，正在自動重新連接一次。')
+  launch.repairState('eleuthia', state)
+  if (state === 'retrying') launch.repair('畫面暫時未能啟動，正在自動重新連接一次。', 'eleuthia')
   if (state === 'unavailable') launch.fail('自動重新連接仍未完成；原有資料保留，可以稍後再試。')
 } })
 const launch = createLaunchScreen(document, {
@@ -28,6 +30,7 @@ const launch = createLaunchScreen(document, {
   },
   onContinue() { reveal() },
 })
+prepareCommunityIntroduction(document, { snapshot: () => launch.snapshot() })
 launch.start('resident')
 void preloadModules(document, [...document.querySelectorAll('link[data-neighbour-warm]')].map(link => ({
   key: link.dataset.neighbourWarm, path: new URL(link.href).pathname,
@@ -110,6 +113,7 @@ function show(area) {
   clearTimeout(startupTimer)
   startupTextReady = false
   launch.start(area, 'interface')
+  launch.connected()
   frame.className = 'is-warming'
   frame.inert = true
   frame.setAttribute('aria-hidden', 'true')
@@ -177,7 +181,10 @@ async function startResident() {
       catch {
         if (epoch !== navigationEpoch) return
         node('status').textContent = '正在重新連接服務，請稍候…'
-        if (attempt < 2) await new Promise(resolve => setTimeout(resolve, 600 * (attempt + 1)))
+        if (attempt < 2) {
+          launch.repair('服務連接未完成，正在安全重連；不會重送對話或個案。', 'minerva')
+          await new Promise(resolve => setTimeout(resolve, 600 * (attempt + 1)))
+        }
       }
     }
     node('status').textContent = '暫時未能連接，請按上方「居民服務台」再試。'
