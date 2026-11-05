@@ -1,0 +1,122 @@
+{
+  "repository": "https://github.com/jaisurya-dev-art/rigby2d",
+  "commit": "72bc84625fac4959e185574df12adbd33add11d6",
+  "license": "MIT OR Apache-2.0",
+  "files": [
+    {
+      "path": "core/animation.js",
+      "bytes": 6632,
+      "sha256": "5833a82edbcbdcabdc894d700b9cf705ca1ec3219c0e12ddb00ce6a1361d2e9c",
+      "source": "src/core/animation.js"
+    },
+    {
+      "path": "core/atlas.js",
+      "bytes": 6496,
+      "sha256": "1d352a9cd6a4f3f87c56bc790040b64d9070da654450f6b3a98d88305a4f256c",
+      "source": "src/core/atlas.js"
+    },
+    {
+      "path": "core/clipping.js",
+      "bytes": 4302,
+      "sha256": "a5f316b4f430729eb724ac888efa32b95140d4f201dd5af773552611055f560a",
+      "source": "src/core/clipping.js"
+    },
+    {
+      "path": "core/constraintdata.js",
+      "bytes": 7184,
+      "sha256": "5911595f2f2e4393a970bc71706bfec882b0fa7dde13de2fd2424dc30aa69087",
+      "source": "src/core/constraintdata.js"
+    },
+    {
+      "path": "core/constraints.js",
+      "bytes": 28903,
+      "sha256": "865473642aef9ee9915bef41fe13faef81ca54b974cdfffd5ea77be2a8643fd0",
+      "source": "src/core/constraints.js"
+    },
+    {
+      "path": "core/curve.js",
+      "bytes": 3468,
+      "sha256": "031654025e87b8368014192b37f9d3b64f5907401fb3052634fc417a8aeb31d4",
+      "source": "src/core/curve.js"
+    },
+    {
+      "path": "core/draw.js",
+      "bytes": 6243,
+      "sha256": "450a4be1b294bb4a2cb42fba587f2740a5f839395fb7fdeea48df4003bff0444",
+      "source": "src/core/draw.js"
+    },
+    {
+      "path": "core/interop.js",
+      "bytes": 40576,
+      "sha256": "ab5e6058065d174c2648e54b8549bc501d15d935d4a68f8fffabdd2721c78900",
+      "source": "src/core/interop.js"
+    },
+    {
+      "path": "core/math.js",
+      "bytes": 5385,
+      "sha256": "53c55e79d8cae3379e6e344f10c21b1420fab1584c020b94d680f05f013b04d3",
+      "source": "src/core/math.js"
+    },
+    {
+      "path": "core/model.js",
+      "bytes": 33244,
+      "sha256": "0a70b811997de43006b8c1d5602daa504727433dfbc9460adfb21a484c2c9e40",
+      "source": "src/core/model.js"
+    },
+    {
+      "path": "core/pose.js",
+      "bytes": 25436,
+      "sha256": "91dbdcc3e4071e1e6b36bab61c9da0cf6f166aa49a4554785a5d7bc8cb14bd33",
+      "source": "src/core/pose.js"
+    },
+    {
+      "path": "core/poses.js",
+      "bytes": 5019,
+      "sha256": "c421a099c0ebd9883b9537e2b70ddf568df1d288afaa8164523bdc491fdbb6f6",
+      "source": "src/core/poses.js"
+    },
+    {
+      "path": "core/scene.js",
+      "bytes": 17501,
+      "sha256": "64e8de1a8f979859bc48db5baacd18c66a130550aab87e15a5a938e9cdb2df7a",
+      "source": "src/core/scene.js"
+    },
+    {
+      "path": "core/sequence.js",
+      "bytes": 1943,
+      "sha256": "74c93f77424506df2c6a174d7a034add6618213e697545faaee48a280c48112a",
+      "source": "src/core/sequence.js"
+    },
+    {
+      "path": "core/state.js",
+      "bytes": 9206,
+      "sha256": "e18e4533b7eeaf5e9da242f146abd0c934ef4d56bca25679bb462c589a9b38d1",
+      "source": "src/core/state.js"
+    },
+    {
+      "path": "webgl/renderer.js",
+      "bytes": 11820,
+      "sha256": "0b1f6949203088db53a66b3fca13e42478892775533118cac66f2f9cbd611078",
+      "source": "src/webgl/renderer.js"
+    },
+    {
+      "path": "LICENSE-MIT",
+      "bytes": 1073,
+      "sha256": "2c3f5813600926e1aa318a3b90f7efdbbcd6f45f9092647c86c1f367ab034bc6",
+      "source": "LICENSE-MIT"
+    },
+    {
+      "path": "LICENSE-APACHE",
+      "bytes": 11357,
+      "sha256": "b40930bbcf80744c86c46a12bc9da056641d722716c378f5659b9e555ef833e1",
+      "source": "LICENSE-APACHE"
+    },
+    {
+      "path": "THIRD_PARTY_NOTICES.md",
+      "bytes": 2878,
+      "sha256": "d7dc78f32ab0fddd82addc3d594f8fde843fe42e558aa333cf4f402708787303",
+      "source": "THIRD_PARTY_NOTICES.md"
+    }
+  ],
+  "scope": "source-only runtime subset; no editor, dependencies, scripts, or demo assets"
+}

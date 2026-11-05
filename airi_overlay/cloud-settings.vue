@@ -152,8 +152,8 @@ async function save() {
   const builtin = ['preset-live2d-1', 'preset-live2d-2', 'preset-vrm-1', 'preset-vrm-2'].includes(selected)
   const localModel = !builtin && !sharedModelPattern.test(selected) ? await display.getDisplayModel(selected) : undefined
   if (!builtin && !sharedModelPattern.test(selected)
-    && (!localModel || localModel.type !== 'file' || ![DisplayModelFormat.Live2dZip, DisplayModelFormat.VRM].includes(localModel.format))) {
-    status.value = '共享匯入支援 Live2D ZIP 及 VRM；其他格式的原檔仍保存在此裝置。'
+    && (!localModel || localModel.type !== 'file' || ![DisplayModelFormat.Live2dZip, DisplayModelFormat.VRM, DisplayModelFormat.RigbyJsonZip].includes(localModel.format))) {
+    status.value = '共享匯入支援 Live2D、VRM 及免費 Rigby JSON ZIP；其他格式的原檔仍保存在此裝置。'
     return
   }
   const background = current.extensions?.airi?.modules?.activeBackgroundId ?? scene.value
@@ -168,7 +168,7 @@ async function save() {
     let model = selected
     if (localModel?.type === 'file') {
       status.value = '正在上載及核對模型，完成後發佈到平台；請保留此頁。'
-      model = (await uploadSharedModel(localModel.file)).id
+      model = (await uploadSharedModel(localModel.file, localModel.format)).id
     }
     payload.airi.stage_model = model
     const response = await transport.fetch('/api/v1/service-desk/presentation', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), signal: AbortSignal.timeout(15000) })

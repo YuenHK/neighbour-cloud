@@ -1,8 +1,8 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path')
 const load=()=>import('data:text/javascript;base64,'+Buffer.from(fs.readFileSync(path.resolve('deploy/cloud/web/privacy.js'))).toString('base64'))
 function document(){
- const block={hidden:true},link={textContent:'',href:'',removeAttribute(name){delete this[name]}}
- return {block,link,getElementById:id=>({modelCredit:block,modelCreditSource:link})[id]}
+ const block={hidden:true},link={textContent:'',href:'',removeAttribute(name){delete this[name]}},notice={textContent:''},terms={hidden:true,removeAttribute(name){delete this[name]}}
+ return {block,link,notice,terms,getElementById:id=>({modelCredit:block,modelCreditSource:link,modelCreditNotice:notice,modelCreditTerms:terms})[id]}
 }
 test('public attribution moves to its dedicated slot as text and can be cleared without keeping an old source',async()=>{
  const api=await load(),doc=document()
@@ -11,6 +11,16 @@ test('public attribution moves to its dedicated slot as text and can be cleared 
  assert.equal(doc.link.textContent,row.name+' · Public author');assert.equal(doc.block.hidden,false)
  assert.equal(api.placeModelCredit(doc,null),true)
  assert.equal(doc.block.hidden,true);assert.equal(doc.link.textContent,'');assert.equal(doc.link.href,undefined)
+})
+
+test('reviewed application inclusion keeps the author notice and exact original terms as text',async()=>{
+ const api=await load(),doc=document()
+ const row={name:'Miko',author:'Original author',source:'https://miko.aituberonair.com/downloads/',terms:'https://miko.aituberonair.com/',notice:'Only part of Neighbour; <script>not HTML</script>'}
+ assert.equal(api.placeModelCredit(doc,row),true)
+ assert.equal(doc.notice.textContent,row.notice);assert.equal(doc.terms.href,row.terms);assert.equal(doc.terms.hidden,false)
+ for(const value of [{...row,terms:'https://evil.invalid/'},{...row,notice:''},{...row,notice:'x'.repeat(1001)},{...row,source:'https://miko.aituberonair.com/downloads/?token=private'}])assert.equal(api.placeModelCredit(doc,value),false)
+ assert.equal(api.placeModelCredit(doc,null),true)
+ assert.equal(doc.notice.textContent,'');assert.equal(doc.terms.hidden,true);assert.equal(doc.terms.href,undefined)
 })
 test('unsafe or malformed source metadata cannot replace an already valid credit',async()=>{
  const api=await load(),doc=document(),good={name:'Public character',author:'Author',source:'https://hub.vroid.com/en/characters/123/models/456'}

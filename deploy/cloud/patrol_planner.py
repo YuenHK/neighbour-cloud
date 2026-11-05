@@ -11,14 +11,15 @@ from collections import deque
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 from starlette.concurrency import run_in_threadpool
+from starlette.responses import Response
 
 PATH = '/api/v1/service-desk/patrol-planning'
 NAMESPACE = 'patrol-map-v1'
 PROFILES = {
     'ep': {'name': 'RoboMaster EP', 'connection': 'existing_manual_console',
            'navigation_execution': False, 'reason': '定位、障礙感測及現場停止驗收未完成。'},
-    's1': {'name': 'RoboMaster S1', 'connection': 'official_robomaster_lab_only',
-           'navigation_execution': False, 'reason': '官方只支援 RoboMaster Lab；未接 EP SDK。'},
+    's1': {'name': 'RoboMaster S1', 'connection': 'official_lab_and_sbus_preparation',
+           'navigation_execution': False, 'reason': '官方 Lab／SBus 離機工具已準備；接線、定位及停止仍待真機核對。'},
     'simulation': {'name': '離機模擬', 'connection': 'none', 'navigation_execution': False,
                    'reason': '只模擬路線，沒有連線或移動機械人。'},
 }
@@ -147,5 +148,13 @@ def planning_router(operations, authorize):
     async def simulate(request: RouteRequest):
         authorize()
         return await run_in_threadpool(plan_route, request)
+
+    @router.get(PATH + '/offline-kit.zip')
+    async def offline_kit():
+        authorize()
+        from deploy.cloud.patrol_kit import source_kit
+        blob = await run_in_threadpool(source_kit)
+        return Response(blob, media_type='application/zip', headers={
+            'Cache-Control': 'no-store', 'Content-Disposition': 'attachment; filename="neighbour-patrol-review-kit.zip"'})
 
     return router

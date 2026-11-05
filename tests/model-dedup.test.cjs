@@ -44,3 +44,18 @@ test('resource author search and VRoid provenance survive merging with an existi
   assert.deepEqual(result[0].aliases,['Existing.vrm','Original','Creator Name'])
   assert.equal(result[0].vroid,source)
 })
+
+test('a reviewed application model reuses local or shared bytes and retains original application-only terms', async () => {
+  const { mergeModelChoices } = await loaded
+  const reviewed = {id:'tsukuyomi-official-spats',application_only:true,notice:'Keep original author terms'}
+  const model = {id:'current-model',type:'file'}
+  const rows = [
+    {id:'current-model',name:'Existing.vrm',format:'vrm',sha256:'abc',platform:'此裝置',model},
+    {id:'reviewed:tsukuyomi',name:'Tsukuyomi',format:'vrm',sha256:'abc',platform:'Tsukuyomi 官方',reviewed},
+    {id:'cloud-vrm-abc',name:'Shared.vrm',format:'vrm',sha256:'abc',platform:'平台共享',sharedId:'cloud-vrm-abc'},
+  ]
+  const result=mergeModelChoices(rows,'current-model')
+  assert.equal(result.length,1);assert.equal(result[0].model,model)
+  assert.equal(result[0].reviewed,reviewed);assert.equal(result[0].sharedId,'cloud-vrm-abc')
+  assert.deepEqual(result[0].platforms,['此裝置','Tsukuyomi 官方','平台共享'])
+})

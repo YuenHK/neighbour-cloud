@@ -697,6 +697,10 @@ function checkIdle() {
   <details v-if="presentation.model_credit && !creditInHeader" class="resident-model-credit">
     <summary>角色來源</summary>
     <p><a :href="presentation.model_credit.source" target="_blank" rel="noopener noreferrer">{{ presentation.model_credit.name }} · {{ presentation.model_credit.author }}</a></p>
+    <p v-if="presentation.model_credit.notice">
+      {{ presentation.model_credit.notice }}
+    </p>
+    <a v-if="presentation.model_credit.terms" :href="presentation.model_credit.terms" target="_blank" rel="noopener noreferrer">原作者使用條款</a>
   </details>
 </template>
 

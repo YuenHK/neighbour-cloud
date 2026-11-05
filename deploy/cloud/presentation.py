@@ -30,7 +30,7 @@ class AiriCharacter(BaseModel):
 
 class AiriPreferences(BaseModel):
     model_config = ConfigDict(extra='forbid', strict=True)
-    stage_model: str = Field(default='preset-live2d-2', pattern=r'^(?:preset-(?:live2d|vrm)-[12]|cloud-(?:live2d|vrm)-[a-f0-9]{64})$')
+    stage_model: str = Field(default='preset-live2d-2', pattern=r'^(?:preset-(?:live2d|vrm)-[12]|cloud-(?:live2d|vrm|rigby)-[a-f0-9]{64})$')
     scene_background: Literal['none', 'builtin:cozy-tea-corner', 'builtin:cute-streaming-room'] = 'none'
     card: AiriCharacter | None = None
     runtime: AiriRuntime = Field(default_factory=AiriRuntime)
@@ -130,10 +130,13 @@ class Presentation:
                     if 'robot_remote_url' not in edit.model_fields_set:
                         payload['robot_remote_url'] = existing['robot_remote_url']
                     model = payload['airi']['stage_model']
-                    if model.startswith(('cloud-live2d-', 'cloud-vrm-')):
+                    if model.startswith(('cloud-live2d-', 'cloud-vrm-', 'cloud-rigby-')):
                         from deploy.cloud.avatar_assets import model_digest
                         uploaded = self.estate.db.execute('SELECT entrypoint FROM cloud_avatar_models WHERE digest=?', (model_digest(model),)).fetchone()
-                        if not uploaded or (uploaded[0] == 'model.vrm') != model.startswith('cloud-vrm-'):
+                        expected_entry = ('model.vrm' if model.startswith('cloud-vrm-')
+                                          else 'model.rigby.json' if model.startswith('cloud-rigby-') else None)
+                        if not uploaded or (expected_entry is not None and uploaded[0] != expected_entry) or (
+                                expected_entry is None and uploaded[0] in ('model.vrm', 'model.rigby.json')):
                             raise HTTPException(422, '請先完成模型上載；原有設定保留。')
                     self.estate.db.execute('UPDATE cloud_presentation SET revision=revision+1,payload=? WHERE id=1',
                                           (json.dumps(payload, ensure_ascii=True),))

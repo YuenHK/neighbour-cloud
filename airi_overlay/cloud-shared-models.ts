@@ -4,7 +4,7 @@ import localforage from 'localforage'
 
 import { DisplayModelFormat } from '@proj-airi/stage-ui/stores/display-models'
 
-export const sharedModelPattern = /^cloud-(?:live2d|vrm)-[a-f0-9]{64}$/
+export const sharedModelPattern = /^cloud-(?:live2d|vrm|rigby)-[a-f0-9]{64}$/
 export const maxModelBytes = 32 * 1024 * 1024
 const pending = new Map<string, Promise<DisplayModelFile>>()
 const ready = new Map<string, DisplayModelFile>()
@@ -32,7 +32,8 @@ export async function loadSharedModel(id: string, name?: string): Promise<Displa
     return pending.get(id)!
   const task = (async () => {
     const vrm = id.startsWith('cloud-vrm-')
-    const digest = id.slice(vrm ? 10 : 13)
+    const rigby = id.startsWith('cloud-rigby-')
+    const digest = id.slice(id.lastIndexOf('-') + 1)
     const mime = vrm ? 'model/gltf-binary' : 'application/zip'
     const key = `neighbour-cloud-model-${digest}`
     let cached: Blob | null = null
@@ -80,9 +81,9 @@ export async function loadSharedModel(id: string, name?: string): Promise<Displa
       }
       catch { /* Keep this verified in-memory copy if device storage is full. */ }
     }
-    const filename = name || (vrm ? '平台 VRM 模型.vrm' : '平台 Live2D 模型.zip')
+    const filename = name || (vrm ? '平台 VRM 模型.vrm' : rigby ? '平台免費骨架模型.rigby.zip' : '平台 Live2D 模型.zip')
     const file = new File([blob], filename, { type: mime })
-    const model: DisplayModelFile = { id, format: vrm ? DisplayModelFormat.VRM : DisplayModelFormat.Live2dZip, type: 'file', file, name: filename, importedAt: Date.now() }
+    const model: DisplayModelFile = { id, format: vrm ? DisplayModelFormat.VRM : rigby ? DisplayModelFormat.RigbyJsonZip : DisplayModelFormat.Live2dZip, type: 'file', file, name: filename, importedAt: Date.now() }
     ready.set(id, model)
     return model
   })().finally(() => pending.delete(id))
@@ -93,12 +94,13 @@ export function installSharedModelLoader() {
   Reflect.set(globalThis, '__NEIGHBOUR_LOAD_SHARED_MODEL__', loadSharedModel)
 }
 export class ModelUploadRejected extends Error {}
-export async function uploadSharedModel(file: File) {
+export async function uploadSharedModel(file: File, format?: DisplayModelFormat) {
   const vrm = file.name.toLowerCase().endsWith('.vrm')
+  const rigby = format === DisplayModelFormat.RigbyJsonZip || file.name.toLowerCase().endsWith('.rigby.zip')
   if (!file.size || file.size > maxModelBytes || (!vrm && !file.name.toLowerCase().endsWith('.zip')))
-    throw new ModelUploadRejected('共享發佈接納不超過 32 MB 的 Live2D ZIP 或 VRM；原檔保留。')
+    throw new ModelUploadRejected('共享發佈接納不超過 32 MB 的 Live2D ZIP、Rigby JSON ZIP 或 VRM；原檔保留。')
   const digest = await modelHash(file)
-  const id = `${vrm ? 'cloud-vrm' : 'cloud-live2d'}-${digest}`
+  const id = `${vrm ? 'cloud-vrm' : rigby ? 'cloud-rigby' : 'cloud-live2d'}-${digest}`
   const response = await transport().fetch(`/api/v1/service-desk/airi-models/${id}?name=${encodeURIComponent(file.name.slice(0, 100))}`, {
     method: 'PUT',
     headers: { 'Content-Type': vrm ? 'model/gltf-binary' : 'application/zip' },
@@ -114,6 +116,6 @@ export async function uploadSharedModel(file: File) {
   const result = await response.json()
   if (result.id !== id || result.sha256 !== digest || result.bytes !== file.size)
     throw new Error('model_upload_acknowledgement_unknown')
-  ready.set(id, { id, format: vrm ? DisplayModelFormat.VRM : DisplayModelFormat.Live2dZip, type: 'file', file, name: result.name, importedAt: Date.now() })
+  ready.set(id, { id, format: vrm ? DisplayModelFormat.VRM : rigby ? DisplayModelFormat.RigbyJsonZip : DisplayModelFormat.Live2dZip, type: 'file', file, name: result.name, importedAt: Date.now() })
   return result
 }

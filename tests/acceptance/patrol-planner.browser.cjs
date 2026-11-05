@@ -3,7 +3,8 @@ const fs = require('node:fs')
 const path = require('node:path')
 const { chromium, webkit } = require('playwright')
 const web = path.resolve('deploy/cloud/web')
-const area = path.resolve('.runtime/community-expansion-20261105')
+const area = path.resolve('.runtime/free-paths-20261105')
+fs.mkdirSync(area, { recursive: true })
 const origin = 'https://isolated.planner.test'
 const full = fs.readFileSync(path.join(web, 'robots.html'), 'utf8')
 const fragment = full.slice(full.indexOf('<section class="service-card patrol-planner">'))
@@ -29,6 +30,7 @@ async function main() {
           if (url.pathname === '/cloud/admin-request.js') return route.fulfill({ contentType: 'text/javascript', body: 'export const cloudFetch=(...args)=>fetch(...args)' })
           if (url.pathname.startsWith('/api/v1/service-desk/patrol-planning')) {
             requests++
+            if (url.pathname.endsWith('/offline-kit.zip')) return route.fulfill({ contentType: 'application/zip', body: Buffer.from('PK-isolated-fixture') })
             const data = route.request().postDataJSON()
             if (url.pathname.endsWith('/simulate')) return route.fulfill({ json: { path: [data.start, { x: data.goal.x, y: data.start.y }, data.goal], distance_m: 4, hardware_commands: 0, execution_enabled: false } })
             if (route.request().method() === 'PUT') {
@@ -43,7 +45,7 @@ async function main() {
         page.on('pageerror', error => errors.push(error.message))
         await page.goto(origin)
         assert.equal(requests, 0, 'closed planner must not fetch')
-        await page.locator('#patrolPlanning summary').click()
+        await page.locator('#patrolPlanning > summary').click()
         await page.waitForFunction(() => document.getElementById('patrolPlanStatus').textContent.includes('尚未儲存'))
         const floor = []
         for (let y = 0; y < 16; y++) for (let x = 0; x < 20; x++) floor.push({ x, y })
@@ -55,7 +57,7 @@ async function main() {
           await page.mouse.click(box.x + box.width*(x+.5)/20, box.y + box.height*(y+.5)/16)
         }
         await page.locator('#patrolProfile').selectOption('s1')
-        assert.match(await page.locator('#patrolProfileNotice').textContent(), /未提供 SDK/)
+        assert.match(await page.locator('#patrolProfileNotice').textContent(), /Lab.*SBus/)
         await page.locator('#patrolPlan').click()
         await page.waitForFunction(() => document.getElementById('patrolPlanStatus').textContent.includes('沒有連線或移動'))
         assert.equal(mutations, 0, 'simulate must not save')
@@ -68,6 +70,12 @@ async function main() {
         await page.waitForFunction(() => document.getElementById('patrolPlanStatus').textContent.includes('衝突'))
         assert.equal(await page.locator('#patrolMapName').inputValue(), '本頁新草稿')
         assert.equal(mutations, 1)
+        await page.locator('summary', { hasText: 'S1 接入與定位準備' }).click()
+        const download = page.waitForEvent('download')
+        await page.locator('#patrolOfflineKit').click()
+        assert.equal((await download).suggestedFilename(), 'neighbour-patrol-review-kit.zip')
+        await page.waitForFunction(() => document.getElementById('patrolPlanStatus').textContent.includes('沒有開啟串口'))
+        assert.equal(mutations, 1, 'downloading code must not change map or contact hardware')
         await page.screenshot({ path: path.join(area, `planner-${engineName}-${width}.png`), fullPage: true })
         const overflow = await page.evaluate(() => [...document.querySelectorAll('body *')].filter(item => item.getBoundingClientRect().right > innerWidth+1).map(item => [item.tagName, item.id, item.className, item.getBoundingClientRect().width]))
         assert.deepEqual(overflow, [])

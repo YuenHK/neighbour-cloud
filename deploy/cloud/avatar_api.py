@@ -14,7 +14,7 @@ from local_audio_gateway.resident_stream import OwnedStreamResponse
 STAFF = '/api/v1/service-desk/airi-models'
 RESIDENT = '/api/v1/resident/airi-models'
 PREPARE = STAFF + '/prepare'
-UPLOAD = re.compile(r'^' + STAFF + r'/cloud-(?:live2d|vrm)-[a-f0-9]{64}$')
+UPLOAD = re.compile(r'^' + STAFF + r'/cloud-(?:live2d|vrm|rigby)-[a-f0-9]{64}$')
 
 
 class AvatarWork:
@@ -113,7 +113,7 @@ def avatar_router(assets, presentation, require_staff, principal, work):
             raise HTTPException(400, '模型名稱或摘要不正確。')
         vrm = identity.startswith('cloud-vrm-')
         if request.headers.get('content-type') != ('model/gltf-binary' if vrm else 'application/zip'):
-            raise HTTPException(415, '請使用 Live2D ZIP 或 VRM 模型。')
+            raise HTTPException(415, '請使用 Live2D ZIP、免費 Rigby JSON ZIP 或 VRM 模型。')
         if upload_lock.locked() or preparation.locked() or work.pending:
             raise HTTPException(429, '另一個模型正在上載，請等候完成；沒有自動重送。')
         async with upload_lock:

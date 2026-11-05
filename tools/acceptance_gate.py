@@ -23,7 +23,10 @@ TESTS = ['test_community_operations.py', 'test_cloud_http_app.py', 'test_cloud_s
          'test_cloud_avatar_assets.py', 'test_cloud_avatar_api.py', 'test_cloud_presentation.py',
          'test_cloud_gallery_catalog.py', 'test_cloud_vroid_api.py', 'test_cloud_vroid_library.py',
          'test_gallery_sources.py', 'test_gallery_expansion.py', 'test_cloud_model_discovery.py',
-         'test_patrol_grounding.py', 'test_patrol_planner.py', 'test_cloud_bundle.py']
+         'test_patrol_grounding.py', 'test_patrol_planner.py', 'test_cloud_bundle.py',
+         'test_fiducial_localisation.py', 'test_route_follower.py', 'test_s1_free_paths.py',
+         'test_reviewed_model_api.py', 'test_reviewed_model_imports.py',
+         'test_cloud_free_skeletal.py', 'test_cloud_free_skeletal_wiring.py', 'test_acceptance_fingerprint.py']
 
 
 def fingerprint(root):
@@ -31,7 +34,7 @@ def fingerprint(root):
     files = {relative.as_posix(): path for relative, path in source_files(root)}
     for directory in ('tests', '.github/workflows'):
         for path in (root / directory).rglob('*'):
-            if path.is_file() and path.suffix in ('.py', '.json', '.cjs', '.yml', '.yaml'):
+            if path.is_file() and path.suffix in ('.py', '.json', '.cjs', '.mjs', '.yml', '.yaml'):
                 files[path.relative_to(root).as_posix()] = path
     return hashlib.sha256(json.dumps([(name, hashlib.sha256(path.read_bytes()).hexdigest())
         for name, path in sorted(files.items())], separators=(',', ':')).encode()).hexdigest()
@@ -54,7 +57,8 @@ def main():
                  '-q', '--junitxml=' + str(output / 'regression.xml')],
                 ['node', '--test', 'tests/resident-pcm.test.cjs', 'tests/resident-avatar-audio.test.cjs', 'tests/resident-camera.test.cjs', 'tests/staff-pwa.test.cjs',
                  'tests/cloud-transport.test.cjs', 'tests/admin-request.test.cjs', 'tests/workbench-live.test.cjs', 'tests/model-dedup.test.cjs',
-                 'tests/cloud-privacy.test.cjs', 'tests/kiosk.test.cjs', 'tests/patrol-planner-review.test.cjs']]
+                 'tests/cloud-privacy.test.cjs', 'tests/kiosk.test.cjs', 'tests/patrol-planner-review.test.cjs',
+                 'tests/free_skeletal.test.mjs']]
     commands[0][0] = sys.executable
     if args.network_faults:
         commands.append([sys.executable, 'tools/toxiproxy_acceptance.py', '--output', str(output / 'network.json')])

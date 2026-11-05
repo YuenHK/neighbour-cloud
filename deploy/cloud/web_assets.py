@@ -17,6 +17,7 @@ from deploy.cloud.robot_assets import robot_assets
 WEB = Path(__file__).with_name('web')
 OVERLAY = Path(__file__).resolve().parents[2] / 'airi_overlay'
 SHELL = {
+    '/cloud/free-skeletal-notices.txt': (WEB / 'free-skeletal-notices.txt', 'text/plain; charset=utf-8'),
     '/staff-sw.js': (WEB / 'staff-sw.js', 'text/javascript'),
     '/staff.webmanifest': (WEB / 'staff.webmanifest', 'application/manifest+json'),
     '/': (WEB / 'index.html', 'text/html'),

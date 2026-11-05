@@ -79,7 +79,7 @@ canvas?.addEventListener('click', event => {
 name?.addEventListener('input', changed)
 cell?.addEventListener('change', changed)
 profile?.addEventListener('change', () => {
-  notice.textContent = profile.value === 's1' ? 'S1 官方只支援 RoboMaster Lab；此處只模擬，未提供 SDK 遙控。' : profile.value === 'ep' ? 'EP 地圖不代表即時定位；完成現場驗收前不會執行路線。' : '只模擬路線，沒有硬件指令。'
+  notice.textContent = profile.value === 's1' ? 'S1 可用官方 Lab／SBus 離機準備工具；接線及停止待真機核對，此處只模擬。' : profile.value === 'ep' ? 'EP 地圖不代表即時定位；完成現場驗收前不會執行路線。' : '只模擬路線，沒有硬件指令。'
   changed()
 })
 document.getElementById('patrolPlan')?.addEventListener('click', () => void run(async () => {
@@ -118,3 +118,14 @@ document.getElementById('patrolMapImport')?.addEventListener('change', event => 
   status.textContent = '地圖已匯入此頁草稿；按儲存後才同步平台。'
 }))
 if (canvas) draw()
+
+document.getElementById('patrolOfflineKit')?.addEventListener('click', () => void run(async () => {
+  const response = await cloudFetch(api + '/offline-kit.zip', { signal: AbortSignal.timeout(15000) })
+  if (!response.ok) throw new Error('工具未能下載；請核對管理登入後再試。')
+  const blob = await response.blob()
+  if (blob.size > 1_000_000 || !response.headers.get('Content-Type')?.startsWith('application/zip')) throw new Error('工具格式不符，沒有開啟或執行。')
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a'); link.href = url; link.download = 'neighbour-patrol-review-kit.zip'; link.click()
+  setTimeout(() => URL.revokeObjectURL(url), 1000)
+  status.textContent = '已下載離機工具；沒有開啟串口、連線或移動機械人。'
+}))

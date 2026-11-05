@@ -1,17 +1,17 @@
 """Reviewed source identities, not a list of licensed/ready model binaries.
 
 One provider/catalogue counts once, never once per author, colour or mirror.
-Only the five explicit metadata adapters and existing VRoid OAuth are connected.
-Other entries remain research candidates; a search result cannot change that.
+Five metadata adapters, existing VRoid OAuth and three pinned runtime sources
+have distinct status. A pinned sample does not imply a whole-site catalogue.
 """
 import re
 from urllib.parse import urlsplit
 
 
-def source(identity, name, url, domains, formats, mode, note, terms=None):
+def source(identity, name, url, domains, formats, mode, note, terms=None, *, one_click_verified=False):
     return {'id': identity, 'name': name, 'url': url, 'domains': domains,
             'formats': formats, 'mode': mode, 'note': note,
-            'terms': terms or url, 'one_click_verified': False}
+            'terms': terms or url, 'one_click_verified': one_click_verified}
 
 
 SOURCES = (
@@ -47,11 +47,16 @@ SOURCES = (
            'requires_account_and_rights', '官方 SDK 可存取已授權用戶頭像；未建立新帳戶或下載私人頭像。',
            'https://docs.viverse.com/developer-tools'),
     source('vrmconsortium', 'VRM Consortium', 'https://vrm.dev/en/', ['vrm.dev'], ['vrm'],
-           'format_and_rights_review', '官方格式範例須核對檔內授權及可發佈版本，不把規格頁當模型。',
-           'https://vrm.dev/en/licenses/1.0/'),
+           'reviewed_runtime_import', '一款 pixiv 官方 VRM 1.0 樣本已核原檔授權及 AIRI 眨眼嘴形，可一鍵預覽；不是全站自動目錄。',
+           'https://vrm.dev/en/licenses/1.0/', one_click_verified=True),
     source('tsukuyomi', 'つくよみちゃん官方素材', 'https://tyc.rei-yumesaki.net/material/avatar/3d-a/',
-           ['tyc.rei-yumesaki.net'], ['vrm'], 'size_and_rights_review',
-           '先前下載達128MiB上限停止；未將超大原包冒稱可一鍵匯入。'),
+           ['tyc.rei-yumesaki.net'], ['vrm'], 'reviewed_runtime_import',
+           '完整官方 ZIP 已核摘要；只抽一款短褲版供鄰伴數字人一鍵預覽，保留署名、角色聲明及原條款；不作通用素材轉發。',
+           one_click_verified=True),
+    source('aituber-onair', 'AITuber OnAir 官方', 'https://miko.aituberonair.com/downloads/',
+           ['miko.aituberonair.com'], ['vrm'], 'reviewed_runtime_import',
+           '兩款 Miko 已核原檔及 AIRI 試載；作者容許作網站／軟件內容一部分內建，禁止純素材庫分發，不當作全站自動目錄。',
+           'https://miko.aituberonair.com/', one_click_verified=True),
     source('ustella', 'U-Stella', 'https://u-stella.co.jp/', ['u-stella.co.jp'], ['vrm'],
            'requires_provider_integration', '原下載入口不可用；未核對新檔案與 VN3 授權。'),
     source('atleone', 'AtleOne', 'https://atleone.com/tubasaneco.html', ['atleone.com'], ['live2d'],
@@ -91,6 +96,7 @@ def registry_snapshot():
     return {'items': [dict(row) for row in SOURCES], 'target_sources': 20,
             'registered_sources': len(SOURCES), 'metadata_adapters': 5,
             'existing_oauth_sources': 1, 'target_complete': False,
+            'reviewed_runtime_sources': 3, 'reviewed_runtime_models': 4,
             'all_sources_one_click': False,
             'counting_rule': 'Connected catalogues only; creators, mirrors and links do not count as connected platforms.'}
 

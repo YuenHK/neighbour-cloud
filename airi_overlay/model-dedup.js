@@ -31,6 +31,7 @@ export function mergeModelChoices(rows, selectedId) {
     prior.aliases = [...new Set([...prior.aliases, row.name, ...(row.aliases || [])])]
     prior.gallery ||= row.gallery
     prior.vroid ||= row.vroid
+    prior.reviewed ||= row.reviewed
     prior.sharedId ||= row.sharedId
     prior.image ||= row.image
     if (row.id === selectedId) {

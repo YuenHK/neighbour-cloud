@@ -102,7 +102,7 @@ def cloud_scene(source):
         "  if (state === 'mounted' && stageModelRenderer.value !== 'live2d')\n"
         "    window.dispatchEvent(new CustomEvent('resident-render-state', { detail: { state: 'ready' } }))\n"
         "}, { immediate: true })\n\n").replace('\n', newline) + late, 1)
-    return cloud_avatar_audio(source)
+    return cloud_free_skeletal_scene(cloud_avatar_audio(source))
 
 
 def cloud_avatar_audio(source):
@@ -442,7 +442,7 @@ def cloud_display_models(source):
     """Resolve immutable shared IDs before native missing-file fallback."""
     old = '  async function getDisplayModel(id: string) {\n    await until(displayModelsFromIndexedDBLoading).toBe(false)'
     new = old + """
-    if (Reflect.get(globalThis, '__NEIGHBOUR_CLOUD__') === true && /^cloud-(?:live2d|vrm)-[a-f0-9]{64}$/.test(id)) {
+    if (Reflect.get(globalThis, '__NEIGHBOUR_CLOUD__') === true && /^cloud-(?:live2d|vrm|rigby)-[a-f0-9]{64}$/.test(id)) {
       try {
         const loader = Reflect.get(globalThis, '__NEIGHBOUR_LOAD_SHARED_MODEL__')
         if (typeof loader !== 'function')
@@ -457,6 +457,18 @@ def cloud_display_models(source):
       }
     }"""
     normal = source.replace('\r\n', '\n')
+    format_anchor = "  SpineZip = 'spine-zip',"
+    if normal.count(format_anchor) != 1:
+        raise ValueError('free_skeletal_display_format_requires_review')
+    normal = normal.replace(format_anchor, "  RigbyJsonZip = 'rigby-json-zip',\n" + format_anchor, 1)
+    for licensed_line in (
+        '  let generateSpinePreview: (file: File) => Promise<string | undefined>\n',
+        "    const { loadSpineModelPreview } = await import('@proj-airi/stage-ui-spine/utils/spine-preview')\n",
+        '    generateSpinePreview = loadSpineModelPreview\n',
+    ):
+        normal = _free_replace(normal, licensed_line, '')
+    normal = _free_replace(normal, '  const loadSpineModelPreview = (file: File) => generateSpinePreview(file)',
+        "  const loadSpineModelPreview = (_file: File): Promise<string | undefined> => Promise.reject(new Error('此平台免費方案不啟用官方 Spine Runtime，請使用 Rigby JSON、Live2D 或 VRM。'))")
     if normal.count(old) != 1:
         raise ValueError('cloud_display_model_anchor_requires_review')
     normal = normal.replace(old, new)
@@ -476,6 +488,14 @@ def cloud_display_models(source):
       contentId = `display-model-sha256-${format}-${digest}`
     }
     const newDisplayModel: DisplayModelFile = { id: contentId || `display-model-${nanoid()}`, format, type: 'file', file, name: file.name, importedAt: Date.now() }""")
+    preview_anchor = '    if (format === DisplayModelFormat.Live2dZip) {'
+    if normal.count(preview_anchor) != 1:
+        raise ValueError('free_skeletal_display_preview_requires_review')
+    normal = normal.replace(preview_anchor,
+        "    if (format === DisplayModelFormat.RigbyJsonZip) {\n"
+        "      const { freeSkeletalPreview } = await import('../libs/free-skeletal-zip')\n"
+        "      newDisplayModel.previewImage = await freeSkeletalPreview(file)\n"
+        "    }\n    else if (format === DisplayModelFormat.Live2dZip) {", 1)
     return normal.replace(insert_anchor, "    if (cloud)\n      displayModels.value = displayModels.value.filter(item => item.id !== newDisplayModel.id)\n" + insert_anchor)
 
 
@@ -503,4 +523,94 @@ def cloud_model_panel(source):
     if source.count('    <Live2D\n') != 1 or source.count('    />\n  </div>') != 1:
         raise ValueError('native_model_adjustments_anchor_requires_review')
     source = source.replace('    <Live2D\n', '    <details class="cloud-model-options"><summary>調整模型外觀與動作</summary>\n    <Live2D\n', 1)
-    return source.replace('    />\n  </div>', '    />\n    </details>\n  </div>', 1)
+    source = source.replace('    />\n  </div>', '    />\n    </details>\n  </div>', 1)
+    source = source.replace("import Spine from './spine.vue'\n", '')
+    begin = source.index('    <Spine\n')
+    end = source.index('    />', begin) + len('    />')
+    return source[:begin] + ('    <p v-if="effectiveRenderer === \'rigby\'" class="cloud-current-model">'
+        '免費骨架（Rigby JSON）：按模型原有動作播放，支援嘴形與揮手；不使用官方 Spine Runtime。'
+        '</p>') + source[end:]
+
+
+def _free_replace(source, old, new):
+    if source.count(old) != 1:
+        raise ValueError('free_skeletal_frontend_anchor_requires_review: ' + old[:65])
+    return source.replace(old, new, 1)
+
+
+def cloud_free_stage_model(source):
+    """Distinct renderer identifier; never route Rigby through paid Spine code."""
+    normal = source.replace('\r\n', '\n')
+    normal = _free_replace(normal, "'live2d' | 'vrm' | 'spine' | 'godot'",
+                           "'live2d' | 'vrm' | 'rigby' | 'spine' | 'godot'")
+    return _free_replace(normal, "      case DisplayModelFormat.SpineZip:\n        return 'spine'",
+                         "      case DisplayModelFormat.RigbyJsonZip:\n        return 'rigby'\n"
+                         "      case DisplayModelFormat.SpineZip:\n        return 'disabled'")
+
+
+def cloud_free_model_selector_labels(source):
+    return _free_replace(source, "  [DisplayModelFormat.SpineZip]: 'Spine',",
+                         "  [DisplayModelFormat.RigbyJsonZip]: 'Rigby JSON',\n"
+                         "  [DisplayModelFormat.SpineZip]: 'Spine',")
+
+
+def cloud_free_skeletal_scene(source):
+    normal = source.replace('\r\n', '\n')
+    normal = _free_replace(normal, "import { SpineScene } from '@proj-airi/stage-ui-spine'",
+                           "import FreeSkeletalScene from '../../libs/free-skeletal-scene.vue'")
+    normal = normal.replace('spineSceneRef', 'freeSkeletalSceneRef').replace('typeof SpineScene', 'typeof FreeSkeletalScene')
+    state_anchor = 'const { mouthOpenSize, nowSpeaking } = storeToRefs(useSpeakingStore())'
+    normal = _free_replace(normal, state_anchor, state_anchor + "\nfunction onFreeSkeletalError() {\n"
+        "  window.dispatchEvent(new CustomEvent('resident-render-state', { detail: { state: 'failed', modelId: stageModelSelected.value } }))\n}")
+    normal = normal.replace("stageModelRenderer.value === 'spine'", "stageModelRenderer.value === 'rigby'")
+    settings = ("const {\n  spinePremultipliedAlpha,\n  spineDefaultMixDuration,\n  spineIdleAnimationEnabled,\n"
+                "  spineMaxFps,\n  spineRenderScale,\n} = storeToRefs(settingsStore)\n")
+    normal = _free_replace(normal, settings, '')
+    start = normal.index('      <SpineScene\n')
+    end = normal.index('      />', start) + len('      />')
+    replacement = """      <FreeSkeletalScene
+        v-if="stageModelRenderer === 'rigby' && showStage"
+        ref="freeSkeletalSceneRef"
+        v-model:state="componentState"
+        min-w="50% <lg:full" min-h="100 sm:100"
+        h-full w-full flex-1
+        :model-src="stageModelSelectedUrl"
+        :model-id="stageModelSelected"
+        :paused="paused"
+        :mouth-open="mouthOpenSize"
+        :audio-source="currentAudioSource"
+        :now-speaking="nowSpeaking"
+        @error="onFreeSkeletalError"
+      />"""
+    return normal[:start] + replacement + normal[end:]
+
+
+def cloud_free_model_runtime(source):
+    return _free_replace(source, "'disabled' | 'live2d' | 'vrm' | 'spine' | 'godot'",
+                         "'disabled' | 'live2d' | 'vrm' | 'rigby' | 'spine' | 'godot'")
+
+
+def cloud_free_model_preview(source):
+    normal = source.replace('\r\n', '\n')
+    normal = _free_replace(normal, "import { SpineScene } from '@proj-airi/stage-ui-spine'",
+                           "import FreeSkeletalScene from '../../../../libs/free-skeletal-scene.vue'")
+    normal = normal.replace('spineSceneRef', 'freeSkeletalSceneRef')
+    normal = normal.replace("stageModelRenderer.value === 'spine'", "stageModelRenderer.value === 'rigby'")
+    normal = normal.replace("renderer: 'spine'", "renderer: 'rigby'")
+    normal = normal.replace('normalizeClassList(props.spineSceneClass)', 'normalizeClassList(props.spineSceneClass || props.live2dSceneClass)')
+    settings = ("const {\n  spinePremultipliedAlpha,\n  spineDefaultMixDuration,\n  spineIdleAnimationEnabled,\n"
+                "  spineMaxFps,\n  spineRenderScale,\n} = storeToRefs(settingsStore)\n")
+    normal = _free_replace(normal, settings, '')
+    start = normal.index('  <template v-if="stageModelRenderer === \'spine\'">')
+    end = normal.index('  </template>', start) + len('  </template>')
+    replacement = """  <template v-if="stageModelRenderer === 'rigby'">
+    <div :class="spineSceneClassList">
+      <FreeSkeletalScene
+        ref="freeSkeletalSceneRef"
+        v-model:state="spineComponentState"
+        :model-src="stageModelSelectedUrl"
+        :model-id="stageModelSelected"
+      />
+    </div>
+  </template>"""
+    return normal[:start] + replacement + normal[end:]

@@ -74,7 +74,7 @@ def test_profiles_never_enable_automatic_movement(profile):
     assert result['hardware_commands'] == 0
     assert result['profile']['navigation_execution'] is False
     if profile == 's1':
-        assert result['profile']['connection'] == 'official_robomaster_lab_only'
+        assert result['profile']['connection'] == 'official_lab_and_sbus_preparation'
 
 
 def test_map_encrypted_restart_conflict_and_idempotent_save(tmp_path):
@@ -119,12 +119,22 @@ def test_routes_are_staff_only_and_simulation_never_persists(tmp_path):
     app.include_router(planning_router(operations, authorize))
     with TestClient(app) as client:
         for method, path, body in [('GET', PATH, None), ('PUT', PATH, {'revision': 0, 'map': floor_map().model_dump()}),
-                                    ('POST', PATH+'/simulate', request().model_dump())]:
+                                    ('POST', PATH+'/simulate', request().model_dump()), ('GET', PATH+'/offline-kit.zip', None)]:
             assert client.request(method, path, json=body).status_code == 401
         assert client.post(PATH+'/simulate', headers={'x-test-role': 'staff'}, json=request().model_dump()).status_code == 200
         assert operations.count('patrol-map-v1') == 0
         response = client.put(PATH, headers={'x-test-role': 'staff'}, json={'revision': 0, 'map': floor_map().model_dump()})
         assert response.status_code == 200 and response.json()['revision'] == 1
         assert client.get(PATH, headers={'x-test-role': 'staff'}).json()['map']['name'] == '合成樓層'
+        assert operations.count('patrol-map-v1') == 1
+        import io
+        import json
+        import zipfile
+        kit = client.get(PATH+'/offline-kit.zip', headers={'x-test-role': 'staff'})
+        assert kit.status_code == 200 and kit.headers['cache-control'] == 'no-store'
+        with zipfile.ZipFile(io.BytesIO(kit.content)) as archive:
+            manifest = json.loads(archive.read('manifest.json'))
+            assert manifest['hardware_commands'] == 0 and not manifest['execution_enabled']
+            assert 's1-lab-readonly.py' in archive.namelist()
         assert operations.count('patrol-map-v1') == 1
     db.close()

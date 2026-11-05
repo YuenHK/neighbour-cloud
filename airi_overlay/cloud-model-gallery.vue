@@ -2,10 +2,12 @@
 import type { DisplayModel } from '@proj-airi/stage-ui/stores/display-models'
 
 import { errorMessageFrom } from '@moeru/std'
+import { loadFreeSkeletalArchive } from '@proj-airi/stage-ui/libs/free-skeletal-zip'
 import { DisplayModelFormat, useDisplayModelsStore } from '@proj-airi/stage-ui/stores/display-models'
 import { computed, inject, onMounted, ref, watch } from 'vue'
 
 import gallery from './cloud-model-gallery.json'
+import reviewedImages from './reviewed-model-thumbnails.json'
 
 import { loadSharedModel, modelHash, sharedModels } from './cloud-shared-models'
 import { fileDigest, mergeModelChoices } from './model-dedup'
@@ -22,7 +24,7 @@ const busy = ref('')
 const message = ref('選擇後先預覽；按「儲存至平台」才套用到所有裝置。')
 const failed = ref(new Set<string>())
 const imagesFailed = ref(new Set<string>())
-const shared = ref<{ id: string, name: string, bytes: number }[]>([])
+const shared = ref<{ id: string, name: string, bytes: number, format?: string }[]>([])
 const ownFile = ref<File>()
 const ownRights = ref(false)
 const ownModels = ref<string[]>([])
@@ -46,6 +48,8 @@ function sourceName(id: string) {
   return sourceRegistry.value.find(row => row.id === id)?.name || id
 }
 function sourceLabel(row: SourceResearch) {
+  if (row.mode === 'reviewed_runtime_import')
+    return '已核對款式可一鍵預覽；不是全站自動目錄'
   const update = sourceUpdates.value.find(item => item.source === row.id)
   if (update?.last_success_ms)
     return `${update.stale ? '更新暫未完成，保留上次' : '目錄已更新'} · ${update.items.length} 項待核候選`
@@ -117,25 +121,29 @@ class VroidPreviewError extends Error {
 }
 interface VroidModel { id: string, name: string, author: string, source: string, terms: string, image: string, bytes: number, sha256: string }
 const vroid = ref<VroidModel[]>([])
+interface ReviewedModel { id: string, name: string, source: string, source_name: string, source_url: string, license_url: string, credit: string, notice: string, bytes: number, sha256: string, application_only: boolean }
+const reviewed = ref<ReviewedModel[]>([])
 const visibleCount = ref(60)
 interface GalleryModel { id: string, name: string, source: string, archive: string, image: string, bytes: number, sha256: string, license: string, terms: string, individual_terms: string, format?: string, platform?: string }
-interface Choice { id: string, name: string, platform: string, format: string, sha256?: string, platforms?: string[], aliases?: string[], image?: string, bytes?: number, model?: DisplayModel, gallery?: GalleryModel, sharedId?: string, vroid?: VroidModel }
+interface Choice { id: string, name: string, platform: string, format: string, sha256?: string, platforms?: string[], aliases?: string[], image?: string, bytes?: number, model?: DisplayModel, gallery?: GalleryModel, sharedId?: string, vroid?: VroidModel, reviewed?: ReviewedModel }
 const choices = computed(() => {
   const rows: Choice[] = (gallery.models as GalleryModel[]).map(item => ({ id: `gallery:${item.id}`, name: item.name, platform: item.platform || (item.source.includes('live2d.com') ? 'Live2D 官方' : '社群 CC0'), format: item.format || 'live2d-zip', sha256: item.sha256, image: item.image, bytes: item.bytes, gallery: item }))
   for (const item of vroid.value)
     rows.push({ id: `vroid:${item.id}`, name: item.name, platform: 'VRoid Hub', format: 'vrm', sha256: item.sha256, image: item.image, bytes: item.bytes, vroid: item, aliases: [item.author] })
+  for (const item of reviewed.value)
+    rows.push({ id: `reviewed:${item.id}`, name: item.name, platform: item.source_name, format: 'vrm', sha256: item.sha256, image: reviewedImages[item.id as keyof typeof reviewedImages], bytes: item.bytes, reviewed: item, aliases: [item.credit] })
   for (const item of shared.value) {
-    const digest = item.id.replace(/^cloud-(?:live2d|vrm)-/, '')
+    const digest = item.id.replace(/^cloud-(?:live2d|vrm|rigby)-/, '')
     const reviewed = (gallery.models as GalleryModel[]).find(model => model.sha256 === digest)
     const local = display.displayModels.find(model => model.id === item.id)
-    rows.push({ id: item.id, name: item.name, platform: '平台共享', sha256: digest, format: item.id.startsWith('cloud-vrm-') ? 'vrm' : 'live2d-zip', image: local?.previewImage || reviewed?.image, bytes: item.bytes, sharedId: item.id, model: local })
+    rows.push({ id: item.id, name: item.name, platform: '平台共享', sha256: digest, format: item.format || (item.id.startsWith('cloud-vrm-') ? 'vrm' : 'live2d-zip'), image: local?.previewImage || reviewed?.image, bytes: item.bytes, sharedId: item.id, model: local })
   }
   for (const item of display.displayModels) {
-    if (rows.some(row => row.id === item.id) || ![DisplayModelFormat.Live2dZip, DisplayModelFormat.VRM].includes(item.format))
+    if (rows.some(row => row.id === item.id) || ![DisplayModelFormat.Live2dZip, DisplayModelFormat.VRM, DisplayModelFormat.RigbyJsonZip].includes(item.format))
       continue
     if (item.type === 'file' && !localReady.value)
       continue
-    const digest = /(?:^cloud-(?:live2d|vrm)-|^display-model-sha256-(?:live2d-zip|vrm)-)([a-f0-9]{64})$/.exec(item.id)?.[1] || localDigests.value[item.id]
+    const digest = /(?:^cloud-(?:live2d|vrm|rigby)-|^display-model-sha256-(?:live2d-zip|vrm|rigby-json-zip)-)([a-f0-9]{64})$/.exec(item.id)?.[1] || localDigests.value[item.id]
     rows.push({ id: item.id, name: item.name, format: item.format, sha256: digest, image: item.previewImage, model: item, platform: item.id.startsWith('preset-') ? 'AIRI 內建' : '此裝置' })
   }
   const excluded = new Set(gallery.excluded_sha256 || [])
@@ -161,6 +169,18 @@ function picked(model: DisplayModel) {
   emit('close')
 }
 onMounted(async () => {
+  void (async () => {
+    try {
+      const transport = Reflect.get(globalThis, '__NEIGHBOUR_CLOUD_TRANSPORT__')
+      const response = await transport.fetch('/api/v1/service-desk/reviewed-models', { signal: AbortSignal.timeout(15000) })
+      if (response.ok) {
+        const value = await response.json()
+        if (Array.isArray(value.items))
+          reviewed.value = value.items
+      }
+    }
+    catch { /* Reviewed-source catalogue is local metadata, never blocks current models. */ }
+  })()
   void (async () => {
     try {
       const transport = Reflect.get(globalThis, '__NEIGHBOUR_CLOUD_TRANSPORT__')
@@ -193,7 +213,7 @@ onMounted(async () => {
   catch { message.value = '共享清單暫未載入；已核對圖庫及此裝置模型仍可選擇。' }
 })
 async function choose(row: Choice) {
-  if (busy.value || ((row.gallery || row.vroid) && !accepted.value))
+  if (busy.value || ((row.gallery || row.vroid || row.reviewed) && !accepted.value))
     return
   busy.value = row.id
   status(`正在準備 ${row.name}…`)
@@ -204,16 +224,18 @@ async function choose(row: Choice) {
       if (!display.displayModels.some(item => item.id === model!.id))
         display.displayModels.push(model)
     }
-    else if (!model && row.vroid) {
-      const item = row.vroid
+    else if (!model && (row.vroid || row.reviewed)) {
+      const item = (row.vroid || row.reviewed)!
       const transport = Reflect.get(globalThis, '__NEIGHBOUR_CLOUD_TRANSPORT__')
-      const response = await transport.fetch(`/api/v1/service-desk/vroid/models/${encodeURIComponent(item.id)}/preview`, {
+      const endpoint = row.reviewed ? '/api/v1/service-desk/reviewed-models' : '/api/v1/service-desk/vroid/models'
+      const response = await transport.fetch(`${endpoint}/${encodeURIComponent(item.id)}/preview`, {
         method: 'POST',
-        signal: AbortSignal.timeout(90000),
+        ...(row.reviewed ? { headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ accepted_terms: true, application_use_only: true }) } : {}),
+        signal: AbortSignal.timeout(row.reviewed ? 120000 : 90000),
       })
       if (!response.ok || !response.body) {
         const value = await response.json().catch(() => ({}))
-        throw new VroidPreviewError(value.detail?.message || 'VRoid 暫時未能下載，沒有自動重試。', response.status === 422 || ['model_changed_requires_review', 'model_not_reviewed'].includes(value.detail?.code))
+        throw new VroidPreviewError(value.detail?.message || '模型暫時未能下載，沒有自動重試。', response.status === 422 || ['model_changed_requires_review', 'model_not_reviewed'].includes(value.detail?.code))
       }
       const reader = response.body.getReader()
       const chunks: Uint8Array[] = []
@@ -278,7 +300,7 @@ async function choose(row: Choice) {
     picked(model)
   }
   catch (error) {
-    const hide = !row.vroid || (error instanceof VroidPreviewError && error.hide)
+    const hide = (!row.vroid && !row.reviewed) || (error instanceof VroidPreviewError && error.hide)
     if (hide)
       failed.value.add(row.id)
     status(`${errorMessageFrom(error) ?? '未能完整載入模型。'} 原角色保留，${hide ? '今次清單會先隱藏此項。' : '稍後可再次選擇。'}`)
@@ -300,6 +322,11 @@ async function prepareOwnArchive() {
   busy.value = 'own-archive'
   status('正在整理及核對 ZIP，原模型保留…')
   try {
+    if (ownFile.value.name.toLowerCase().endsWith('.rigby.zip')) {
+      await loadFreeSkeletalArchive(ownFile.value)
+      picked(await display.addDisplayModel(DisplayModelFormat.RigbyJsonZip, ownFile.value))
+      return
+    }
     const transport = Reflect.get(globalThis, '__NEIGHBOUR_CLOUD_TRANSPORT__')
     const response = await transport.fetch(`/api/v1/service-desk/airi-models/prepare${ownEntry.value ? `?entrypoint=${encodeURIComponent(ownEntry.value)}` : ''}`, {
       method: 'POST',
@@ -351,21 +378,27 @@ async function prepareOwnArchive() {
         <option value="vrm">
           VRM · 3D
         </option>
+        <option value="rigby-json-zip">
+          免費骨架 · Rigby JSON
+        </option>
       </select>
     </div>
-    <label class="model-picker-license"><input v-model="accepted" type="checkbox">我已閱讀所選圖庫模型的授權及署名要求，只作非商業學習使用。</label>
+    <label class="model-picker-license"><input v-model="accepted" type="checkbox">我已閱讀所選模型的授權及署名要求，只在鄰伴作數字人學習使用，保留原條款，不作素材轉發。</label>
     <p class="model-picker-message" role="status">
       {{ localReady ? message : '正在整理此裝置模型，避免重複顯示…' }}
     </p>
     <div class="model-picker-grid">
       <article v-for="row in visible" :key="row.id" :class="{ current: props.selectedModel?.id === row.id }">
-        <button type="button" :disabled="!!busy || (!!row.gallery || !!row.vroid) && !accepted" :aria-label="`選擇 ${row.name}`" @click="choose(row)">
+        <button type="button" :disabled="!!busy || (!!row.gallery || !!row.vroid || !!row.reviewed) && !accepted" :aria-label="`選擇 ${row.name}`" @click="choose(row)">
           <img v-if="row.image && !imagesFailed.has(row.id)" :src="row.image" :alt="row.name" loading="lazy" @error="imagesFailed.add(row.id)">
           <span v-else class="model-picker-placeholder" aria-hidden="true">♧</span>
           <strong>{{ row.name }}</strong><span class="model-picker-tag">{{ row.platform }}{{ row.format === 'vrm' ? ' · 3D' : '' }}</span>
           <small>{{ busy === row.id ? '準備中…' : props.selectedModel?.id === row.id ? '目前選擇' : '選擇預覽' }}</small>
         </button>
-        <details v-if="row.gallery" class="model-picker-terms">
+        <details v-if="row.reviewed" class="model-picker-terms">
+          <summary>作者及使用條款</summary><p>{{ row.reviewed.credit }} · {{ row.reviewed.notice }}</p><a :href="row.reviewed.source_url" target="_blank" rel="noopener noreferrer">作者來源</a> · <a :href="row.reviewed.license_url" target="_blank" rel="noopener noreferrer">原作者條款</a>
+        </details>
+        <details v-else-if="row.gallery" class="model-picker-terms">
           <summary>授權及來源</summary><p>{{ row.gallery.individual_terms }}</p><a :href="row.gallery.source" target="_blank" rel="noopener noreferrer">作者來源</a> · <a :href="row.gallery.license" target="_blank" rel="noopener noreferrer">授權</a> · <a :href="row.gallery.terms" target="_blank" rel="noopener noreferrer">條款</a>
         </details>
         <details v-else-if="row.vroid" class="model-picker-terms">
@@ -380,8 +413,9 @@ async function prepareOwnArchive() {
       未找到可用模型，試吓其他名稱或來源。
     </p>
     <details class="model-picker-import">
-      <summary>匯入自己的 Live2D ZIP</summary>
+      <summary>匯入自己的 Live2D／免費骨架 ZIP</summary>
       <p>自動整理多層資料夾、引用路徑及取景；保留原模型、貼圖及授權。32 MB 以內，整理失敗不改原角色。</p>
+      <p>免費骨架請使用 .rigby.zip：只限 Rigby JSON、region／unweighted mesh 及 PNG 貼圖；不是 Spine 格式，不接受或轉換 .skel。</p>
       <input type="file" accept=".zip,application/zip" aria-label="自己的模型 ZIP" :disabled="!!busy" @change="chooseArchive">
       <label v-if="ownFile"><input v-model="ownRights" type="checkbox">我有權在本平台使用及儲存這個模型。</label>
       <select v-if="ownModels.length" v-model="ownEntry" aria-label="ZIP 內的模型">

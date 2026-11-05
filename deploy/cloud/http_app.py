@@ -39,6 +39,9 @@ from deploy.cloud.presentation import PUBLIC_PATH as PRESENTATION_PUBLIC_PATH
 from deploy.cloud.presentation import STAFF_PATH as PRESENTATION_STAFF_PATH
 from deploy.cloud.presentation import Presentation, PresentationEdit
 from deploy.cloud.quota_api import QUOTA_PATH, CloudQuotas, quota_router
+from deploy.cloud.reviewed_model_api import PATH as REVIEWED_MODELS_PATH
+from deploy.cloud.reviewed_model_api import reviewed_model_router
+from deploy.cloud.reviewed_model_imports import ReviewedModelImporter
 from deploy.cloud.robot_proxy import robot_path, robot_router
 from deploy.cloud.site_access import PATH as ACCESS_PATH
 from deploy.cloud.site_access import AccessInput, SiteSessions
@@ -377,6 +380,7 @@ def create_app(services, verifier, *, origin, model_client=None, voice_client=No
     app.state.browser_timings = BrowserTimings()
     app.state.resident_transcription = Transcription(lambda: app.state.resident_cloud_client)
     app.state.avatar_work = AvatarWork()
+    app.state.reviewed_models = ReviewedModelImporter()
     app.state.gallery_catalogue = None
     if presentation is not None:
         services.residents.runtime_settings = presentation.runtime
@@ -385,6 +389,7 @@ def create_app(services, verifier, *, origin, model_client=None, voice_client=No
                                             uri=True, timeout=20, check_same_thread=False)
         app.include_router(avatar_router(AvatarAssets(model_connection), presentation, require_staff, current_principal,
                                          app.state.avatar_work))
+        app.include_router(reviewed_model_router(require_staff, app.state.reviewed_models, app.state.avatar_work))
         app.state.gallery_catalogue = SourceCatalogue(SourceStore(model_connection), lambda: app.state.gallery_client, operations=operations)
         app.include_router(sources_router(require_staff, app.state.gallery_catalogue))
 
@@ -398,6 +403,7 @@ def create_app(services, verifier, *, origin, model_client=None, voice_client=No
         def resident_presentation():
             value = presentation.public()
             credit = app.state.vroid_library.credit(value['airi']['stage_model']) if app.state.vroid_library else None
+            credit = credit or app.state.reviewed_models.credit(value['airi']['stage_model'])
             if credit:
                 value['model_credit'] = credit
             return value
@@ -438,6 +444,7 @@ def create_app(services, verifier, *, origin, model_client=None, voice_client=No
     async def audit(request: Request, call_next):
         private = (private_staff_path(request.url.path, request.method)
                    or request.url.path.startswith('/api/v1/service-desk/vroid/')
+                   or request.url.path.startswith(REVIEWED_MODELS_PATH)
                    or request.url.path in ('/api/v1/events.csv', QUOTA_PATH, '/api/v1/governance/audit', PRESENTATION_STAFF_PATH) or staff_path(request.url.path))
         identity = None
         if private:

@@ -21,7 +21,7 @@ from PIL import Image
 MAX_ARCHIVE = 32 * 1024 * 1024
 MAX_TOTAL = 64 * 1024 * 1024
 CHUNK = 256 * 1024
-MODEL_ID = re.compile(r'cloud-(?:live2d|vrm)-([a-f0-9]{64})$')
+MODEL_ID = re.compile(r'cloud-(?:live2d|vrm|rigby)-([a-f0-9]{64})$')
 TABLES = {'cloud_avatar_models', 'cloud_avatar_model_chunks'}
 
 
@@ -152,15 +152,20 @@ class AvatarAssets:
     @staticmethod
     def metadata(row):
         vrm = row[5] == 'model.vrm'
-        return {'id': ('cloud-vrm-' if vrm else 'cloud-live2d-') + row[0], 'sha256': row[0], 'name': row[1], 'bytes': row[2],
-                'format': 'vrm' if vrm else 'live2d-zip', 'uploaded_ms': row[4], 'entrypoint': row[5]}
+        rigby = row[5] == 'model.rigby.json'
+        prefix = 'cloud-vrm-' if vrm else 'cloud-rigby-' if rigby else 'cloud-live2d-'
+        return {'id': prefix + row[0], 'sha256': row[0], 'name': row[1], 'bytes': row[2],
+                'format': 'vrm' if vrm else 'rigby-json-zip' if rigby else 'live2d-zip', 'uploaded_ms': row[4], 'entrypoint': row[5]}
 
     def put(self, identity, name, content):
         digest = model_digest(identity)
         if hashlib.sha256(content).hexdigest() != digest:
             raise ValueError('上載內容摘要不一致；沒有發佈。')
         from deploy.cloud.avatar_vrm import validate_vrm
-        entrypoint = validate_vrm(content) if identity.startswith('cloud-vrm-') else validate_archive(content)
+        from deploy.cloud.free_skeletal import validate_free_skeletal_archive
+        entrypoint = (validate_vrm(content) if identity.startswith('cloud-vrm-')
+                      else validate_free_skeletal_archive(content) if identity.startswith('cloud-rigby-')
+                      else validate_archive(content))
         name = name.strip()
         if not 1 <= len(name) <= 100 or any(ord(char) < 32 for char in name):
             raise ValueError('模型名稱不正確。')
@@ -193,7 +198,9 @@ class AvatarAssets:
             row = db.execute('SELECT bytes,parts,entrypoint FROM cloud_avatar_models WHERE digest=?', (digest,)).fetchone()
             if row is None:
                 return None
-            if (row[2] == 'model.vrm') != identity.startswith('cloud-vrm-'):
+            expected = ('cloud-vrm-' if row[2] == 'model.vrm'
+                        else 'cloud-rigby-' if row[2] == 'model.rigby.json' else 'cloud-live2d-') + digest
+            if identity != expected:
                 return None
             if not 0 < row[0] <= MAX_ARCHIVE or row[1] != (row[0] + CHUNK - 1) // CHUNK:
                 raise ValueError('model_inventory_requires_review')

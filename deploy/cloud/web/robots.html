@@ -13,6 +13,7 @@
         <label>機體<select id="patrolProfile"><option value="simulation">離機模擬</option><option value="ep">RoboMaster EP</option><option value="s1">RoboMaster S1</option></select></label>
       </div>
       <p id="patrolProfileNotice">只模擬路線，沒有硬件指令。</p>
+      <details><summary>S1 接入與定位準備</summary><p>可下載官方 Lab 讀取模板、SBus 離機預覽及固定標記定位工具。S1 須先核對韌體及接線；地圖、里程讀數都不能代替即時定位與避障。未經現場驗收不啟用自主行車。</p><button type="button" id="patrolOfflineKit">下載離機準備工具</button></details>
       <div class="planner-map-wrap"><canvas id="patrolMapCanvas" width="800" height="640" aria-label="巡查地圖：選擇畫筆後點格子；亦可匯入地圖 JSON" role="img"></canvas></div>
       <p>灰：未勘察　淺綠：地面　深灰：障礙　藍：起點　橙：終點　黃線：模擬路線。規劃會預留機身安全距離。</p>
       <div class="planner-actions"><button type="button" id="patrolPlan">模擬路線</button><button type="button" id="patrolMapSave">儲存地圖</button><button type="button" id="patrolMapLoad">讀取已儲存地圖</button><button type="button" id="patrolMapExport">匯出地圖</button><label class="planner-import">匯入地圖<input id="patrolMapImport" type="file" accept="application/json,.json"></label></div>

@@ -1,0 +1,70 @@
+{
+  "version": 1,
+  "models": [
+    {
+      "id": "tsukuyomi-official-spats",
+      "name": "月詠 Tsukuyomi（官方短褲版）",
+      "source": "tsukuyomi",
+      "source_name": "Tsukuyomi 官方",
+      "source_url": "https://tyc.rei-yumesaki.net/material/avatar/3d-a/",
+      "license_url": "https://tyc.rei-yumesaki.net/material/avatar/3d-a/",
+      "credit": "つくよみちゃん／夢前黎 (Rei Yumesaki)",
+      "notice": "本平台使用免費素材角色「つくよみちゃん」，對話由鄰伴產生，並非角色官方發言。模型僅隨本平台使用；公開截圖或影片須保留鄰伴及角色名稱，並遵守原作者條款。不得上傳至 VRoid Hub 公開分發。",
+      "bytes": 14958064,
+      "sha256": "ca73476640926dc52a9eb99bdd7e70ece8eb124398e34b8f926f139a30ef84a7",
+      "download_url": "https://tyc.rei-yumesaki.net/files/3d/tyc-3d-a.zip",
+      "download_bytes": 176073879,
+      "download_sha256": "abda963d1e9e35be423e7d83758b7c4320af43c9c4af5396c70d8206b8f4e4ad",
+      "member": "é┬é¡éµé▌é┐éßé±î÷Ä«3Dâéâfâï â^âCâvA/02 âXâpâbâcö┼üiVRMüj/üyù╓èsÉⁿéáéΦüzé┬é¡éµé▌é┐éßé±î÷Ä«3Dâéâfâï â^âCâvAüiâXâpâbâcö┼üj.vrm",
+      "application_only": true
+    },
+    {
+      "id": "onair-miko",
+      "name": "Miko（原版）",
+      "source": "aituber-onair",
+      "source_name": "AITuber OnAir 官方",
+      "source_url": "https://miko.aituberonair.com/downloads/",
+      "license_url": "https://miko.aituberonair.com/",
+      "credit": "© Yuki Shindo (AITuber OnAir)",
+      "notice": "僅作鄰伴數字人及本平台內容的一部分使用；原作者明許軟件／網站內建分發，禁止作獨立素材或素材集再分發。不得冒稱官方合作或獨佔角色。",
+      "bytes": 15379048,
+      "sha256": "417b787e63e8f0c49b2a3515367171f449d33603cb059ac27a796061dbbf3ef8",
+      "download_url": "https://miko.aituberonair.com/assets/miko.vrm",
+      "download_bytes": 15379048,
+      "download_sha256": "417b787e63e8f0c49b2a3515367171f449d33603cb059ac27a796061dbbf3ef8",
+      "application_only": true
+    },
+    {
+      "id": "onair-miko-cheer",
+      "name": "Miko（應援服）",
+      "source": "aituber-onair",
+      "source_name": "AITuber OnAir 官方",
+      "source_url": "https://miko.aituberonair.com/downloads/",
+      "license_url": "https://miko.aituberonair.com/",
+      "credit": "© Yuki Shindo (AITuber OnAir)",
+      "notice": "僅作鄰伴數字人及本平台內容的一部分使用；原作者明許軟件／網站內建分發，禁止作獨立素材或素材集再分發。不得冒稱官方合作或獨佔角色。",
+      "bytes": 15510628,
+      "sha256": "68a0cebd4d1b32363de05579f6a213e4814d1a747454221f40b2c9e28bca7a35",
+      "download_url": "https://miko.aituberonair.com/assets/miko-cheer.vrm",
+      "download_bytes": 15510628,
+      "download_sha256": "68a0cebd4d1b32363de05579f6a213e4814d1a747454221f40b2c9e28bca7a35",
+      "application_only": true
+    },
+    {
+      "id": "vrm-consortium-constraint",
+      "name": "VRM 官方 Constraint 樣本",
+      "source": "vrmconsortium",
+      "source_name": "VRM Consortium／pixiv 官方",
+      "source_url": "https://github.com/pixiv/three-vrm",
+      "license_url": "https://vrm.dev/en/licenses/1.0/",
+      "credit": "© 2022 pixiv Inc.",
+      "notice": "依檔案內 VRM Public License 1.0 設定：容許各人作數字人、重發及改作；不得作反社會或仇恨用途。",
+      "bytes": 10776032,
+      "sha256": "12c2b97e95e700783a6a550dc0eee2d7880aeedccef9ae67bc4c5a2f0f2631a2",
+      "download_url": "https://raw.githubusercontent.com/pixiv/three-vrm/3caf7a21ee68f0d5dfa363ab3d577450bbf60136/packages/three-vrm/examples/models/VRM1_Constraint_Twist_Sample.vrm",
+      "download_bytes": 10776032,
+      "download_sha256": "12c2b97e95e700783a6a550dc0eee2d7880aeedccef9ae67bc4c5a2f0f2631a2",
+      "application_only": false
+    }
+  ]
+}

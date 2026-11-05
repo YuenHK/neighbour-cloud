@@ -1,3 +1,0 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/dist-cuwwDmBz.js","assets/dist-CS62mElk.js"])))=>i.map(i=>d[i]);
-import{t as e}from"./preload-helper-ClBMtM1g.js";import{i as t}from"./index-DoHiaFQM-YR12A1iq.js";var n=async()=>{let{toJsonSchema:n}=await t(e(()=>import(`./dist-cuwwDmBz.js`),__vite__mapDeps([0,1])),`@valibot/to-json-schema`);return e=>n(e)};export{n as getToJsonSchemaFn};
-//# sourceMappingURL=valibot-_ibN3zSD-4Q2EiwLd.js.map
