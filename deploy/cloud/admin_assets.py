@@ -35,7 +35,7 @@ class CloudAdminAssets:
                    '<section class="service-card" aria-labelledby="quotaHeading">')
         html = cut(html, '<section class="service-card" id="localResourcesCard">', '<footer class="service-footer">')
         # Keep the enclosing usage tab closed after removing its native card.
-        html = html.replace('<footer class="service-footer">', '</section><footer class="service-footer">', 1)
+        html = html.replace('<footer class="service-footer">', (WEB / 'kiosk.html').read_text(encoding='utf-8') + '</section><footer class="service-footer">', 1)
         html = html.replace('__SERVICE_SHELL__', '').replace('__LOCAL_OPERATOR_TOKEN__', '')
         html = html.replace('本機可用量', '系統守護可用量').replace('官方餘額與本機保守限制', '官方餘額與系統保守限制')
         html = html.replace('<th scope="col">官方免費額度</th><th scope="col">系統守護可用量</th>', '<th scope="col">免費配額與可用量</th>')
@@ -68,10 +68,12 @@ class CloudAdminAssets:
         self.responses['/assets/service-shell.css'] = (css, mime)
         self.responses['/cloud/admin/presentation.js'] = ((WEB / 'presentation.js').read_bytes(), 'text/javascript')
         self.responses['/cloud/admin/robots.js'] = ((WEB / 'robots.js').read_bytes(), 'text/javascript')
+        self.responses['/cloud/admin/patrol-planner.js'] = ((WEB / 'patrol-planner.js').read_bytes(), 'text/javascript')
+        self.responses['/cloud/admin/kiosk.js'] = ((WEB / 'kiosk.js').read_bytes(), 'text/javascript')
         self.responses['/cloud/admin/staff-notifications.js'] = ((WEB / 'staff-notifications.js').read_bytes(), 'text/javascript')
         self.responses['/assets/service-shell.css'] = (self.responses['/assets/service-shell.css'][0] +
             b'\n.service-tabs{grid-template-columns:repeat(7,minmax(0,1fr))}@media(max-width:680px){.service-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}}\n' +
-            (WEB / 'robots.css').read_bytes() + (WEB / 'module-loading.css').read_bytes(), 'text/css')
+            (WEB / 'robots.css').read_bytes() + (WEB / 'module-loading.css').read_bytes() + (WEB / 'kiosk.css').read_bytes(), 'text/css')
         for name in SCRIPTS + (('governance.js',) if governance else ()):
             script = (static / name).read_text(encoding='utf-8')
             if name == 'estate-management.js':

@@ -29,6 +29,87 @@ const ownModels = ref<string[]>([])
 const ownEntry = ref('')
 const localDigests = ref<Record<string, string>>({})
 const localReady = ref(false)
+interface SourceResearch { id: string, name: string, domains: string[], mode: string, note: string }
+interface SourceUpdate { source: string, items: unknown[], last_success_ms: number | null, stale: boolean }
+interface DiscoveredModel { title: string, url: string, description: string, source: string }
+const sourceRegistry = ref<SourceResearch[]>([])
+const sourceUpdates = ref<SourceUpdate[]>([])
+const sourceLoaded = ref(false)
+const sourceBusy = ref(false)
+const sourceMessage = ref('')
+const discoverySource = ref('all')
+const discoveryQuery = ref('')
+const discoveryFormat = ref('all')
+const discoveryResults = ref<DiscoveredModel[]>([])
+const sourceSuccess = computed(() => sourceUpdates.value.filter(row => row.last_success_ms !== null).length)
+function sourceName(id: string) {
+  return sourceRegistry.value.find(row => row.id === id)?.name || id
+}
+function sourceLabel(row: SourceResearch) {
+  const update = sourceUpdates.value.find(item => item.source === row.id)
+  if (update?.last_success_ms)
+    return `${update.stale ? '更新暫未完成，保留上次' : '目錄已更新'} · ${update.items.length} 項待核候選`
+  if (update)
+    return update.stale ? '暫未能取得目錄' : '正在等候首次檢查'
+  return row.mode === 'existing_oauth' ? '已接入，已核模型在上方清單' : '尚未接通自動目錄'
+}
+async function readSources(event: Event) {
+  if (!(event.target instanceof HTMLDetailsElement) || !event.target.open || sourceLoaded.value || sourceBusy.value)
+    return
+  sourceBusy.value = true
+  try {
+    const transport = Reflect.get(globalThis, '__NEIGHBOUR_CLOUD_TRANSPORT__')
+    const response = await transport.fetch('/api/v1/service-desk/model-gallery/catalogue', { signal: AbortSignal.timeout(15000) })
+    if (!response.ok)
+      throw new Error('source_unavailable')
+    const value = await response.json()
+    if (!Array.isArray(value.sources) || !Array.isArray(value.registry?.items))
+      throw new Error('source_unavailable')
+    sourceUpdates.value = value.sources
+    sourceRegistry.value = value.registry.items
+    sourceLoaded.value = true
+    sourceMessage.value = '進入後台會在背景檢查已接通目錄；檢查失敗保留舊清單。'
+  }
+  catch {
+    sourceMessage.value = '圖庫更新狀態暫未能載入；上方已核可用模型仍可選擇。'
+  }
+  finally { sourceBusy.value = false }
+}
+function safeCandidate(item: DiscoveredModel) {
+  try {
+    const url = new URL(item.url)
+    const source = sourceRegistry.value.find(row => row.id === item.source)
+    return url.protocol === 'https:' && !url.username && !url.password && (!url.port || url.port === '443')
+      && source?.domains.some(host => url.hostname === host || url.hostname.endsWith(`.${host}`))
+  }
+  catch { return false }
+}
+async function discoverModels() {
+  if (sourceBusy.value || !sourceLoaded.value)
+    return
+  sourceBusy.value = true
+  discoveryResults.value = []
+  try {
+    const transport = Reflect.get(globalThis, '__NEIGHBOUR_CLOUD_TRANSPORT__')
+    const response = await transport.fetch('/api/v1/service-desk/model-gallery/search', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      signal: AbortSignal.timeout(18000),
+      body: JSON.stringify({ query: discoveryQuery.value, source: discoverySource.value, format: discoveryFormat.value }),
+    })
+    const value = await response.json()
+    if (!response.ok) {
+      sourceMessage.value = typeof value.detail === 'string' ? value.detail.slice(0, 240) : '免費搜尋暫時未能完成。'
+      return
+    }
+    discoveryResults.value = (Array.isArray(value.items) ? value.items.slice(0, 8) : []).filter(safeCandidate)
+    sourceMessage.value = discoveryResults.value.length
+      ? '以下是待核候選；價格、授權及 AIRI 試載通過後才會加入可用模型，現在不會自動匯入。'
+      : '未找到符合來源限制的候選，可換其他名稱或來源。'
+  }
+  catch { sourceMessage.value = '搜尋暫未完成，沒有自動重試或改動目前角色。' }
+  finally { sourceBusy.value = false }
+}
 class VroidPreviewError extends Error {
   constructor(message: string, readonly hide: boolean) {
     super(message)
@@ -314,11 +395,63 @@ async function prepareOwnArchive() {
         {{ busy === 'own-archive' ? '整理中…' : '整理並預覽' }}
       </button>
     </details>
+    <details class="model-picker-sources" @toggle="readSources">
+      <summary>圖庫更新狀態及尋找新資源</summary>
+      <p role="status">
+        {{ sourceBusy ? '正在查閱圖庫…' : sourceMessage }}
+      </p>
+      <template v-if="sourceLoaded">
+        <p>{{ sourceSuccess }} 個公開目錄已有檢查紀錄，另有已接入的 VRoid Hub。共 {{ sourceRegistry.length }} 個研究來源；未代表全部已接通或可一鍵匯入。</p>
+        <div class="model-source-search">
+          <input v-model="discoveryQuery" type="search" maxlength="80" placeholder="尋找日系角色、貓、鄰居…" aria-label="新圖庫候選名稱">
+          <select v-model="discoverySource" aria-label="搜尋新候選的來源">
+            <option value="all">
+              全部研究來源
+            </option>
+            <option v-for="row in sourceRegistry" :key="row.id" :value="row.id">
+              {{ row.name }}
+            </option>
+          </select>
+          <select v-model="discoveryFormat" aria-label="搜尋新候選的格式">
+            <option value="all">
+              Live2D 或 VRM
+            </option><option value="live2d">
+              Live2D
+            </option><option value="vrm">
+              VRM
+            </option>
+          </select>
+          <button type="button" :disabled="sourceBusy" @click="discoverModels">
+            搜尋候選
+          </button>
+        </div>
+        <p class="model-source-note">
+          按「搜尋候選」才使用免費搜尋額度；用完即停。結果不會混入上方可用模型。
+        </p>
+        <ul v-if="discoveryResults.length" class="model-source-results">
+          <li v-for="item in discoveryResults" :key="item.url">
+            <a :href="item.url" target="_blank" rel="noopener noreferrer">{{ item.title }}</a><small>{{ sourceName(item.source) }} · 待核對</small>
+          </li>
+        </ul>
+        <details class="model-source-review">
+          <summary>查看各來源的接入狀態</summary>
+          <ul>
+            <li v-for="row in sourceRegistry" :key="row.id">
+              <strong>{{ row.name }}</strong><span>{{ sourceLabel(row) }}</span><small>{{ row.note }}</small>
+            </li>
+          </ul>
+        </details>
+      </template>
+    </details>
   </section>
 </template>
 
 <style>
 .model-picker{display:grid;gap:14px;color:#194f49;min-width:0}.model-picker-heading{display:flex;align-items:start;justify-content:space-between;gap:16px}.model-picker-heading h2{font-size:24px;font-weight:650;margin:0 0 4px}.model-picker-heading p{font-size:13px;color:#687d71;overflow-wrap:anywhere}.model-picker-heading>button,.model-picker-import>button{padding:9px 16px;border:1px solid #cbded4;border-radius:10px;background:#f0f7f2;white-space:nowrap}.model-picker-filters{display:flex;gap:10px}.model-picker-filters input{flex:1;min-width:0}.model-picker-filters input,.model-picker-filters select,.model-picker-import select{padding:11px 12px;border:1px solid #cbded4;border-radius:10px;background:#fff;max-width:100%}.model-picker-license{display:flex;align-items:start;gap:8px;font-size:13px;line-height:1.6}.model-picker-license input{flex:0 0 auto;margin-top:4px}.model-picker-message{font-size:13px;line-height:1.6;color:#627a6a}.model-picker-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:12px}.model-picker-grid article{overflow:hidden;border:1px solid #dae7df;border-radius:14px;background:#f8fbf8}.model-picker-grid article.current{border-color:#43957b;box-shadow:0 0 0 2px #b8d9c7}.model-picker-grid article>button{width:100%;display:flex;align-items:center;flex-direction:column;gap:7px;padding:12px;text-align:center;border:0;background:transparent}.model-picker-grid img,.model-picker-placeholder{height:130px;width:100%;object-fit:contain;display:grid;place-items:center;font-size:64px;color:#82aa91}.model-picker-grid strong{font-size:14px;overflow-wrap:anywhere}.model-picker-tag{font-size:11px;padding:3px 8px;border-radius:12px;background:#e6f0e8;color:#557662}.model-picker-grid small{font-size:12px;color:#23765e}.model-picker-grid button:disabled{opacity:.55;cursor:default}.model-picker button:focus-visible,.model-picker input:focus-visible,.model-picker select:focus-visible{outline:3px solid #88bca4;outline-offset:2px}.model-picker-terms{font-size:11px;line-height:1.5;padding:0 12px 10px}.model-picker-terms summary{cursor:pointer;color:#607969}.model-picker-terms a{text-decoration:underline}.model-picker-import{border-top:1px solid #dfebe3;padding-top:12px;font-size:13px;line-height:1.7}.model-picker-import summary{cursor:pointer;font-weight:600}.model-picker-import input[type=file],.model-picker-import>label,.model-picker-import>select{display:block;margin-block:12px;max-width:100%}.model-picker-empty{padding:32px;text-align:center;color:#728579}.cloud-current-model{font-size:14px;font-weight:600;padding:10px 0;overflow-wrap:anywhere}.cloud-model-options>summary{font-size:13px;cursor:pointer;padding:14px 0;color:#607c6b}@media(max-width:500px){.model-picker-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.model-picker-grid img,.model-picker-placeholder{height:100px}.model-picker-filters{flex-direction:column}.model-picker-heading h2{font-size:21px}}
+</style>
+
+<style>
+.model-picker-sources{border-top:1px solid #d9e6df;padding-top:14px;font-size:13px;line-height:1.7}.model-picker-sources summary{cursor:pointer}.model-picker-sources p{margin-block:10px}.model-source-search{display:grid;grid-template-columns:minmax(120px,1fr) minmax(100px,160px) minmax(90px,130px) auto;gap:8px}.model-source-search input,.model-source-search select,.model-source-search button{min-width:0;max-width:100%;padding:9px;border:1px solid #cbded4;border-radius:10px;background:#fff}.model-source-note{color:#657c70}.model-source-results,.model-source-review ul{list-style:none;padding:0;display:grid;gap:10px}.model-source-results li,.model-source-review li{display:grid;gap:3px;padding:9px;border-radius:10px;background:#f1f7f3;overflow-wrap:anywhere}.model-source-results small,.model-source-review small{color:#657c70}@media(max-width:650px){.model-source-search{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.model-source-search input{grid-column:1/-1}}
 </style>
 
 <style>

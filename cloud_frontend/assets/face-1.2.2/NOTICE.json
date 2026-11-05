@@ -71,12 +71,5 @@
     "new_destination": null
   },
   "hand_model": "User reference project QingmingPortal/vendor/mediapipe/hand_landmarker.task; MediaPipe Apache-2.0",
-  "privacy": "Frame analysis stays on device; no identities or embeddings; SDK performance/usage uploads disabled.",
-  "hand_model_witness": {
-    "source": "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task",
-    "matches_official_content_md5_and_size": true,
-    "sha256": "fbc2a30080c3c557093b5ddfc334698132eb341044ccee322ccf8bcf3607cde1",
-    "bytes": 7819105,
-    "reference": "User-owned QingmingPortal; read/copy only, no modifications to that project"
-  }
+  "privacy": "Frame analysis stays on device; no identities or embeddings; SDK performance/usage uploads disabled."
 }

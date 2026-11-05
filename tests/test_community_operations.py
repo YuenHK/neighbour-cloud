@@ -357,6 +357,7 @@ def test_fake_patrol_outbox_cloud_staff_progress_and_90day_local_evidence(system
     manager.configure('synthetic-device', PatrolSettings(enabled=True, zone='SYNTHETIC'))
     manager.step('synthetic-device')
     frame['key'] = 'epoch-2'
+    frame['captured_at_ms'] += 1  # A genuinely new synthetic capture, not a renamed buffer.
     manager.states['synthetic-device']['next_at'] = 0
     manager.step('synthetic-device')
     manager.close()

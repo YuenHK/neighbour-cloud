@@ -1,6 +1,22 @@
 <section id="panel-robots" role="tabpanel" aria-labelledby="tab-robots" hidden>
   <section class="service-card robot-workspace"><div class="robot-workspace-heading"><div><h2>機械人控制</h2><p id="robotConsoleStatus" role="status">正在準備現場控制台…</p></div><div class="robot-workspace-actions"><button id="retryRobotConsole" type="button" hidden>重新連接</button></div></div>
     <div class="module-stage"><div id="robotBoot" class="module-boot" hidden aria-hidden="true"><span class="module-boot-mark">鄰</span><strong>正在準備機械人控制台</strong><span class="module-boot-dots"><i></i><i></i><i></i></span></div><iframe id="robotConsoleFrame" title="EP 機械人控制台" allow="microphone 'none'; camera 'none'; fullscreen" allowfullscreen referrerpolicy="no-referrer" hidden></iframe></div>
-    <details class="robot-workspace-help"><summary>連線提示</summary><p>沿用管理工作台的登入，現場同街外都在此操作，不用額外 Google 驗證。現場電腦需要開機、同 EP 在同一網絡，並執行現場及遠端連接程式。</p><p>啟動程式不會自行連接、開鏡頭或移動 EP。自動巡查回報同步雲端仍待接通。</p></details>
+    <details class="robot-workspace-help"><summary>連線提示</summary><p>沿用管理工作台的登入，現場同街外都在此操作，不用額外 Google 驗證。現場電腦需要開機、同 EP 在同一網絡，並執行現場及遠端連接程式。</p><p>啟動程式不會自行連接、開鏡頭或移動 EP。巡查候選的三張相片可經已配對現場程式送到雲端；真實巡查流程仍須現場驗收。</p></details>
+  </section>
+  <section class="service-card patrol-planner">
+    <details id="patrolPlanning"><summary>地圖與巡查路線</summary>
+      <p>先勘察地面，再畫通道及障礙。此處只儲存地圖及模擬路線，不會連線或移動機械人；地圖不代表即時定位。</p>
+      <div class="planner-toolbar">
+        <label>地圖名稱<input id="patrolMapName" maxlength="60" value="巡查區域"></label>
+        <label>每格大小<select id="patrolCellSize"><option value="50">50 厘米</option><option value="100">1 米</option></select></label>
+        <label>畫筆<select id="patrolPaint"><option value="floor">已勘察地面</option><option value="blocked">障礙／樓梯／禁入</option><option value="unknown">未勘察</option><option value="start">起點</option><option value="goal">終點</option></select></label>
+        <label>機體<select id="patrolProfile"><option value="simulation">離機模擬</option><option value="ep">RoboMaster EP</option><option value="s1">RoboMaster S1</option></select></label>
+      </div>
+      <p id="patrolProfileNotice">只模擬路線，沒有硬件指令。</p>
+      <div class="planner-map-wrap"><canvas id="patrolMapCanvas" width="800" height="640" aria-label="巡查地圖：選擇畫筆後點格子；亦可匯入地圖 JSON" role="img"></canvas></div>
+      <p>灰：未勘察　淺綠：地面　深灰：障礙　藍：起點　橙：終點　黃線：模擬路線。規劃會預留機身安全距離。</p>
+      <div class="planner-actions"><button type="button" id="patrolPlan">模擬路線</button><button type="button" id="patrolMapSave">儲存地圖</button><button type="button" id="patrolMapLoad">讀取已儲存地圖</button><button type="button" id="patrolMapExport">匯出地圖</button><label class="planner-import">匯入地圖<input id="patrolMapImport" type="file" accept="application/json,.json"></label></div>
+      <p id="patrolPlanStatus" role="status">未讀取地圖。打開此區後才會查閱，未有地圖時所有格子預設為未勘察。</p>
+    </details>
   </section>
 </section>

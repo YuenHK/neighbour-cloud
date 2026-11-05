@@ -7,38 +7,36 @@ import asyncio
 import json
 import sqlite3
 import time
-from urllib.parse import urlsplit
+from urllib.parse import urlsplit, urlunsplit
 
 import httpx
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, ConfigDict, Field
 from starlette.concurrency import run_in_threadpool
 
+from deploy.cloud.gallery_registry import (
+    SEARCH_DOMAINS,
+    registry_snapshot,
+    source_id,
+    valid_source_link,
+)
 from edge_hub.cloud_allowance import CloudAllowance
 from edge_hub.estate_services import search_key
 from edge_hub.storage_context import current_storage
 
 PATH = '/api/v1/service-desk/model-gallery/search'
-SOURCES = {'booth': ['booth.pm'], 'itch': ['itch.io'], 'nizima': ['nizima.com'],
-           'live2d': ['live2d.com'], 'vtubernook': ['vtuber-nook.com'], 'aplaybox': ['aplaybox.com']}
+SOURCES = SEARCH_DOMAINS
 
 
 class Search(BaseModel):
     model_config = ConfigDict(extra='forbid', strict=True)
     query: str = Field(default='', max_length=80)
-    source: str = Field(pattern='^(all|booth|itch|nizima|live2d|vtubernook|aplaybox)$', default='all')
+    source: str = Field(pattern='^(all|' + '|'.join(SOURCES) + ')$', default='all')
+    format: str = Field(pattern='^(all|live2d|vrm)$', default='all')
 
 
 def creator_url(value):
-    try:
-        url = urlsplit(value)
-        host = url.hostname or ''
-        return (url.scheme == 'https' and not url.username and not url.password and url.port in (None, 443)
-                and (host == 'booth.pm' or host.endswith(('.booth.pm', '.itch.io'))
-                     or host in ('nizima.com', 'live2d.com', 'www.live2d.com', 'vtuber-nook.com',
-                                 'www.vtuber-nook.com', 'aplaybox.com', 'www.aplaybox.com')) and len(value) <= 1600)
-    except (ValueError, TypeError):
-        return False
+    return valid_source_link(value)
 
 
 class ModelDiscovery:
@@ -59,7 +57,7 @@ class ModelDiscovery:
     async def search(self, request):
         if self.closed:
             raise HTTPException(503, '圖庫搜尋正在結束，請稍後再試。')
-        key = (request.source, request.query.strip())
+        key = (request.source, request.format, request.query.strip())
         cached = self.cache.get(key)
         if cached and time.monotonic() - cached[0] < 21600:
             return {**cached[1], 'cached': True}
@@ -106,7 +104,9 @@ class ModelDiscovery:
             async with asyncio.timeout(12):
                 async with self.client().stream('POST', 'https://api.tavily.com/search',
                         headers={'Authorization': 'Bearer ' + search_key()},
-                        json={'query': 'free Live2D model ' + request.query.strip(), 'include_domains': domains,
+                        json={'query': ('free VRM avatar model ' if request.format == 'vrm' else
+                                        'free Live2D model ' if request.format == 'live2d' else
+                                        'free Live2D or VRM ready-made avatar model ') + request.query.strip(), 'include_domains': domains,
                               'search_depth': 'basic', 'max_results': 8, 'include_answer': False,
                               'include_images': False, 'include_raw_content': False, 'auto_parameters': False},
                         timeout=10, follow_redirects=False) as response:
@@ -117,15 +117,28 @@ class ModelDiscovery:
                         if len(content) > 262144:
                             raise ValueError('bounded_catalogue_response')
             data = json.loads(content)
-            items = [{'title': str(item.get('title', 'Live2D'))[:140], 'url': item['url'],
-                      'description': str(item.get('content', ''))[:260]}
-                     for item in data.get('results', [])[:8] if isinstance(item, dict) and creator_url(item.get('url'))]
+            items, seen = [], set()
+            for item in data.get('results', [])[:8]:
+                if not isinstance(item, dict) or not creator_url(item.get('url')):
+                    continue
+                if request.source != 'all' and not valid_source_link(item['url'], request.source):
+                    continue
+                parsed = urlsplit(item['url'])
+                canonical = urlunsplit((parsed.scheme, parsed.netloc.lower(), parsed.path, parsed.query, ''))
+                if canonical in seen:
+                    continue
+                seen.add(canonical)
+                items.append({'title': str(item.get('title', '角色模型'))[:140], 'url': canonical,
+                              'description': str(item.get('content', ''))[:260],
+                              'source': source_id(canonical), 'runtime_verified': False, 'one_click': False})
         except (httpx.HTTPError, TimeoutError, ValueError, TypeError, AttributeError):
             raise HTTPException(503, '圖庫搜尋暫未完成，未自動重試；可直接到下方平台瀏覽。') from None
-        result = {'items': items, 'cached': False, 'licence_verified': False, 'search_credit': 1}
+        result = {'items': items, 'cached': False, 'licence_verified': False, 'search_credit': 1,
+                  'registered_sources': registry_snapshot()['registered_sources'],
+                  'connected_sources_goal_complete': False, 'automatic_import': False}
         if len(self.cache) >= 16:
             self.cache.pop(next(iter(self.cache)))
-        self.cache[(request.source, request.query.strip())] = (time.monotonic(), result)
+        self.cache[(request.source, request.format, request.query.strip())] = (time.monotonic(), result)
         return result
 
 

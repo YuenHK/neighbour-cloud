@@ -12,6 +12,7 @@ import zipfile
 from pathlib import Path
 
 TREES = {'edge_hub': {'.py', '.html', '.js', '.css', '.svg'},
+         'ep_runtime': {'.py'},  # Pure helpers for isolated CI, never SDK wheels or device state.
          'local_audio_gateway': {'.py', '.txt'},
          'airi_overlay': {'.py', '.ts', '.js', '.vue', '.css', '.json'},
          'airi_bridge': {'.ts', '.json'},

@@ -365,7 +365,9 @@ def create_app(services, verifier, *, origin, model_client=None, voice_client=No
     app.state.vroid_library = None
     if operations is not None:
         from deploy.cloud.case_photo import router as case_photo_router
+        from deploy.cloud.patrol_planner import planning_router
         app.include_router(case_photo_router(services, operations, current_principal, require_staff))
+        app.include_router(planning_router(operations, require_staff))
         patrol_ingest = PatrolIngest(services, operations)
         app.state.staff_push = StaffPush(operations, services.cases, origin)
         app.include_router(patrol_router(patrol_ingest, require_staff, current_principal))
@@ -383,7 +385,7 @@ def create_app(services, verifier, *, origin, model_client=None, voice_client=No
                                             uri=True, timeout=20, check_same_thread=False)
         app.include_router(avatar_router(AvatarAssets(model_connection), presentation, require_staff, current_principal,
                                          app.state.avatar_work))
-        app.state.gallery_catalogue = SourceCatalogue(SourceStore(model_connection), lambda: app.state.gallery_client)
+        app.state.gallery_catalogue = SourceCatalogue(SourceStore(model_connection), lambda: app.state.gallery_client, operations=operations)
         app.include_router(sources_router(require_staff, app.state.gallery_catalogue))
 
         @app.get('/api/v1/service-desk/airi-services')

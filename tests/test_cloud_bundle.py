@@ -53,6 +53,23 @@ def test_cloud_login_source_assets_are_bundled_but_encrypted_setup_is_not(tmp_pa
             assert hashlib.sha256(stored.read(entry['path'])).hexdigest() == entry['sha256']
 
 
+def test_ci_gets_pure_robot_helpers_without_sdk_or_saved_device_material(tmp_path):
+    root = project(tmp_path)
+    helpers = root/'ep_runtime'
+    helpers.mkdir()
+    (helpers/'__init__.py').write_text('')
+    (helpers/'manual_warning.py').write_text('class ManualWarning: pass')
+    for name in ('state.json', 'private.dpapi', 'sdk.whl', 'worker.exe', 'record.log'):
+        (helpers/name).write_text('PRIVATE-DEVICE-MARKER')
+    archive = tmp_path/'ci-source.zip'
+    build(root, archive)
+    with zipfile.ZipFile(archive) as stored:
+        assert 'ep_runtime/manual_warning.py' in stored.namelist()
+        assert {name for name in stored.namelist() if name.startswith('ep_runtime/')} == {
+            'ep_runtime/__init__.py', 'ep_runtime/manual_warning.py'}
+        assert all(b'PRIVATE-DEVICE-MARKER' not in stored.read(name) for name in stored.namelist())
+
+
 def test_existing_bundle_is_never_overwritten(tmp_path):
     root = project(tmp_path)
     output = tmp_path / 'existing.zip'

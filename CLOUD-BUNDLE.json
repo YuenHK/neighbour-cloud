@@ -1,7 +1,7 @@
 {
   "format": "neighbour-cloud-preparation-v1",
   "kind": "source-only",
-  "deployed": true,
+  "deployed": false,
   "contains_resident_data": false,
   "contains_credentials": false,
   "requires": [
@@ -181,8 +181,8 @@
     },
     {
       "path": "airi_overlay/cloud-model-gallery.vue",
-      "bytes": 20469,
-      "sha256": "a0492722a701f70346aab6887725ebfe2c5f04546bb60cad55a08e771f1f048c"
+      "bytes": 27959,
+      "sha256": "7e82d3c704e43d2e247f576c5472f42d875f7304adfd7a0376b6d7291817d7a7"
     },
     {
       "path": "airi_overlay/cloud-model-library.vue",
@@ -436,8 +436,8 @@
     },
     {
       "path": "deploy/cloud/admin_assets.py",
-      "bytes": 7996,
-      "sha256": "3e55e10ccec88c511152d07653784a9c89bf41d178e4b85538bcc7ad34f8494a"
+      "bytes": 8306,
+      "sha256": "d66476056220fc705e22e3b0ed7456cd0bf7c560db6071d64475eef3f967fe74"
     },
     {
       "path": "deploy/cloud/airi_runtime.py",
@@ -515,9 +515,19 @@
       "sha256": "3fe88641b1176dff1af0706400cc9e5544486a972e1e6a4b7f716b1481fb9b30"
     },
     {
+      "path": "deploy/cloud/gallery_extra.py",
+      "bytes": 6422,
+      "sha256": "52e66f6c0d8b84d6af9f30ef7bda4ee031f84c000e24ee815a2998c9ac41c1b3"
+    },
+    {
+      "path": "deploy/cloud/gallery_registry.py",
+      "bytes": 6989,
+      "sha256": "29710aca4c5c3a3e59ece8ce21b7490a1ca033e8e2c7052845ed66aa3ce4b230"
+    },
+    {
       "path": "deploy/cloud/gallery_sources.py",
-      "bytes": 13685,
-      "sha256": "990d7c0000b11bafa0a88f3b5481297a2abe4b6a584409b59757788d1802874a"
+      "bytes": 14695,
+      "sha256": "27d77b4bea4d333f851a98ed34a7865c4ee5f4409eaca9b5b5377bdd26e9e2ce"
     },
     {
       "path": "deploy/cloud/google_identity.py",
@@ -531,8 +541,8 @@
     },
     {
       "path": "deploy/cloud/http_app.py",
-      "bytes": 31558,
-      "sha256": "4ef2644241e18eb951aba0a99164377e8e48371322cf04524d086ebbde7a3c1a"
+      "bytes": 31716,
+      "sha256": "b5db1fb2afa19adcc5d52d62d2efc9b56edc450b6c7bb300454dfe6e2c54aa79"
     },
     {
       "path": "deploy/cloud/libsql_connection.py",
@@ -576,8 +586,8 @@
     },
     {
       "path": "deploy/cloud/model_discovery.py",
-      "bytes": 7137,
-      "sha256": "dda9a8ec2276e3f831f9252654f617fdbe5a577cf6e4f8519542b209b98f8d90"
+      "bytes": 7700,
+      "sha256": "e7cfb71f4a6c5a5b0b65be30a3af5ce0ca544e5d2b58cb307487b68df4312571"
     },
     {
       "path": "deploy/cloud/native_adapters.py",
@@ -598,6 +608,11 @@
       "path": "deploy/cloud/patrol_ingest.py",
       "bytes": 8184,
       "sha256": "ef6ee9980694ffc7c7c68d19cfe3203aac336f23cc13707e9ff85b3db332fae5"
+    },
+    {
+      "path": "deploy/cloud/patrol_planner.py",
+      "bytes": 6384,
+      "sha256": "6994f345804eea0e6b5a68d830227fafb056c88a8fe7222df4bc66eb39a050f0"
     },
     {
       "path": "deploy/cloud/photo_api.py",
@@ -651,8 +666,8 @@
     },
     {
       "path": "deploy/cloud/rollout.py",
-      "bytes": 8829,
-      "sha256": "37650d4766689bb61f6437a3f060715fd5a172d1642274fce501d5ece7963e67"
+      "bytes": 8830,
+      "sha256": "4fafce53735309ee358841eb3be03bac7bf32e637a1f59d4fdac8eb4e186302e"
     },
     {
       "path": "deploy/cloud/runtime_storage.py",
@@ -741,8 +756,8 @@
     },
     {
       "path": "deploy/cloud/web/admin-entry.js",
-      "bytes": 3647,
-      "sha256": "42294ccfb748d0493157992dd41ac80797ec704f0603ac9c57886e4e72be89d2"
+      "bytes": 3674,
+      "sha256": "9c9a897c3199bb4ccc7b2405138804e231ec754d0eeb2f9115be70c0422f5767"
     },
     {
       "path": "deploy/cloud/web/admin-request.js",
@@ -805,6 +820,21 @@
       "sha256": "91bf02edf0e20d84d77098ea8cd09254710b13df50c91ccdeea933d792d2b1dc"
     },
     {
+      "path": "deploy/cloud/web/kiosk.css",
+      "bytes": 1173,
+      "sha256": "9aa78219de466029e0b232393f4ba386f3f60f8a95e6ad6d68688356af832ba4"
+    },
+    {
+      "path": "deploy/cloud/web/kiosk.html",
+      "bytes": 1376,
+      "sha256": "af53badc36fdfc995568b443000b0c1c6b91d4ca20766025646aacc2fbc873ee"
+    },
+    {
+      "path": "deploy/cloud/web/kiosk.js",
+      "bytes": 5014,
+      "sha256": "b2ef120fe13160b30088f511c7581ecef65bd2f49f3fdd1dff82efaaaa4eb8c8"
+    },
+    {
       "path": "deploy/cloud/web/launch-screen.css",
       "bytes": 10697,
       "sha256": "65c4269747cfe42ced1e22fdbf8b29426dc324be2c803f64acdf67fb5cf90d99"
@@ -828,6 +858,11 @@
       "path": "deploy/cloud/web/module-warmup.js",
       "bytes": 2074,
       "sha256": "68b627815b72ebe2242f281a9b6693626ce1ee41a15dd82dacbcd688b41d3c9a"
+    },
+    {
+      "path": "deploy/cloud/web/patrol-planner.js",
+      "bytes": 7723,
+      "sha256": "f93825b770b18efceaa670626dbedde6e0759aba814c34d790d10c1a5c9f9a86"
     },
     {
       "path": "deploy/cloud/web/presentation.html",
@@ -856,13 +891,13 @@
     },
     {
       "path": "deploy/cloud/web/robots.css",
-      "bytes": 694,
-      "sha256": "88eff2ae59b7f5d5a27e678aea71a10ad512b54db90246cad7568bcb74e06a6c"
+      "bytes": 1600,
+      "sha256": "cc5dde605534a97faba6e216fb7e9683e5c81430c211801065b19237d0673e39"
     },
     {
       "path": "deploy/cloud/web/robots.html",
-      "bytes": 1239,
-      "sha256": "3b4d151e8c7439c133089346739a3400a1ce59cea5fd21c2a1aff77fa7168a44"
+      "bytes": 3377,
+      "sha256": "2cb877b80eaf5c32e66ff9d7e4e630006157b91d9ecd832b95003f8e348335cb"
     },
     {
       "path": "deploy/cloud/web/robots.js",
@@ -1036,8 +1071,8 @@
     },
     {
       "path": "edge_hub/ep_patrol.py",
-      "bytes": 22465,
-      "sha256": "f382e504c13d6a9393cdceb68bb2322613e456c4090e61f9ab26ad85a1d13c23"
+      "bytes": 22765,
+      "sha256": "e1b7f4cdcaed471dd74236132aa81d88cdd5776531b4c65babbae78bad209e8c"
     },
     {
       "path": "edge_hub/ep_preparation.py",
@@ -1178,6 +1213,11 @@
       "path": "edge_hub/patrol_followup.py",
       "bytes": 8478,
       "sha256": "28bf52e64f4be9054275c8754230cc7e86754538eb02d744fcd75e0dcded9a68"
+    },
+    {
+      "path": "edge_hub/patrol_observation.py",
+      "bytes": 2531,
+      "sha256": "28b59838ceb9fc563fd86d866a24ff836a20ac5f6ac695433e1e2c295e3e5376"
     },
     {
       "path": "edge_hub/patrol_schedule.py",
@@ -1570,6 +1610,131 @@
       "sha256": "b30d34c8be387b2f05a20b2342583372c9eeda2d20ee8472b59b91743ee1a64e"
     },
     {
+      "path": "ep_runtime/__init__.py",
+      "bytes": 77,
+      "sha256": "2658209576c5680d3c1e0478dff5ba400d5d869a13e5553081ec93e6fbda2083"
+    },
+    {
+      "path": "ep_runtime/body_snapshot.py",
+      "bytes": 1529,
+      "sha256": "435afa655c530942f60ddbfc55e7e2704d465567dc87abc14e31141206c3f258"
+    },
+    {
+      "path": "ep_runtime/bootstrap.py",
+      "bytes": 1254,
+      "sha256": "bde6f6cd39800c7c66d3a0be7b47f1ccc803f081901bb4b0039f0ce39d992fc9"
+    },
+    {
+      "path": "ep_runtime/codecs.py",
+      "bytes": 2687,
+      "sha256": "bd5ecc1049004f96aaa0be75904407cd57ef24709a217a9a1c6f76d779172725"
+    },
+    {
+      "path": "ep_runtime/console_session.py",
+      "bytes": 46625,
+      "sha256": "20a18c6d947586b3350e69234b1c86a3bed70190a41f99f20499f00daa8f86e8"
+    },
+    {
+      "path": "ep_runtime/console_tests.py",
+      "bytes": 57826,
+      "sha256": "70f41cf9a5d2081e37cc82462fa8093f22673f7d307c9e901f6029af477ff466"
+    },
+    {
+      "path": "ep_runtime/console_worker.py",
+      "bytes": 5060,
+      "sha256": "8dbd603cf42180d7b0f57406851a9a79310a33d0a8d0b284aaa00d3cf2aa5fb6"
+    },
+    {
+      "path": "ep_runtime/control_ack.py",
+      "bytes": 1930,
+      "sha256": "41827ee0321435dc25a618f60e7339c48f647a5c7a366b0f5044594596467889"
+    },
+    {
+      "path": "ep_runtime/esc_snapshot.py",
+      "bytes": 1253,
+      "sha256": "6c141d7256deab191cdfb1cda47fb8fdf9eac28e41eff12defae028f12aa5a74"
+    },
+    {
+      "path": "ep_runtime/handshake.py",
+      "bytes": 2960,
+      "sha256": "9284b501843228a3a873bce6e7668fe5fa33b8f88059815deb24da5077281063"
+    },
+    {
+      "path": "ep_runtime/idle_motor_session.py",
+      "bytes": 18821,
+      "sha256": "87d6d8a86a11c6b09a0d3e7799ba0b5d9b080d900ea2a8e74ae76a4abf97e308"
+    },
+    {
+      "path": "ep_runtime/idle_motor_tests.py",
+      "bytes": 31453,
+      "sha256": "ae98944046f1e71676da83bf8810b19d21b25e25f6257277d93e48e5bd48c265"
+    },
+    {
+      "path": "ep_runtime/infrared_warning.py",
+      "bytes": 3805,
+      "sha256": "1526fc2bfe00db9fa150b172f71cf1b536b2eca619cb13e0ad01b3f242214772"
+    },
+    {
+      "path": "ep_runtime/interfaces.py",
+      "bytes": 802,
+      "sha256": "89f165465f80e2eb23fa664167302c7204ce2299491882b4cc3e8ba806a31d55"
+    },
+    {
+      "path": "ep_runtime/manual_warning.py",
+      "bytes": 3541,
+      "sha256": "16c319dff84df9b410bf966f3a2498fa776cdf70261d3bc7e9ed8bbc198e32f6"
+    },
+    {
+      "path": "ep_runtime/motor_trace.py",
+      "bytes": 1858,
+      "sha256": "57c284b5294783565aa70c75203373bff23cb0d99ceec504805e1f3532cc114e"
+    },
+    {
+      "path": "ep_runtime/native_ack_tests.py",
+      "bytes": 5412,
+      "sha256": "64f18babaab18ad495504e20b1a4162ff6b46968e477982a5c0dda4e4397923b"
+    },
+    {
+      "path": "ep_runtime/pairing_session.py",
+      "bytes": 822,
+      "sha256": "2df0a9737c9408f248275da46aa7ff981c53e314c6c97d6f33e97d0025b5b6dc"
+    },
+    {
+      "path": "ep_runtime/patrol_context.py",
+      "bytes": 8906,
+      "sha256": "68c6c18a10b6bf21443681dfcd45d710c47fae86fa23f3bd2936b334376dc3b2"
+    },
+    {
+      "path": "ep_runtime/probe.py",
+      "bytes": 6699,
+      "sha256": "fedc73dd1472d1336b5fbedf4bdc7590072a5a29bb7f975f48e9caf2015c9ad3"
+    },
+    {
+      "path": "ep_runtime/readonly_session.py",
+      "bytes": 4765,
+      "sha256": "966b9770609917c71b2178400414108eef3530fae2c70af4445f285d93e5d6b6"
+    },
+    {
+      "path": "ep_runtime/release_evidence.py",
+      "bytes": 13174,
+      "sha256": "10002fe3f225be4bb644e68f8980fb8f86b159f940935d6d3f2551b1ca4127e7"
+    },
+    {
+      "path": "ep_runtime/rest_evidence.py",
+      "bytes": 9478,
+      "sha256": "6c1d3c1f61499a24179e5ba1615a621cce721558e699e32d23aed1c2a5101e20"
+    },
+    {
+      "path": "ep_runtime/short_press_session.py",
+      "bytes": 4920,
+      "sha256": "968c94ae9c5f412ec8ca390cb2bba851ff5fcbafb24fa3a154fc8a729b2f81a0"
+    },
+    {
+      "path": "ep_runtime/tests.py",
+      "bytes": 2923,
+      "sha256": "d5316711d6a29f8cf9c299265f5c677430bf00b3ab686322f1a82650e9786be4"
+    },
+    {
       "path": "local_audio_gateway/__init__.py",
       "bytes": 57,
       "sha256": "457e266cf094fa2682746728c0dc3b769c92b1b6f67ba0e92b85a8bd34ab32d9"
@@ -1641,8 +1806,8 @@
     },
     {
       "path": "tools/acceptance_gate.py",
-      "bytes": 5002,
-      "sha256": "0a2f1f9cdbd3a02eeb4ce0c51d69e20547d4c2745d5459e9294036bd997b3dce"
+      "bytes": 5251,
+      "sha256": "2a6e1a6f8b438e4513c5dc2ebad916b414fd57fbb35c1d087f82582aede05db4"
     },
     {
       "path": "tools/check_release_gate.py",
@@ -1651,8 +1816,8 @@
     },
     {
       "path": "tools/cloud_bundle.py",
-      "bytes": 5838,
-      "sha256": "39a24f4bea020339bd48c382a4de0545a44d84189311bf00abbbb367a13d3db2"
+      "bytes": 5937,
+      "sha256": "5024483aef9b7345ac2d778715cd2de5ac65a949a6aeba3fb9a61d1a86db3d61"
     },
     {
       "path": "tools/cloud_frontend_assets.py",
@@ -1689,20 +1854,5 @@
       "bytes": 4746,
       "sha256": "8bf3ecc3f05d619df53c09d93bbc9abfe76a0356f1a7487a4b20cdfdf94d1bce"
     }
-  ],
-  "current_runtime": {
-    "origin": "https://neighbour-yuenhk-live.onrender.com",
-    "runtime": "735e1a124ba99d9fad25f455c4fa9f62e60f996e",
-    "deploy": "dep-dblbao0u01pc739nagm0",
-    "release": "avatar-interaction-20261104-barrier24",
-    "service": "srv-dbii3qijnfac73cgabd0",
-    "instance": "srv-dbii3qijnfac73cgabd0-hkzvh",
-    "PID": 59,
-    "ready_utc": "2026-11-04T04:36:49.68098023Z",
-    "Free_Singapore_instances": 1,
-    "autoDeploy": "no",
-    "original_data_preserved": true,
-    "optional_camera_and_confirmed_photos": true,
-    "docs_only_no_redeploy": true
-  }
+  ]
 }

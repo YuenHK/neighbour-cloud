@@ -40,6 +40,9 @@ def patrol(tmp_path):
 
 def step(manager, frame, sequence):
     frame['key'] = f'epoch-{sequence}'
+    # Each synthetic step represents a genuinely new capture, not a renamed
+    # stale buffer with the previous capture timestamp.
+    frame['captured_at_ms'] += 1
     manager.states['ep-2']['next_at'] = 0
     manager.step('ep-2')
 

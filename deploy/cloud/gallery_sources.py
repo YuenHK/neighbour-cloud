@@ -17,6 +17,9 @@ import httpx
 from fastapi import APIRouter
 from starlette.concurrency import run_in_threadpool
 
+from deploy.cloud.gallery_extra import ExtraSources
+from deploy.cloud.gallery_registry import registry_snapshot
+
 PATH = '/api/v1/service-desk/model-gallery/catalogue'
 NAMES = ('live2d', 'vtubernook', 'aplaybox')
 TTL = 6 * 60 * 60 * 1000
@@ -137,8 +140,9 @@ def ap_record(row):
 
 
 class SourceCatalogue:
-    def __init__(self, store, client, *, now=None):
+    def __init__(self, store, client, *, now=None, operations=None):
         self.store, self.client, self.now = store, client, now or (lambda: int(time.time() * 1000))
+        self.extra = ExtraSources(operations, client, self.now) if operations is not None else None
         self.tasks = set()
         self.closed = False
         self.next_check_ms = 0
@@ -177,10 +181,14 @@ class SourceCatalogue:
     async def snapshot(self):
         try:
             rows = await run_in_threadpool(self.store.rows)
+            if self.extra is not None:
+                rows.extend(await run_in_threadpool(self.extra.rows))
             return {'sources': rows, 'refreshing': bool(self.tasks), 'refresh_interval_ms': TTL,
                     'check_on_staff_entry': True, 'entry_coalesce_ms': 60000,
                     'automatic_avatar_switch': False, 'provider_credits_used': 0,
-                    'licence_required': True}
+                    'licence_required': True, 'registry': registry_snapshot(),
+                    'metadata_sources_with_success': sum(row['last_success_ms'] is not None for row in rows),
+                    'unreviewed_items_importable': False}
         except (OSError, ValueError, sqlite3.Error):
             return {'sources': [], 'refreshing': False, 'cache_unavailable': True,
                     'automatic_avatar_switch': False, 'provider_credits_used': 0}
@@ -272,12 +280,23 @@ class SourceCatalogue:
                 await run_in_threadpool(self.store.failed, name)
             return True
         checked = await asyncio.gather(*(one(name) for name in NAMES))
+        if self.extra is not None:
+            try:
+                await self.extra.refresh(minimum_age)
+            except (OSError, ValueError, sqlite3.Error):
+                # A damaged extension cache cannot replace original sources
+                # or cause a source crawl to escape an owned shutdown task.
+                checked.append(False)
         if all(checked):
             self.next_check_ms = self.now() + TTL
 
 
 def sources_router(authorize, catalogue):
     router = APIRouter()
+    @router.get(PATH + '/registry')
+    async def registry():
+        authorize()
+        return registry_snapshot()
     @router.get(PATH)
     async def sources():
         authorize()

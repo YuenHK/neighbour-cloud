@@ -21,7 +21,9 @@ TESTS = ['test_community_operations.py', 'test_cloud_http_app.py', 'test_cloud_s
          'test_ep_patrol.py', 'test_cloud_web_assets.py', 'test_workbench_filters.py',
          'test_cloud_admin_assets.py', 'test_service_desk.py', 'test_cloud_avatar_vrm.py',
          'test_cloud_avatar_assets.py', 'test_cloud_avatar_api.py', 'test_cloud_presentation.py',
-         'test_cloud_gallery_catalog.py', 'test_cloud_vroid_api.py', 'test_cloud_vroid_library.py']
+         'test_cloud_gallery_catalog.py', 'test_cloud_vroid_api.py', 'test_cloud_vroid_library.py',
+         'test_gallery_sources.py', 'test_gallery_expansion.py', 'test_cloud_model_discovery.py',
+         'test_patrol_grounding.py', 'test_patrol_planner.py', 'test_cloud_bundle.py']
 
 
 def fingerprint(root):
@@ -52,7 +54,7 @@ def main():
                  '-q', '--junitxml=' + str(output / 'regression.xml')],
                 ['node', '--test', 'tests/resident-pcm.test.cjs', 'tests/resident-avatar-audio.test.cjs', 'tests/resident-camera.test.cjs', 'tests/staff-pwa.test.cjs',
                  'tests/cloud-transport.test.cjs', 'tests/admin-request.test.cjs', 'tests/workbench-live.test.cjs', 'tests/model-dedup.test.cjs',
-                 'tests/cloud-privacy.test.cjs']]
+                 'tests/cloud-privacy.test.cjs', 'tests/kiosk.test.cjs', 'tests/patrol-planner-review.test.cjs']]
     commands[0][0] = sys.executable
     if args.network_faults:
         commands.append([sys.executable, 'tools/toxiproxy_acceptance.py', '--output', str(output / 'network.json')])

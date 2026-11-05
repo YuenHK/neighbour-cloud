@@ -1,6 +1,10 @@
 name: Isolated pre-release acceptance
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
 permissions:
   contents: read
 concurrency:
@@ -8,6 +12,12 @@ concurrency:
   cancel-in-progress: true
 jobs:
   free-isolated-checks:
+    # Evaluated before allocating a hosted runner. Enable this repository
+    # variable only after an account-level $0 hard-stop budget is verified.
+    if: >-
+      github.repository == 'YuenHK/neighbour-cloud' &&
+      vars.NEIGHBOUR_CI_FREE_ONLY == 'confirmed-zero-dollar-hard-stop' &&
+      (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-24.04
     timeout-minutes: 18
     env:
@@ -28,6 +38,6 @@ jobs:
         env:
           NODE_PATH: ${{ github.workspace }}/.acceptance-node/node_modules
         run: python tools/acceptance_gate.py --network-faults --browser
-      # Local acceptance is mandatory before every deployment. Remote Actions
-      # remains manual until account free minutes AND zero spending cap can be
-      # verified. No private-runner billing is implicitly authorized by a push.
+      # No deploy, upload-artifact, paid runner, caching, production credentials,
+      # hardware, microphone or real model/voice requests. Local acceptance and
+      # a separate stopped-writer handover remain mandatory for deployment.
