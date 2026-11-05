@@ -18,6 +18,8 @@ def main():
     analyse.add_argument('--captured-at-ms', type=int, required=True)
     analyse.add_argument('--now-ms', type=int, required=True)
     analyse.add_argument('--fixed-camera-confirmed', action='store_true')
+    analyse.add_argument('--method', choices=('single', 'board'), default='single',
+                         help='board jointly fits at least two surveyed markers; no automatic fallback')
     args = parser.parse_args()
     if args.command == 'marker':
         import cv2
@@ -33,7 +35,11 @@ def main():
     if args.calibration.stat().st_size > 40_000 or args.jpeg.stat().st_size > 1_500_000:
         raise ValueError('input_bound_exceeded')
     config = Calibration.parse(json.loads(args.calibration.read_text(encoding='utf-8')))
-    result = MarkerLocaliser(config).estimate(args.jpeg.read_bytes(), frame_key='saved-frame',
+    localiser = MarkerLocaliser
+    if args.method == 'board':
+        from edge_hub.board_localisation import BoardLocaliser
+        localiser = BoardLocaliser
+    result = localiser(config).estimate(args.jpeg.read_bytes(), frame_key='saved-frame',
         captured_at_ms=args.captured_at_ms, now_ms=args.now_ms, camera_fixed=args.fixed_camera_confirmed)
     print(json.dumps(result, ensure_ascii=False, allow_nan=False))
 

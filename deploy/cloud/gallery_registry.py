@@ -96,7 +96,8 @@ def registry_snapshot():
     return {'items': [dict(row) for row in SOURCES], 'target_sources': 20,
             'registered_sources': len(SOURCES), 'metadata_adapters': 5,
             'existing_oauth_sources': 1, 'target_complete': False,
-            'reviewed_runtime_sources': 3, 'reviewed_runtime_models': 4,
+            'reviewed_runtime_sources': 3, 'reviewed_runtime_models': 5,
+            'reviewed_original_github_models': 2,
             'all_sources_one_click': False,
             'counting_rule': 'Connected catalogues only; creators, mirrors and links do not count as connected platforms.'}
 

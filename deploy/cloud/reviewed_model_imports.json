@@ -65,6 +65,22 @@
       "download_bytes": 10776032,
       "download_sha256": "12c2b97e95e700783a6a550dc0eee2d7880aeedccef9ae67bc4c5a2f0f2631a2",
       "application_only": false
+    },
+    {
+      "id": "godette-original-vrm",
+      "name": "Godette · 藍髮女孩",
+      "source": "godette-original",
+      "source_name": "Godette 原作者及 V-Sekai／Lyuma",
+      "source_url": "https://github.com/SirRichard94/low-poly-godette",
+      "license_url": "https://github.com/V-Sekai/godot-vrm/blob/e15199f980064028bfa4fbee5e70dddb82dd55c3/vrm_samples/LICENSE_SAMPLES.txt",
+      "credit": "Original model © SirRichard94; VRM adaptation © 2021 Lyuma. CC BY 3.0 Unported.",
+      "notice": "原作及 VRM 改作依 CC BY 3.0 使用；保留作者、改作及授權連結。本平台沒有改動模型或貼圖，對話不代表原作者。",
+      "bytes": 591288,
+      "sha256": "0b008f60c808eb1c83781c650e654a70d512574932e3867f80609c62d7052c6c",
+      "download_url": "https://raw.githubusercontent.com/V-Sekai/godot-vrm/e15199f980064028bfa4fbee5e70dddb82dd55c3/vrm_samples/Godette_vrm_v4.vrm",
+      "download_bytes": 591288,
+      "download_sha256": "0b008f60c808eb1c83781c650e654a70d512574932e3867f80609c62d7052c6c",
+      "application_only": false
     }
   ]
 }

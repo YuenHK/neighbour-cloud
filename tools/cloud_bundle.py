@@ -25,7 +25,8 @@ ROOT_FILES = ('pyproject.toml', 'package.json', 'pnpm-lock.yaml', 'pnpm-workspac
               'deploy/cloud/web/brand/icon-192.png', 'deploy/cloud/web/brand/icon-512.png')
 TOOLS = ('tools/cloud_bundle.py', 'tools/cloud_preflight.py', 'tools/cloud_frontend_assets.py',
          'tools/acceptance_gate.py', 'tools/check_release_gate.py', 'tools/toxiproxy_acceptance.py',
-         'tools/vision_anomaly_lab.py', 'tools/localisation_replay.py')
+         'tools/vision_anomaly_lab.py', 'tools/localisation_replay.py',
+         'tools/navigation_board_lab.py', 'tools/navigation_acceptance.py')
 FORBIDDEN = {'.git', '.runtime', '.experiments', '.venv', '.venv-audio', 'node_modules',
              '__pycache__', '.env', 'data', 'output'}
 PRIVATE_SUFFIXES = {'.dpapi', '.sqlite3', '.sqlite', '.db', '.wav', '.mp3', '.log', '.pem', '.key'}

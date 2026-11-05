@@ -25,6 +25,19 @@ MAX_ARCHIVE_BYTES = 192 * 1024 * 1024
 MANIFEST = Path(__file__).with_name('reviewed_model_imports.json')
 _HOSTS = {'tyc.rei-yumesaki.net', 'miko.aituberonair.com', 'raw.githubusercontent.com'}
 
+# Static reviewed Live2D files use the normal gallery rather than this VRM-only
+# downloader. Resolve their notice by immutable content ID after shared Save as
+# well, so another device does not lose the original creator's attribution.
+STATIC_MODEL_CREDITS = {
+    'cloud-live2d-bc35f1bdbf503abace04cadb524eddbdee5945f717ba265b71505aabde71792f': {
+        'name': 'Cat1 · 橙色貓咪',
+        'author': 'Boris González / DenpaBorisu',
+        'source': 'https://github.com/DenpaBorisu/Live2D_Android_Demo/tree/395bcd5b907fd5f1da68992d63f2666a1bea94ca/AndroidSample/Live2dModels/Cat1',
+        'terms': 'https://github.com/DenpaBorisu/Live2D_Android_Demo/blob/395bcd5b907fd5f1da68992d63f2666a1bea94ca/README.md',
+        'notice': '作者明確將自己製作的貓咪圖像置於公有領域；模型及貼圖原檔保留。鄰伴僅整理執行封裝及引用路徑，並加入自動構圖標記。沒有複製 Unity 或 Live2D SDK 程式。',
+    },
+}
+
 
 class ReviewedImportUnavailable(ValueError):
     """Small public error codes; upstream pages and paths are never echoed."""
@@ -93,7 +106,11 @@ class ReviewedModelImporter:
         return self._models[identity]
 
     def credit(self, model_id):
-        if not isinstance(model_id, str) or not model_id.startswith('cloud-vrm-'):
+        if not isinstance(model_id, str):
+            return None
+        if model_id in STATIC_MODEL_CREDITS:
+            return dict(STATIC_MODEL_CREDITS[model_id])
+        if not model_id.startswith('cloud-vrm-'):
             return None
         digest = model_id.removeprefix('cloud-vrm-')
         row = next((row for row in self._models.values() if row.sha256 == digest), None)

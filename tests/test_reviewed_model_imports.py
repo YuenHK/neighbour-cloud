@@ -9,6 +9,7 @@ import pytest
 from test_cloud_avatar_vrm import model_vrm
 
 from deploy.cloud.reviewed_model_imports import (
+    STATIC_MODEL_CREDITS,
     ReviewedImportUnavailable,
     ReviewedModel,
     ReviewedModelImporter,
@@ -161,9 +162,26 @@ def test_time_budget_is_bounded_and_gate_released():
 
 def test_production_manifest_is_fixed_nonduplicated_and_carries_original_permissions():
     rows = reviewed_models()
-    assert len(rows) == 4 and len({row.sha256 for row in rows}) == 4
-    assert len({row.source for row in rows}) == 3
+    assert len(rows) == 5 and len({row.sha256 for row in rows}) == 5
+    assert len({row.source for row in rows}) == 4
     assert all(row.credit and row.license_url and row.notice for row in rows)
-    assert all(row.application_only for row in rows if row.source != 'vrmconsortium')
+    assert all(row.application_only for row in rows if row.source not in ('vrmconsortium', 'godette-original'))
     with pytest.raises(dataclasses.FrozenInstanceError):
         rows[0].download_url = 'https://127.0.0.1/private'
+
+
+def test_published_static_cat_and_godette_resolve_exact_original_credit_on_another_device():
+    importer = ReviewedModelImporter()
+    cat_id = 'cloud-live2d-bc35f1bdbf503abace04cadb524eddbdee5945f717ba265b71505aabde71792f'
+    cat = importer.credit(cat_id)
+    assert cat == STATIC_MODEL_CREDITS[cat_id]
+    assert 'Boris González' in cat['author'] and '公有領域' in cat['notice']
+    cat['notice'] = 'caller mutation'
+    assert '公有領域' in importer.credit(cat_id)['notice']
+    godette = next(row for row in reviewed_models() if row.id == 'godette-original-vrm')
+    credit = importer.credit('cloud-vrm-' + godette.sha256)
+    assert 'SirRichard94' in credit['author'] and 'Lyuma' in credit['author']
+    assert 'CC BY 3.0' in credit['author']
+    for invalid in (None, {}, cat_id + '?changed=1', cat_id.replace('live2d', 'vrm'),
+                    'cloud-live2d-' + 'a' * 64):
+        assert importer.credit(invalid) is None

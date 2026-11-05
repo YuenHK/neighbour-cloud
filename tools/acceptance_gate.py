@@ -24,7 +24,8 @@ TESTS = ['test_community_operations.py', 'test_cloud_http_app.py', 'test_cloud_s
          'test_cloud_gallery_catalog.py', 'test_cloud_vroid_api.py', 'test_cloud_vroid_library.py',
          'test_gallery_sources.py', 'test_gallery_expansion.py', 'test_cloud_model_discovery.py',
          'test_patrol_grounding.py', 'test_patrol_planner.py', 'test_cloud_bundle.py',
-         'test_fiducial_localisation.py', 'test_route_follower.py', 'test_s1_free_paths.py',
+         'test_fiducial_localisation.py', 'test_board_localisation.py',
+         'test_route_follower.py', 'test_navigation_scenarios.py', 'test_navigation_kit.py', 'test_s1_free_paths.py',
          'test_reviewed_model_api.py', 'test_reviewed_model_imports.py',
          'test_cloud_free_skeletal.py', 'test_cloud_free_skeletal_wiring.py', 'test_acceptance_fingerprint.py']
 

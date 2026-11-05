@@ -16,7 +16,9 @@ export function placeModelCredit(document, credit) {
   const applicationSources=new Map([
     ['https://tyc.rei-yumesaki.net/material/avatar/3d-a/','https://tyc.rei-yumesaki.net/material/avatar/3d-a/'],
     ['https://miko.aituberonair.com/downloads/','https://miko.aituberonair.com/'],
-    ['https://github.com/pixiv/three-vrm','https://vrm.dev/en/licenses/1.0/']
+    ['https://github.com/pixiv/three-vrm','https://vrm.dev/en/licenses/1.0/'],
+    ['https://github.com/SirRichard94/low-poly-godette','https://github.com/V-Sekai/godot-vrm/blob/e15199f980064028bfa4fbee5e70dddb82dd55c3/vrm_samples/LICENSE_SAMPLES.txt'],
+    ['https://github.com/DenpaBorisu/Live2D_Android_Demo/tree/395bcd5b907fd5f1da68992d63f2666a1bea94ca/AndroidSample/Live2dModels/Cat1','https://github.com/DenpaBorisu/Live2D_Android_Demo/blob/395bcd5b907fd5f1da68992d63f2666a1bea94ca/README.md']
   ])
   if (!credit || typeof credit.name !== 'string' || typeof credit.author !== 'string'
     || !credit.name.trim() || !credit.author.trim() || credit.name.length>500 || credit.author.length>500

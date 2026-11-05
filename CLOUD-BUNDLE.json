@@ -176,8 +176,8 @@
     },
     {
       "path": "airi_overlay/cloud-model-gallery.json",
-      "bytes": 33346,
-      "sha256": "8288d1e319dfeb077a66243288a3c625b9e7fe05c6286abfecbe3f7959ba163f"
+      "bytes": 34553,
+      "sha256": "6d02ebe379880f8abf7cdc2bf1b562ac9b0e273addf2d02ad415656d57caed13"
     },
     {
       "path": "airi_overlay/cloud-model-gallery.vue",
@@ -506,8 +506,8 @@
     },
     {
       "path": "airi_overlay/reviewed-model-thumbnails.json",
-      "bytes": 26748,
-      "sha256": "4697d3e1de430b5e5f94cc8c04a2d56d21c4c271690e53d1cc335fde38aba940"
+      "bytes": 31514,
+      "sha256": "522631b8b285efa1ade71a6a8b08494c4525ba4f06fc7da4b906666ab14c3b40"
     },
     {
       "path": "airi_overlay/settings-entry.js",
@@ -636,8 +636,8 @@
     },
     {
       "path": "deploy/cloud/gallery_registry.py",
-      "bytes": 7681,
-      "sha256": "c7cdcd911a8c15ebb1010b7833e8629e3274151922aa0814980d8dfc2a71c1c8"
+      "bytes": 7731,
+      "sha256": "86b4bc00b357d41494068b0060a0f79a2ba9bda8bf23693cbaa1cdad14cacaa7"
     },
     {
       "path": "deploy/cloud/gallery_sources.py",
@@ -726,8 +726,8 @@
     },
     {
       "path": "deploy/cloud/patrol_kit.py",
-      "bytes": 3036,
-      "sha256": "f7903e0c95ba5884305bd5ebff836008cee6915fddee08d3c3c6cafa70eed0ed"
+      "bytes": 4098,
+      "sha256": "a0aadd51ba2bad3f8fcbc8f434a17fbd08499151d836e838d81fa1b9f11472f2"
     },
     {
       "path": "deploy/cloud/patrol_planner.py",
@@ -781,13 +781,13 @@
     },
     {
       "path": "deploy/cloud/reviewed_model_imports.json",
-      "bytes": 4056,
-      "sha256": "499804bbc1b55f910409c2cb286e443146c1c99e637fbd68b9239282b921a932"
+      "bytes": 5152,
+      "sha256": "43cf56ac1bcfe749823211e43e1f66b5e8c35eecc582a8296d3e7440b0680da1"
     },
     {
       "path": "deploy/cloud/reviewed_model_imports.py",
-      "bytes": 8285,
-      "sha256": "4d5beadbdf58c510d7b0327efb86032afad86dad4534083eed37a17785c920c5"
+      "bytes": 9378,
+      "sha256": "1a5a71e32242f8a66ab6d27f60d88e87791a91ec2b56b5ecac4a308fc3dfcb2b"
     },
     {
       "path": "deploy/cloud/robot_assets.py",
@@ -801,8 +801,8 @@
     },
     {
       "path": "deploy/cloud/rollout.py",
-      "bytes": 8821,
-      "sha256": "9309da700e2210d4034f395a83c0ee7de664f49f48f7862883d75654582fd500"
+      "bytes": 8825,
+      "sha256": "e798cee3d9fae5c6bc51dd9a21d3a56587a171c02462da16c03d16d9875a480a"
     },
     {
       "path": "deploy/cloud/runtime_storage.py",
@@ -1016,8 +1016,8 @@
     },
     {
       "path": "deploy/cloud/web/privacy.js",
-      "bytes": 2280,
-      "sha256": "5ac8669c9cdf8b6a079c46ac33e93a2b5e139c9f09c6d46687702896d3adc894"
+      "bytes": 2702,
+      "sha256": "bdc69f4b98463239d7db5b28d997312fb209cba866ca299d4eb2daf8824ab64c"
     },
     {
       "path": "deploy/cloud/web/quota-compact.js",
@@ -1113,6 +1113,11 @@
       "path": "edge_hub/azure_voice.py",
       "bytes": 10353,
       "sha256": "db372481eecc756e49cba9a6a70a776c7fb36dc6b4abf0406d4a35c0c4ddf2e2"
+    },
+    {
+      "path": "edge_hub/board_localisation.py",
+      "bytes": 10241,
+      "sha256": "be6b6a6206998eb1b4a06007a7d4b82935dde7f000dbe18cff31910a127340c5"
     },
     {
       "path": "edge_hub/browser_timing.py",
@@ -1318,6 +1323,11 @@
       "path": "edge_hub/mimo_voice.py",
       "bytes": 2062,
       "sha256": "c7d6e0579ded75386aa6d1cf1720ad4dd4c9bdd5b4a6f36cf4807ad63694ca05"
+    },
+    {
+      "path": "edge_hub/navigation_scenarios.py",
+      "bytes": 8084,
+      "sha256": "4eac01f67ce3314781c29e8eb5f921431b83384c10793224afc456ab70dc5851"
     },
     {
       "path": "edge_hub/object_hints.py",
@@ -1966,8 +1976,8 @@
     },
     {
       "path": "tools/acceptance_gate.py",
-      "bytes": 5586,
-      "sha256": "eb80c2d410b5e93b91d173c92c2b38f997ab26d74e57aac985689a817afc417b"
+      "bytes": 5683,
+      "sha256": "61fdf8c3c7eb57987a806165a33c36480feae99aafa5d50bbea2ee9b3864c73c"
     },
     {
       "path": "tools/check_release_gate.py",
@@ -1976,8 +1986,8 @@
     },
     {
       "path": "tools/cloud_bundle.py",
-      "bytes": 5978,
-      "sha256": "beed5f97b3065d7105f1ec006ba10dedc44a52a75f48d80c61effae107ddf464"
+      "bytes": 6054,
+      "sha256": "3d21057de0ebd8d5b7e88b110c513196a82884f41a5f0ea6b71254e3f90109c5"
     },
     {
       "path": "tools/cloud_frontend_assets.py",
@@ -2006,8 +2016,18 @@
     },
     {
       "path": "tools/localisation_replay.py",
-      "bytes": 2124,
-      "sha256": "5036d8bdac4f71b54dbff14b4d5c0df56b1b287f40766cbb70713c464c4b9788"
+      "bytes": 2468,
+      "sha256": "073c363c24da44fcaa2cefc67de549098ea1f93c7468f32c7ca63f0b33d0d262"
+    },
+    {
+      "path": "tools/navigation_acceptance.py",
+      "bytes": 2028,
+      "sha256": "70b31f312c80096e317c87e6a05581fc390934b9d8005a0cc75d5d47ed524dca"
+    },
+    {
+      "path": "tools/navigation_board_lab.py",
+      "bytes": 6870,
+      "sha256": "b2cf1ee89951df9489a0a0aacb93d90a511bc74fcf50267a46b88d72dd786a2f"
     },
     {
       "path": "tools/toxiproxy_acceptance.py",

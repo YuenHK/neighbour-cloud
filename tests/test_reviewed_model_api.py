@@ -3,9 +3,11 @@ import hashlib
 import httpx
 import pytest
 import test_cloud_avatar_api as shared_api
+from test_cloud_avatar_assets import model_zip
 from test_cloud_avatar_vrm import model_vrm
 from test_reviewed_model_imports import descriptor
 
+from deploy.cloud import reviewed_model_imports
 from deploy.cloud.reviewed_model_api import PATH
 
 AGREEMENT = {'accepted_terms': True, 'application_use_only': True}
@@ -37,7 +39,7 @@ def test_catalogue_and_preview_are_staff_only_and_do_not_fetch_in_background(mod
     assert client.get(PATH, headers=resident).status_code == 403
     result = client.get(PATH, headers=staff)
     assert result.status_code == 200
-    assert len(result.json()['items']) == 4 and result.json()['auto_publish'] is False
+    assert len(result.json()['items']) == 5 and result.json()['auto_publish'] is False
     assert all('download_url' not in row for row in result.json()['items'])
     for headers, status in (({'Origin': staff['Origin']}, 401), (resident, 403)):
         response = client.post(PATH + '/onair-miko/preview', json=AGREEMENT, headers=headers)
@@ -94,3 +96,25 @@ def test_unknown_id_never_fetches_and_changed_file_is_not_published(models_api):
     response = client.post(PATH + '/' + row.id + '/preview', json=AGREEMENT, headers=staff)
     assert response.status_code == 422 and response.json()['detail']['code'] == 'model_changed_requires_review'
     assert client.get('/api/v1/service-desk/airi-models', headers=staff).json()['items'] == []
+
+
+def test_static_original_credit_survives_shared_publication_and_clears_on_other_model(models_api, monkeypatch):
+    client, staff, resident = models_api
+    raw = model_zip()
+    identity = 'cloud-live2d-' + hashlib.sha256(raw).hexdigest()
+    original_credit = dict(next(iter(reviewed_model_imports.STATIC_MODEL_CREDITS.values())))
+    # Synthetic bounded model exercises the same exact-ID lookup without copying
+    # the original artist's runtime binary into the test suite.
+    monkeypatch.setattr(reviewed_model_imports, 'STATIC_MODEL_CREDITS', {identity: original_credit})
+    assert client.put('/api/v1/service-desk/airi-models/' + identity + '?name=synthetic-cat.zip',
+                      headers={**staff, 'Content-Type': 'application/zip'}, content=raw).status_code == 200
+    settings = client.get('/api/v1/service-desk/presentation', headers=staff).json()
+    settings['expected_revision'] = settings.pop('revision')
+    settings['airi']['stage_model'] = identity
+    assert client.put('/api/v1/service-desk/presentation', headers=staff, json=settings).status_code == 200
+    assert client.get('/api/v1/resident/presentation', headers=resident).json()['model_credit'] == original_credit
+    assert client.get('/api/v1/resident/airi-models/' + identity, headers=resident).content == raw
+    settings['expected_revision'] += 1
+    settings['airi']['stage_model'] = 'preset-live2d-2'
+    assert client.put('/api/v1/service-desk/presentation', headers=staff, json=settings).status_code == 200
+    assert 'model_credit' not in client.get('/api/v1/resident/presentation', headers=resident).json()

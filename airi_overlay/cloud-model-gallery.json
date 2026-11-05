@@ -406,6 +406,21 @@
       "license": "https://creativecommons.org/publicdomain/zero/1.0/",
       "terms": "https://vroid.pixiv.help/hc/en-us/articles/360013482714-Sendagaya-Shino",
       "individual_terms": "pixiv 官方樣本條款明示 CC0。檔案由固定版本公開鏡像按需下載，已逐檔核對 Git 雜湊、內置 CC0 metadata 及 AIRI 原生預覽；不是 VRoid Hub 全站整合。"
+    },
+    {
+      "id": "denpaborisu-cat1",
+      "name": "Cat1 · 橙色貓咪",
+      "platform": "原創公有領域 · Live2D",
+      "source": "https://github.com/DenpaBorisu/Live2D_Android_Demo/tree/395bcd5b907fd5f1da68992d63f2666a1bea94ca/AndroidSample/Live2dModels/Cat1",
+      "archive": "/assets/gallery/denpaborisu-cat1.zip",
+      "image": "/assets/gallery/denpaborisu-cat1.webp",
+      "bytes": 47270,
+      "sha256": "bc35f1bdbf503abace04cadb524eddbdee5945f717ba265b71505aabde71792f",
+      "license": "https://github.com/DenpaBorisu/Live2D_Android_Demo/blob/395bcd5b907fd5f1da68992d63f2666a1bea94ca/README.md",
+      "terms": "https://github.com/DenpaBorisu/Live2D_Android_Demo/blob/395bcd5b907fd5f1da68992d63f2666a1bea94ca/README.md",
+      "individual_terms": "作者明確將自己製作的貓咪圖像置於公有領域；模型及貼圖原檔保留。鄰伴僅整理執行封裝及引用路徑，並加入自動構圖標記。沒有複製 Unity 或 Live2D SDK 程式。",
+      "copyright": "Cat1 artwork and model by Boris González / DenpaBorisu. Author dedicates the cat artwork to the public domain; project license MIT No Attribution.",
+      "format": "live2d-zip"
     }
   ],
   "official_catalogue": [

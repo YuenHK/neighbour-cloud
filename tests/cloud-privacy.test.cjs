@@ -31,3 +31,16 @@ test('unsafe or malformed source metadata cannot replace an already valid credit
   assert.equal(api.placeModelCredit(doc,value),false)
  assert.equal(doc.link.href,good.source);assert.equal(doc.link.textContent,'Public character · Author')
 })
+
+test('original Cat1 and Godette shared models keep exact author terms without allowing arbitrary GitHub links',async()=>{
+ const api=await load(),doc=document()
+ const cat={name:'Cat1',author:'Boris González / DenpaBorisu',source:'https://github.com/DenpaBorisu/Live2D_Android_Demo/tree/395bcd5b907fd5f1da68992d63f2666a1bea94ca/AndroidSample/Live2dModels/Cat1',terms:'https://github.com/DenpaBorisu/Live2D_Android_Demo/blob/395bcd5b907fd5f1da68992d63f2666a1bea94ca/README.md',notice:'Original public-domain cat artwork; framing only.'}
+ const godette={name:'Godette',author:'SirRichard94; VRM adaptation Lyuma; CC BY 3.0',source:'https://github.com/SirRichard94/low-poly-godette',terms:'https://github.com/V-Sekai/godot-vrm/blob/e15199f980064028bfa4fbee5e70dddb82dd55c3/vrm_samples/LICENSE_SAMPLES.txt',notice:'Original and adaptation attribution retained.'}
+ for(const row of [cat,godette]){
+  assert.equal(api.placeModelCredit(doc,row),true)
+  assert.equal(doc.link.textContent,row.name+' · '+row.author)
+  assert.equal(doc.notice.textContent,row.notice);assert.equal(doc.terms.href,row.terms)
+  for(const changed of [{...row,terms:'https://github.com/unreviewed/LICENSE'},{...row,source:row.source+'?redirect=1'},{...row,source:row.source.replace('github.com','github.com.evil.test')}])assert.equal(api.placeModelCredit(doc,changed),false)
+ }
+ assert.equal(api.placeModelCredit(doc,{...cat,source:'https://github.com/unreviewed/model'}),false)
+})
