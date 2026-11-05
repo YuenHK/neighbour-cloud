@@ -791,8 +791,8 @@
     },
     {
       "path": "deploy/cloud/retention_restore.py",
-      "bytes": 11499,
-      "sha256": "4e39ae35c296257eded39b803718620402d16aabcf74a0be43d86775e4bad41a"
+      "bytes": 11645,
+      "sha256": "8ca8434076b4740723225d672a06feb3ce9734423a587506b9e9d78bf375eab6"
     },
     {
       "path": "deploy/cloud/reviewed_model_api.py",
@@ -827,7 +827,7 @@
     {
       "path": "deploy/cloud/rollout.py",
       "bytes": 9192,
-      "sha256": "6b61262b76a28135543e6f4eb2a9124bf75ec46c2f7b99a8f028f836cbdb033c"
+      "sha256": "bf8e1330311c5b2509dc729e0f45cd40849cca06e36e7a63726badc7d1a921ad"
     },
     {
       "path": "deploy/cloud/runtime_storage.py",

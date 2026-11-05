@@ -57,6 +57,17 @@ def test_case_purge_removes_only_corresponding_case_photos_and_preserves_model_a
     assert estate.execute('SELECT COUNT(*) FROM cloud_operations').fetchone()[0]==2
 
 
+def test_purge_accepts_old_estate_backup_before_optional_operations_table():
+    estate=sqlite3.connect(':memory:')
+    estate.execute('CREATE TABLE estate_knowledge(id TEXT PRIMARY KEY,content TEXT)')
+    estate.execute("INSERT INTO estate_knowledge VALUES('keep','original knowledge')")
+    estate.commit()
+    records=[{'kind':'case_purge','target':'old','revision':1,'erased_ms':123}]
+    with estate:assert reconcile(estate,'estate',records)==0
+    assert estate.execute('SELECT content FROM estate_knowledge').fetchone()[0]=='original knowledge'
+    assert estate.execute("SELECT COUNT(*) FROM sqlite_master WHERE name='cloud_operations'").fetchone()[0]==0
+
+
 def test_large_purge_is_batched_and_keeps_shared_image_until_final_owner():
     db=sqlite3.connect(':memory:')
     db.executescript('''CREATE TABLE cloud_photos(key TEXT PRIMARY KEY,event_id TEXT,content BLOB,digest TEXT);

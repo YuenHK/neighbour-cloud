@@ -18,7 +18,7 @@ from pathlib import Path
 from starlette.responses import JSONResponse, Response
 
 SERVICE = 'srv-dbii3qijnfac73cgabd0'
-RELEASE = 'acceptance-setup-20261105-barrier32'
+RELEASE = 'acceptance-setup-20261105-barrier33'
 RECORD = hashlib.sha256(('rollout:' + RELEASE).encode()).hexdigest()
 DOMAIN = b'neighbour-stopped-writer-rollout-v1\0'
 FIELDS = {'format', 'release', 'service_id', 'stop_event_id', 'stopped_instance',

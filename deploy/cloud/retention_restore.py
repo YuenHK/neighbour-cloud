@@ -48,6 +48,8 @@ def purge_records(db, scope, records):
     changed = 0
     if not selected:
         return changed
+    if scope == 'estate' and not columns(db, 'cloud_operations'):
+        return changed  # Early backups predate optional case-photo ciphertext.
     children = [(table, field) for table, field in [('service_case_activity','case_id'), ('patrol_case_links','case_id'),
         ('resident_session_cases','case_id'), ('resident_session_turns','case_id'), ('resident_support_links','case_id')]
         if scope == 'cases' and field in columns(db, table)]
