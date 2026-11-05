@@ -1,3 +1,20 @@
+# 2026-11-05 鄰伴：免費模型、骨架動畫與 S1／定位準備
+
+最新正式入口：https://neighbour-yuenhk-live.onrender.com/ 。runtime `dd54a31b66422006b26aa04fa971297460920784`，官方 CLI deploy `dep-dbltpe5g1s2s73bf6sr0`／barrier26，Render Free Singapore 單實例。下面各日期章節是歷史版本，不代表需要重新部署。
+
+- 三個已核對固定來源提供四款新 VRM；原227款保留，共231不同檔。二十一個研究來源不等於二十個完整可匯入來源，20目標仍未達。新款可以預覽及沿原流程儲存，沒有代人更換正式模型。
+- 加入獨立 MIT／Apache Rigby JSON／PNG 骨架動畫格式，接原生 AIRI 匯入、共享、嘴部骨架及命名動作。官方付費 Spine 不採用，不接受任意 .skel 或全部 Spine 功能；素材授權獨立。
+- 機械人地圖內可下載 S1 官方 Lab／SBus、固定標記定位與閉環離機工具。沒有串口／SDK實體輸出，真接線、座標校準、即時避障及自主行車仍待現場驗收。
+- 715後端／96Node、網絡故障／兩瀏覽器／36題庫及frontend91三檢通過，57真HTTPS資產同；10原個案、短號、設定、模型、MB842、所有Ops、flags、ledger、events及歷史quota保留。只有新簽署技術放行行，沒有ENV／DDL／資料重匯／AI及EP測試操作。
+
+詳情：[本批進度](docs/free-paths-2026-11-05.md)、[免費動畫格式](docs/free-skeletal-animation-2026-11-05.md)、[模型來源](docs/reviewed-library-imports-2026-11-05.md)、[S1接入條件](docs/s1-free-integration-2026-11-05.md)。Gemma＋Microsoft曉曼F0不變；不付費、不清quota、不啟動EP。GitHub自動CI仍按本人要求取消。
+
+本次後續 README／docs 提交只有文件，runtime仍為上面版本，autoDeploy=no；不要為文件重部署。
+
+---
+
+## 歷史紀錄
+
 # 2026-11-05 鄰伴：圖庫、巡查規劃及智能屏幕
 
 正式入口：https://neighbour-yuenhk-live.onrender.com/ 。本批runtime `537e3bb0ef94980f450880fbbc9d423899b5c818`，Render官方CLI／Free Singapore單實例，原有10個案、模型、設定、記憶標記及歷史用量保留。
