@@ -176,13 +176,13 @@
     },
     {
       "path": "airi_overlay/cloud-model-gallery.json",
-      "bytes": 44455,
-      "sha256": "9a31c35b552f734e9bf14ad392d7b87d074274a4a944050f850b5b13f7c6c8f3"
+      "bytes": 50757,
+      "sha256": "d459e23c370b9a65145ebf80d8e73be42b67b9b0895831de185f31913204afeb"
     },
     {
       "path": "airi_overlay/cloud-model-gallery.vue",
-      "bytes": 33395,
-      "sha256": "6f1bdb97d761ef9916d23cbd8cd8b0bb033c19d19b46ae19da392498e47f854e"
+      "bytes": 33741,
+      "sha256": "f16fd80fdbf5b4536a434f0412c73a19f70c6fc39887f794bea3b161e347d7f3"
     },
     {
       "path": "airi_overlay/cloud-model-library.vue",
@@ -365,9 +365,14 @@
       "sha256": "8f5e1f195c873688ccaa253137cacf30adbfbce6631a8b2543326dfa723c3625"
     },
     {
+      "path": "airi_overlay/model-added.json",
+      "bytes": 22453,
+      "sha256": "61c48e99589ed1a292a7f4a6eda2634f312f73a8332523e2fb74e3d6962aebdb"
+    },
+    {
       "path": "airi_overlay/model-dedup.js",
-      "bytes": 1658,
-      "sha256": "056ff4c4aa53aceaed0076296f45c955e8ba0cc79ea4ddb02e258930eae2d561"
+      "bytes": 2208,
+      "sha256": "7cbf8ee0a694ab4bc0944ce9c1c87465d2da5f746e542b0eb6e8bc20f434f141"
     },
     {
       "path": "airi_overlay/model-settings-page.vue",
@@ -646,8 +651,8 @@
     },
     {
       "path": "deploy/cloud/gallery_registry.py",
-      "bytes": 8387,
-      "sha256": "083ef6fdc923e4c305493439c724a346402abd7cea90a681ca09a4da2db540c5"
+      "bytes": 9906,
+      "sha256": "67363bd9e9c3a49f87897a556eb6ff0de96104e33dcdaddabc4019e689f74d5f"
     },
     {
       "path": "deploy/cloud/gallery_sources.py",
@@ -731,8 +736,8 @@
     },
     {
       "path": "deploy/cloud/original_libraries.json",
-      "bytes": 16794,
-      "sha256": "bced328e07657db30ae3842166f3435b6f83f892d1b2cf73f9f8d1dd0e216460"
+      "bytes": 19065,
+      "sha256": "e73e15ab9ed89a63327d254220b33eb1f474aff1830c3efead73c46d81481653"
     },
     {
       "path": "deploy/cloud/original_libraries.py",
@@ -806,8 +811,8 @@
     },
     {
       "path": "deploy/cloud/reviewed_model_imports.py",
-      "bytes": 31722,
-      "sha256": "ef3573366b5f3fa8eec85946882fae5321a793defd4a3f756f23fa0e1ec62ebb"
+      "bytes": 34985,
+      "sha256": "75b3220c108c36865accc0eda1aae182d7b5b7e185ca7f01e997d9d0c8dfa18d"
     },
     {
       "path": "deploy/cloud/reviewed_vrm_prepare.py",
@@ -826,8 +831,8 @@
     },
     {
       "path": "deploy/cloud/rollout.py",
-      "bytes": 9194,
-      "sha256": "0f18b2d979eb3077b66e1ca3e6af79c4772672c23d522bbeae14c6d7feb16083"
+      "bytes": 9188,
+      "sha256": "06f6c33618c5288422e5af0d9c9d6c0b667e8be2a6bc7fe16170e74340d5bb64"
     },
     {
       "path": "deploy/cloud/runtime_storage.py",
@@ -1076,8 +1081,8 @@
     },
     {
       "path": "deploy/cloud/web/privacy.js",
-      "bytes": 4439,
-      "sha256": "3f9db57a07d4906ee3a9c9d684628a56d9f59afa3e5af355303d1af159243188"
+      "bytes": 4988,
+      "sha256": "3888265483cf9d8982e249d229937cc39994ad04db39068394b958a838e5c6c5"
     },
     {
       "path": "deploy/cloud/web/quota-compact.js",

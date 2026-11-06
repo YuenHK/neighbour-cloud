@@ -5,13 +5,14 @@ The user allows independently maintained original GitHub model libraries to
 count; one creator/team still counts once, never once per mirror or colour.
 """
 import re
-from urllib.parse import urlsplit
+from urllib.parse import unquote, urlsplit
 
 
-def source(identity, name, url, domains, formats, mode, note, terms=None, *, one_click_verified=False):
+def source(identity, name, url, domains, formats, mode, note, terms=None, *, one_click_verified=False, path_prefix=None):
     return {'id': identity, 'name': name, 'url': url, 'domains': domains,
             'formats': formats, 'mode': mode, 'note': note,
-            'terms': terms or url, 'one_click_verified': one_click_verified}
+            'terms': terms or url, 'one_click_verified': one_click_verified,
+            **({'path_prefix': path_prefix} if path_prefix else {})}
 
 
 SOURCES = (
@@ -69,6 +70,14 @@ SOURCES = (
     source('litaart', 'Lita Art', 'https://lita-art.net/model/', ['lita-art.net'], ['live2d'],
            'redistribution_prohibited', '官方條款禁止 moc3／PSD 等原檔再分發，沒有加入共享模型。',
            'https://lita-art.net/terms-and-condition/'),
+    source('melba', 'NOM Network · Melba Toast', 'https://github.com/NOM-Network/Melba-Toaster', ['github.com'], ['live2d'],
+           'reviewed_runtime_import', '已核原創模型、CC BY-SA 4.0、AIRI 嘴形及眨眼；可一鍵預覽，並非全庫自動匯入。',
+           'https://github.com/NOM-Network/Melba-Toaster/blob/5760b98f4a601f26b0b00e7ee8b6edab02c1db63/LICENSE-ASSETS.md',
+           one_click_verified=True, path_prefix='/NOM-Network/Melba-Toaster'),
+    source('whale-girl', '鯨魚娘原創模型庫', 'https://github.com/A8Chann/dsh-pet-live2d', ['github.com'], ['live2d'],
+           'reviewed_runtime_import', '已核三位原作者及 CC BY-NC-SA 4.0、AIRI 嘴形及眨眼；非商業學習一鍵預覽，並非全庫自動匯入。',
+           'https://github.com/A8Chann/dsh-pet-live2d/blob/9b7cd8ed0d16bd23fb098bc0c4fdbac63d89de75/NOTICE.md',
+           one_click_verified=True, path_prefix='/A8Chann/dsh-pet-live2d'),
 )
 REGISTRY = {row['id']: row for row in SOURCES}
 SEARCH_DOMAINS = {row['id']: row['domains'] for row in SOURCES}
@@ -82,8 +91,20 @@ def valid_source_link(value, source_id=None):
         if url.scheme != 'https' or url.username or url.password or url.port not in (None, 443):
             return False
         host = (url.hostname or '').lower()
-        domains = SEARCH_DOMAINS.get(source_id, []) if source_id else [d for ds in SEARCH_DOMAINS.values() for d in ds]
-        return any(host == domain or host.endswith('.' + domain) for domain in domains)
+        sources = [REGISTRY[source_id]] if source_id in REGISTRY else [] if source_id else SOURCES
+        for item in sources:
+            if not any(host == domain or host.endswith('.' + domain) for domain in item['domains']):
+                continue
+            prefix = item.get('path_prefix')
+            if prefix:
+                path = unquote(url.path).casefold().rstrip('/')
+                if any(part in ('.', '..') for part in path.split('/')):
+                    continue
+                prefix = prefix.casefold()
+                if path != prefix and not path.startswith(prefix + '/'):
+                    continue
+            return True
+        return False
     except ValueError:
         return False
 

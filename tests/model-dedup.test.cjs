@@ -59,3 +59,31 @@ test('a reviewed application model reuses local or shared bytes and retains orig
   assert.equal(result[0].reviewed,reviewed);assert.equal(result[0].sharedId,'cloud-vrm-abc')
   assert.deepEqual(result[0].platforms,['此裝置','Tsukuyomi 官方','平台共享'])
 })
+
+test('newest admitted or imported content sorts first across sources without changing current selection', async () => {
+  const { mergeModelChoices, newestModelChoices } = await loaded
+  const rows = [
+    { id: 'selected-old', name: 'Old', platform: '官方', format: 'live2d-zip', sha256: 'old', addedAt: 100 },
+    { id: 'new-vrm', name: 'New', platform: 'VRoid', format: 'vrm', sha256: 'new', addedAt: 300 },
+    { id: 'shared-new', name: 'Newest upload', platform: '平台共享', format: 'live2d-zip', sha256: 'upload', addedAt: 500 },
+    { id: 'local-copy', name: 'New local import', platform: '此裝置', format: 'vrm', sha256: 'new', addedAt: 700 },
+    { id: 'unknown', name: 'Unknown date', platform: '官方', format: 'vrm' },
+  ]
+  const original = structuredClone(rows)
+  const merged = mergeModelChoices(rows, 'selected-old')
+  const sorted = newestModelChoices(merged)
+  assert.deepEqual(sorted.map(row => row.id), ['new-vrm', 'shared-new', 'selected-old', 'unknown'])
+  assert.equal(sorted[0].addedAt, 700)
+  assert.deepEqual(rows, original)
+  assert.equal(merged[0].id, 'selected-old')
+  assert.deepEqual(newestModelChoices(merged).map(row => row.id), sorted.map(row => row.id))
+})
+
+test('missing or invalid dates remain last and ties retain their stable original order', async () => {
+  const { newestModelChoices } = await loaded
+  const rows = [{ id: 'missing' }, { id: 'future', addedAt: Infinity }, { id: 'bad', addedAt: '99999' },
+    { id: 'one', addedAt: 100 }, { id: 'two', addedAt: 100 }, { id: 'negative', addedAt: -10 }]
+  const original = rows.slice()
+  assert.deepEqual(newestModelChoices(rows).map(row => row.id), ['one', 'two', 'missing', 'future', 'bad', 'negative'])
+  assert.deepEqual(rows, original)
+})

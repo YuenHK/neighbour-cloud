@@ -18,6 +18,14 @@ export async function findSameModel(models, format, file, digest) {
     catch { /* Preserve an unreadable original; do not merge it. */ }
   }
 }
+function admissionTime(value) {
+  return Number.isSafeInteger(value) && value > 0 && value <= 8640000000000000 ? value : 0
+}
+export function newestModelChoices(rows) {
+  // Stable ties preserve the catalogue's own order. Never mutate its records,
+  // use a filename as a date, or manufacture freshness from page-load time.
+  return rows.slice().sort((a, b) => admissionTime(b.addedAt) - admissionTime(a.addedAt))
+}
 export function mergeModelChoices(rows, selectedId) {
   const groups = new Map()
   for (const row of rows) {
@@ -34,6 +42,9 @@ export function mergeModelChoices(rows, selectedId) {
     prior.reviewed ||= row.reviewed
     prior.sharedId ||= row.sharedId
     prior.image ||= row.image
+    const addedAt = Math.max(admissionTime(prior.addedAt), admissionTime(row.addedAt))
+    if (addedAt)
+      prior.addedAt = addedAt
     if (row.id === selectedId) {
       prior.id = row.id
       prior.model = row.model || prior.model

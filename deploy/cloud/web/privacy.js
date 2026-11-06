@@ -14,6 +14,10 @@ export function placeModelCredit(document, credit) {
     return true
   }
   const applicationSources=new Map([
+    ["https://github.com/xShiroeNguyenx/desktop-companion/tree/4a9170a13c4fb702e35c68a2311d5fa27088b6d5", "https://github.com/xShiroeNguyenx/desktop-companion/blob/4a9170a13c4fb702e35c68a2311d5fa27088b6d5/ASSETS-LICENSE.md"],
+    ["https://github.com/NOM-Network/Melba-Toaster", "https://github.com/NOM-Network/Melba-Toaster/blob/5760b98f4a601f26b0b00e7ee8b6edab02c1db63/LICENSE-ASSETS.md"],
+    ["https://github.com/A8Chann/dsh-pet-live2d", "https://github.com/A8Chann/dsh-pet-live2d/blob/9b7cd8ed0d16bd23fb098bc0c4fdbac63d89de75/NOTICE.md"],
+
     ["https://github.com/jupiterbjy/Live2DPractice-Cyannyan", "https://github.com/jupiterbjy/Live2DPractice-Cyannyan/blob/898d849e594712cd6afb3bb81c07ecc58c59e024/LICENSE.md"],
     ['https://tyc.rei-yumesaki.net/material/avatar/3d-a/','https://tyc.rei-yumesaki.net/material/avatar/3d-a/'],
     ['https://miko.aituberonair.com/downloads/','https://miko.aituberonair.com/'],

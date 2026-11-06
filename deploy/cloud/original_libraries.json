@@ -429,6 +429,21 @@
           "channel": "static",
           "id": "desktop-companion-snow-kawaii",
           "sha256": "db08e256d076e9004661f021a01ef042f4a647278a739bf7ee4b74116725404c"
+        },
+        {
+          "channel": "static",
+          "id": "desktop-companion-gothic-dream",
+          "sha256": "ea912942e88f9357d18e34787779a837ef6caa2687d931dc92688fa3db492719"
+        },
+        {
+          "channel": "static",
+          "id": "desktop-companion-pink-dream",
+          "sha256": "20bc4a411631ff9935c443d1a2247811284263739836cabf5834a9c36abfc3cf"
+        },
+        {
+          "channel": "static",
+          "id": "desktop-companion-snow-dream",
+          "sha256": "aad3c3381402871f723202cdab20b031aa017dd39e223a30ecf5848e4bde02ec"
         }
       ]
     },
@@ -449,6 +464,46 @@
           "channel": "static",
           "id": "cyannyan-sd-original",
           "sha256": "3e199a79f3122c227a8da457f3fa93159a0fd2766938a33eba279bc855f03100"
+        }
+      ]
+    },
+    {
+      "id": "melba-toast-original",
+      "name": "NOM Network · Melba Toast",
+      "maintainer_id": "nom-network",
+      "url": "https://github.com/NOM-Network/Melba-Toaster",
+      "rights_urls": [
+        "https://github.com/NOM-Network/Melba-Toaster/blob/5760b98f4a601f26b0b00e7ee8b6edab02c1db63/LICENSE-ASSETS.md",
+        "https://github.com/NOM-Network/Melba-Toaster/blob/5760b98f4a601f26b0b00e7ee8b6edab02c1db63/README.md"
+      ],
+      "repository": "https://github.com/NOM-Network/Melba-Toaster",
+      "original_material": true,
+      "verification": "licensed-native-import-verified",
+      "models": [
+        {
+          "channel": "static",
+          "id": "melba-toast-original",
+          "sha256": "c34c0a74585bb85c0cd8a4be267bcd98b4dbf95dbf9c024cf806dd9d9bf04680"
+        }
+      ]
+    },
+    {
+      "id": "whale-girl-original",
+      "name": "上善無形／ZipZipPipe／氵六青 · 鯨魚娘",
+      "maintainer_id": "whale-girl-original-creators",
+      "url": "https://github.com/A8Chann/dsh-pet-live2d",
+      "rights_urls": [
+        "https://github.com/A8Chann/dsh-pet-live2d/blob/9b7cd8ed0d16bd23fb098bc0c4fdbac63d89de75/NOTICE.md",
+        "https://github.com/A8Chann/dsh-pet-live2d/blob/9b7cd8ed0d16bd23fb098bc0c4fdbac63d89de75/README.md"
+      ],
+      "repository": "https://github.com/A8Chann/dsh-pet-live2d",
+      "original_material": true,
+      "verification": "licensed-native-import-verified",
+      "models": [
+        {
+          "channel": "static",
+          "id": "whale-girl-original",
+          "sha256": "f534c6736ac39e547872941d531bef968093a394edc110857ee739bcd2b076be"
         }
       ]
     }

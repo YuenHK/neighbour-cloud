@@ -30,3 +30,26 @@ def test_reviewed_gallery_keeps_distinct_usable_imports_and_excludes_removed_ser
                 assert '/100avatars-r2.json' in row['source'] or '/100avatars-r3.json' in row['source']
         else:
             assert row['archive'].startswith('/assets/gallery/') and row['archive'].endswith('.zip')
+
+
+def test_each_admitted_model_has_stable_first_added_metadata_for_cross_source_order():
+    root = Path(__file__).resolve().parents[1]
+    admissions = json.loads((root / 'airi_overlay/model-added.json').read_text(encoding='utf-8'))
+    assert admissions['version'] == 1
+    rows = [row for name in ('airi_overlay/cloud-model-gallery.json', 'deploy/cloud/vroid_reviewed.json',
+                            'deploy/cloud/reviewed_model_imports.json')
+            for row in json.loads((root / name).read_text(encoding='utf-8'))['models']]
+    assert {row['sha256'] for row in rows} == set(admissions['added_ms'])
+    assert all(type(value) is int and 0 < value < 8640000000000000 for value in admissions['added_ms'].values())
+
+
+def test_new_original_live2d_sources_only_accept_their_own_repository_links():
+    from deploy.cloud.gallery_registry import REGISTRY, valid_source_link
+    assert REGISTRY['melba']['one_click_verified']
+    assert REGISTRY['whale-girl']['one_click_verified']
+    assert valid_source_link('https://github.com/NOM-Network/Melba-Toaster/blob/main/README.md', 'melba')
+    assert valid_source_link('https://github.com/A8Chann/dsh-pet-live2d/tree/main/model-packs', 'whale-girl')
+    assert not valid_source_link('https://github.com/other/repository', 'melba')
+    assert not valid_source_link('https://github.com/NOM-Network/Melba-Toaster-fake', 'melba')
+    assert not valid_source_link('https://github.com/NOM-Network/Melba-Toaster/%2e%2e/other', 'melba')
+    assert not valid_source_link('https://user:secret@github.com/NOM-Network/Melba-Toaster', 'melba')

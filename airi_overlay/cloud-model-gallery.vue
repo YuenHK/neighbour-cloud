@@ -7,10 +7,11 @@ import { DisplayModelFormat, useDisplayModelsStore } from '@proj-airi/stage-ui/s
 import { computed, inject, onMounted, ref, watch } from 'vue'
 
 import gallery from './cloud-model-gallery.json'
+import admissions from './model-added.json'
 import reviewedImages from './reviewed-model-thumbnails.json'
 
 import { loadSharedModel, modelHash, sharedModels } from './cloud-shared-models'
-import { fileDigest, mergeModelChoices } from './model-dedup'
+import { fileDigest, mergeModelChoices, newestModelChoices } from './model-dedup'
 
 const props = defineProps<{ selectedModel?: DisplayModel }>()
 const emit = defineEmits<{ pick: [model: DisplayModel], close: [], status: [message: string] }>()
@@ -24,7 +25,7 @@ const busy = ref('')
 const message = ref('選擇後先預覽；按「儲存至平台」才套用到所有裝置。')
 const failed = ref(new Set<string>())
 const imagesFailed = ref(new Set<string>())
-const shared = ref<{ id: string, name: string, bytes: number, format?: string }[]>([])
+const shared = ref<{ id: string, name: string, bytes: number, format?: string, uploaded_ms?: number }[]>([])
 const ownFile = ref<File>()
 const ownRights = ref(false)
 const ownModels = ref<string[]>([])
@@ -130,18 +131,19 @@ interface ReviewedModel { id: string, name: string, source: string, source_name:
 const reviewed = ref<ReviewedModel[]>([])
 const visibleCount = ref(60)
 interface GalleryModel { id: string, name: string, source: string, archive: string, image: string, bytes: number, sha256: string, license: string, terms: string, individual_terms: string, format?: string, platform?: string }
-interface Choice { id: string, name: string, platform: string, format: string, sha256?: string, platforms?: string[], aliases?: string[], image?: string, bytes?: number, model?: DisplayModel, gallery?: GalleryModel, sharedId?: string, vroid?: VroidModel, reviewed?: ReviewedModel }
+interface Choice { id: string, name: string, platform: string, format: string, sha256?: string, platforms?: string[], aliases?: string[], image?: string, bytes?: number, model?: DisplayModel, gallery?: GalleryModel, sharedId?: string, vroid?: VroidModel, reviewed?: ReviewedModel, addedAt?: number }
+const admittedAt = admissions.added_ms as Record<string, number>
 const choices = computed(() => {
-  const rows: Choice[] = (gallery.models as GalleryModel[]).map(item => ({ id: `gallery:${item.id}`, name: item.name, platform: item.platform || (item.source.includes('live2d.com') ? 'Live2D 官方' : '社群 CC0'), format: item.format || 'live2d-zip', sha256: item.sha256, image: item.image, bytes: item.bytes, gallery: item }))
+  const rows: Choice[] = (gallery.models as GalleryModel[]).map(item => ({ id: `gallery:${item.id}`, name: item.name, platform: item.platform || (item.source.includes('live2d.com') ? 'Live2D 官方' : '社群 CC0'), format: item.format || 'live2d-zip', sha256: item.sha256, image: item.image, bytes: item.bytes, gallery: item, addedAt: admittedAt[item.sha256] }))
   for (const item of vroid.value)
-    rows.push({ id: `vroid:${item.id}`, name: item.name, platform: 'VRoid Hub', format: 'vrm', sha256: item.sha256, image: item.image, bytes: item.bytes, vroid: item, aliases: [item.author] })
+    rows.push({ id: `vroid:${item.id}`, name: item.name, platform: 'VRoid Hub', format: 'vrm', sha256: item.sha256, image: item.image, bytes: item.bytes, vroid: item, aliases: [item.author], addedAt: admittedAt[item.sha256] })
   for (const item of reviewed.value)
-    rows.push({ id: `reviewed:${item.id}`, name: item.name, platform: item.source_name, format: 'vrm', sha256: item.sha256, image: reviewedImages[item.id as keyof typeof reviewedImages], bytes: item.bytes, reviewed: item, aliases: [item.credit] })
+    rows.push({ id: `reviewed:${item.id}`, name: item.name, platform: item.source_name, format: 'vrm', sha256: item.sha256, image: reviewedImages[item.id as keyof typeof reviewedImages], bytes: item.bytes, reviewed: item, aliases: [item.credit], addedAt: admittedAt[item.sha256] })
   for (const item of shared.value) {
     const digest = item.id.replace(/^cloud-(?:live2d|vrm|rigby)-/, '')
     const reviewed = (gallery.models as GalleryModel[]).find(model => model.sha256 === digest)
     const local = display.displayModels.find(model => model.id === item.id)
-    rows.push({ id: item.id, name: item.name, platform: '平台共享', sha256: digest, format: item.format || (item.id.startsWith('cloud-vrm-') ? 'vrm' : 'live2d-zip'), image: local?.previewImage || reviewed?.image, bytes: item.bytes, sharedId: item.id, model: local })
+    rows.push({ id: item.id, name: item.name, platform: '平台共享', sha256: digest, format: item.format || (item.id.startsWith('cloud-vrm-') ? 'vrm' : 'live2d-zip'), image: local?.previewImage || reviewed?.image, bytes: item.bytes, sharedId: item.id, model: local, addedAt: item.uploaded_ms })
   }
   for (const item of display.displayModels) {
     if (rows.some(row => row.id === item.id) || ![DisplayModelFormat.Live2dZip, DisplayModelFormat.VRM, DisplayModelFormat.RigbyJsonZip].includes(item.format))
@@ -149,10 +151,10 @@ const choices = computed(() => {
     if (item.type === 'file' && !localReady.value)
       continue
     const digest = /(?:^cloud-(?:live2d|vrm|rigby)-|^display-model-sha256-(?:live2d-zip|vrm|rigby-json-zip)-)([a-f0-9]{64})$/.exec(item.id)?.[1] || localDigests.value[item.id]
-    rows.push({ id: item.id, name: item.name, format: item.format, sha256: digest, image: item.previewImage, model: item, platform: item.id.startsWith('preset-') ? 'AIRI 內建' : '此裝置' })
+    rows.push({ id: item.id, name: item.name, format: item.format, sha256: digest, image: item.previewImage, model: item, platform: item.id.startsWith('preset-') ? 'AIRI 內建' : '此裝置', addedAt: item.importedAt })
   }
   const excluded = new Set(gallery.excluded_sha256 || [])
-  return (mergeModelChoices(rows, props.selectedModel?.id) as Choice[]).filter(row => !failed.value.has(row.id)
+  return (newestModelChoices(mergeModelChoices(rows, props.selectedModel?.id)) as Choice[]).filter(row => !failed.value.has(row.id)
     && (!row.sha256 || !excluded.has(row.sha256) || row.id === props.selectedModel?.id))
 })
 const platforms = computed(() => [...new Set(choices.value.flatMap(row => row.platforms || [row.platform]))])

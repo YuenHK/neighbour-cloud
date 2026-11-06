@@ -24,14 +24,15 @@ def operations():
 
 def test_source_registry_distinguishes_metadata_and_pinned_runtime_sources_from_full_integrations():
     value = registry_snapshot()
-    assert len(REGISTRY) == value['registered_sources'] == 21
-    assert len({row['domains'][0] for row in value['items']}) == 21
+    assert len(REGISTRY) == value['registered_sources'] == 23
+    assert len({row['domains'][0] for row in value['items']}) == 22
+    assert REGISTRY['melba']['path_prefix'] != REGISTRY['whale-girl']['path_prefix']
     assert value['target_complete'] is False and value['all_sources_one_click'] is False
     assert value['metadata_adapters'] == 5 and value['existing_oauth_sources'] == 1
     assert value['reviewed_runtime_sources'] == 7 and value['reviewed_runtime_models'] == 9
-    assert value['reviewed_original_github_models'] == 39
-    assert value['verified_independent_sources'] == 16 and value['github_original_sources'] == 13
-    assert {row['id'] for row in value['items'] if row['one_click_verified']} == {'vrmconsortium', 'tsukuyomi', 'aituber-onair'}
+    assert value['reviewed_original_github_models'] == 44
+    assert value['verified_independent_sources'] == 18 and value['github_original_sources'] == 15
+    assert {row['id'] for row in value['items'] if row['one_click_verified']} == {'vrmconsortium', 'tsukuyomi', 'aituber-onair', 'melba', 'whale-girl'}
     for row in value['items']:
         assert valid_source_link(row['url'], row['id'])
         assert row['note'] and row['terms'].startswith('https://')
