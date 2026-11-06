@@ -8,6 +8,46 @@ import { prepareCommunityIntroduction } from '/cloud/community-about.js'
 
 const node = id => document.getElementById(id)
 preparePrivacy(document)
+installLedNavigation()
+function installLedNavigation() {
+  const header = node('platformHeader'), handle = node('ledNavigationToggle')
+  const small = matchMedia('(max-width:256px) and (max-height:768px)')
+  let hovering = false, pinned = false
+  function update() {
+    const open = small.matches && (hovering || pinned || header.contains(document.activeElement))
+    document.body.toggleAttribute('data-led-navigation-open', open)
+    handle.setAttribute('aria-expanded', String(open))
+  }
+  function outside(target) { return !header.contains(target) && !handle.contains(target) }
+  function dismiss() {
+    if (!small.matches) return
+    pinned = hovering = false
+    if (header.contains(document.activeElement)) document.activeElement.blur()
+    update()
+  }
+  for (const surface of [header, handle]) {
+    surface.addEventListener('pointerenter', event => { if (event.pointerType === 'mouse') { hovering = true; update() } })
+    surface.addEventListener('pointerleave', event => { if (outside(event.relatedTarget)) { hovering = false; update() } })
+  }
+  handle.addEventListener('click', () => { pinned = !pinned; if (!pinned) hovering = false; update() })
+  header.addEventListener('focusin', update)
+  header.addEventListener('focusout', () => queueMicrotask(update))
+  document.addEventListener('pointerdown', event => {
+    if (!small.matches || !outside(event.target)) return
+    dismiss()
+  })
+  // Pointer events inside the service iframe do not bubble to this document.
+  node('service').addEventListener('pointerenter', dismiss)
+  window.addEventListener('blur', () => setTimeout(() => { if (document.activeElement?.tagName === 'IFRAME') dismiss() }, 0))
+  document.addEventListener('keydown', event => {
+    if (event.key !== 'Escape' || !small.matches || !document.body.hasAttribute('data-led-navigation-open')) return
+    pinned = hovering = false
+    handle.focus({ preventScroll: true })
+    update()
+  })
+  small.addEventListener('change', () => { pinned = hovering = false; update() })
+  update()
+}
 let frame, broker, expire, provider, role
 let publicMode = false
 let requestedArea = new URLSearchParams(location.search).get('workspace') === 'staff' ? 'staff' : 'resident'

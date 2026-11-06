@@ -1,14 +1,70 @@
 import type { VRM } from '@pixiv/three-vrm'
-import type { Object3D } from 'three'
+import type { Object3D, PerspectiveCamera } from 'three'
 
-import { Euler, Quaternion, Vector3 } from 'three'
+import { Box3, Euler, Quaternion, Vector3 } from 'three'
 
+import { isLedResident } from './resident-display.js'
 import { readResidentGaze } from './resident-gaze-state.js'
 import { bodyGestureOffsets, gestureOffsets } from './resident-gestures.js'
 
 const bones = ['head', 'chest', 'spine', 'leftShoulder', 'rightShoulder', 'leftUpperArm', 'rightUpperArm', 'leftLowerArm', 'rightLowerArm', 'leftHand', 'rightHand'] as const
 type GestureBone = typeof bones[number]
 const zero = [0, 0, 0]
+
+/** Fit the projection only: changing model scale disturbs VRM spring physics. */
+export function residentVrmDisplay() {
+  let fitted: { vrm: VRM, camera: PerspectiveCamera, beforeView: PerspectiveCamera['view'], afterView: string, cameraPosition: Vector3, cameraRotation: Quaternion, aspect: number, zoom: number, fov: number, width: number, height: number } | undefined
+  function restore() {
+    if (fitted && JSON.stringify(fitted.camera.view) === fitted.afterView) {
+      fitted.camera.view = fitted.beforeView ? { ...fitted.beforeView } : null
+      fitted.camera.updateProjectionMatrix()
+    }
+    fitted = undefined
+  }
+  function update(vrm: VRM, camera?: PerspectiveCamera) {
+    if (!camera)
+      return
+    if (!isLedResident()) {
+      restore()
+      return
+    }
+    if (fitted?.vrm === vrm && fitted.camera === camera && JSON.stringify(camera.view) === fitted.afterView
+      && camera.position.equals(fitted.cameraPosition) && camera.quaternion.equals(fitted.cameraRotation)
+      && camera.aspect === fitted.aspect && camera.zoom === fitted.zoom && camera.fov === fitted.fov
+      && globalThis.innerWidth === fitted.width && globalThis.innerHeight === fitted.height) {
+      return
+    }
+    restore()
+    vrm.scene.updateMatrixWorld(true)
+    camera.updateMatrixWorld(true)
+    camera.updateProjectionMatrix()
+    const box = new Box3().setFromObject(vrm.scene)
+    if (box.isEmpty())
+      return
+    const projected = new Box3()
+    for (const x of [box.min.x, box.max.x]) {
+      for (const y of [box.min.y, box.max.y]) {
+        for (const z of [box.min.z, box.max.z])
+          projected.expandByPoint(new Vector3(x, y, z).project(camera))
+      }
+    }
+    const size = projected.getSize(new Vector3())
+    const center = projected.getCenter(new Vector3())
+    const ratio = Math.min(2 / size.x, 2 / size.y) * 0.78
+    if (!Number.isFinite(ratio) || ratio <= 0 || ratio > 100)
+      return
+    const beforeView = camera.view ? { ...camera.view } : null
+    const base = beforeView?.enabled ? beforeView : { fullWidth: globalThis.innerWidth, fullHeight: globalThis.innerWidth / camera.aspect, offsetX: 0, offsetY: 0, width: globalThis.innerWidth, height: globalThis.innerWidth / camera.aspect }
+    const width = base.width / ratio
+    const height = base.height / ratio
+    const aspect = camera.aspect
+    camera.setViewOffset(base.fullWidth, base.fullHeight, base.offsetX + (center.x + 1) * base.width / 2 - width / 2, base.offsetY + (1 - center.y) * base.height / 2 - height / 2, width, height)
+    camera.aspect = aspect
+    camera.updateProjectionMatrix()
+    fitted = { vrm, camera, beforeView, afterView: JSON.stringify(camera.view), cameraPosition: camera.position.clone(), cameraRotation: camera.quaternion.clone(), aspect, zoom: camera.zoom, fov: camera.fov, width: globalThis.innerWidth, height: globalThis.innerHeight }
+  }
+  return { update, restore }
+}
 
 export function residentVrmGesture() {
   const reduced = matchMedia('(prefers-reduced-motion: reduce)')

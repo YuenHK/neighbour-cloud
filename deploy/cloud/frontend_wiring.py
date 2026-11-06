@@ -181,16 +181,18 @@ def cloud_audio_node_type(source):
     emit('error', error)
   }
 }'''
-        new = '''const residentMotion = residentVrmGesture()
+        new = '''const residentDisplay = residentVrmDisplay()
+const residentMotion = residentVrmGesture()
 watch(() => props.paused, (paused) => { if (paused) residentMotion.restore() })
 ''' + old[:-1] + '''  finally {
+    residentDisplay.update(vrm, camera.value)
     residentMotion.update(vrm, delta)
   }
 }'''
         for before, after in (
-            ("import { VRMUtils } from '@pixiv/three-vrm'", "import { VRMUtils } from '@pixiv/three-vrm'\nimport { residentVrmGesture } from '../../cloud-vrm-gestures'"),
+            ("import { VRMUtils } from '@pixiv/three-vrm'", "import { VRMUtils } from '@pixiv/three-vrm'\nimport { residentVrmDisplay, residentVrmGesture } from '../../cloud-vrm-gestures'"),
             (old, new),
-            ("onUnmounted(() => {\n  componentCleanUp('component-unmount')", "onUnmounted(() => {\n  residentMotion.restore()\n  componentCleanUp('component-unmount')"),
+            ("onUnmounted(() => {\n  componentCleanUp('component-unmount')", "onUnmounted(() => {\n  residentDisplay.restore()\n  residentMotion.restore()\n  componentCleanUp('component-unmount')"),
         ):
             if source.count(before) != 1:
                 raise ValueError('cloud_resident_motion_hook_requires_review')
@@ -228,11 +230,18 @@ def cloud_model_gestures(source):
     binding = "    motionManagerUpdate.register(useMotionUpdatePluginLipSync(mouthOpenSize, nowSpeaking), 'final')"
     if source.count(anchor) != 1 or source.count(binding) != 1:
         raise ValueError('cloud_model_gesture_anchor_requires_review')
-    source = source.replace(anchor, "import { residentGesturePlugin } from '../../../cloud-gestures'\nimport { galleryFraming, installGalleryMouthAlias } from '../../../gallery-fit.js'\n" + anchor, 1)
+    source = source.replace(anchor, "import { residentGesturePlugin } from '../../../cloud-gestures'\nimport { galleryFraming, installGalleryMouthAlias } from '../../../gallery-fit.js'\nimport { isLedResident } from '../../../resident-display.js'\n" + anchor, 1)
     frame = '  const normalized = modelNormalizeParams.value'
     if source.count(frame) != 1:
         raise ValueError('cloud_gallery_framing_anchor_requires_review')
-    source = source.replace(frame, '  const normalized = galleryFraming(model.value, { width: props.width, height: props.height }, modelNormalizeParams.value, props.modelId)', 1)
+    source = source.replace(frame, '  const normalized = galleryFraming(model.value, { width: props.width, height: props.height }, modelNormalizeParams.value, props.modelId)\n  const displayScale = isLedResident() ? 1 : scale.value\n  const displayOffset = isLedResident() ? { x: 0, y: 0 } : offset.value', 1)
+    for before, after in (('normalized.scale * scale.value', 'normalized.scale * displayScale'),
+                          ('normalized.x + offset.value.x', 'normalized.x + displayOffset.x'),
+                          ('normalized.y + offset.value.y', 'normalized.y + displayOffset.y')):
+        expected = 3 if before.endswith('scale.value') else 2
+        if source.count(before) != expected:
+            raise ValueError('cloud_led_live2d_transform_requires_review')
+        source = source.replace(before, after)
     source = source.replace(binding, binding + "\n    motionManagerUpdate.register(residentGesturePlugin(), 'final')", 1)
     capture = "  try {\n    if (isUnmounted) {"
     setup = '    await Live2DFactory.setupLive2DModel(live2DModel, { url: modelSrcRef.value, id: props.modelId }, { autoInteract: false })'

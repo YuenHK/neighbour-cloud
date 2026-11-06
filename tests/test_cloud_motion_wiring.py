@@ -24,14 +24,14 @@ onUnmounted(() => {
     function = re.search(r'function runVrmFrameRuntimeHook\([\s\S]*?\n\}', result)[0]
     function = function.replace('vrm: VRM, delta: number', 'vrm, delta')
     script = '''const assert=require('node:assert/strict'),events=[];
-const vrm={},residentMotion={update:(v,dt)=>{assert.equal(v,vrm);assert.equal(dt,.016);events.push('resident')}},
+const vrm={},camera={value:{}},residentDisplay={update:()=>events.push('display')},residentMotion={update:(v,dt)=>{assert.equal(v,vrm);assert.equal(dt,.016);events.push('resident')}},
 vrmFrameRuntimeHook={value:()=>events.push('external')},emit=()=>events.push('error');
 console.error=()=>{};
 ''' + function + '''
 runVrmFrameRuntimeHook(vrm,.016);
 vrmFrameRuntimeHook.value=undefined;runVrmFrameRuntimeHook(vrm,.016);
 vrmFrameRuntimeHook.value=()=>{throw Error('synthetic pose failure')};runVrmFrameRuntimeHook(vrm,.016);
-assert.deepEqual(events,['external','resident','resident','error','resident']);
+assert.deepEqual(events,['external','display','resident','display','resident','error','display','resident']);
 '''
     run = subprocess.run(['node', '-e', script], capture_output=True, text=True, check=False)
     assert run.returncode == 0, run.stderr

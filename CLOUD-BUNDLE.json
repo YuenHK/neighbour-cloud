@@ -211,8 +211,8 @@
     },
     {
       "path": "airi_overlay/cloud-resident.css",
-      "bytes": 2161,
-      "sha256": "3bc26a3af84ecf08318b06e55b9d789f9e2ad000732bf0b8395bec18140a3179"
+      "bytes": 2172,
+      "sha256": "7825d18c4e84a828f7f68e6d40799ca815633006796ad6e25e4ef78fdbd42412"
     },
     {
       "path": "airi_overlay/cloud-session.js",
@@ -236,8 +236,8 @@
     },
     {
       "path": "airi_overlay/cloud-vrm-gestures.ts",
-      "bytes": 4559,
-      "sha256": "2050553a84d92f0e142b3aedd730e210e9d68622da1abcdcc0d188006e42f1c1"
+      "bytes": 7698,
+      "sha256": "39590188cbae541551b33e8de90ff50a78d04d7b2bf447bfa14b377341cbe10d"
     },
     {
       "path": "airi_overlay/embedded-settings.ts",
@@ -351,8 +351,8 @@
     },
     {
       "path": "airi_overlay/gallery-fit.js",
-      "bytes": 2731,
-      "sha256": "fd9b0f2f687997c324799bf636c449547ee9f7f0ea0f39dc52a9334a047c0a01"
+      "bytes": 2839,
+      "sha256": "27dee29e035d5ef5d52fbfb6a27b99c576837029e53b2615bc6cc034c8550382"
     },
     {
       "path": "airi_overlay/local-connection-error.ts",
@@ -425,6 +425,11 @@
       "sha256": "362fc390162d738aa63d25c4b549cd45383a5c9478aaaeac68135b9a3e35b75f"
     },
     {
+      "path": "airi_overlay/resident-display.js",
+      "bytes": 419,
+      "sha256": "e99797baef7d6d400a22d9cd37585e11c739b4209413f7db8a76471b27003039"
+    },
+    {
       "path": "airi_overlay/resident-entry.js",
       "bytes": 244,
       "sha256": "675b1cf3b9b15fe46ec1fa2375ed4a96060fbf11466c1ec75a7d89382bdfd64d"
@@ -471,8 +476,8 @@
     },
     {
       "path": "airi_overlay/resident-panel.css",
-      "bytes": 6516,
-      "sha256": "8e320b2fdcc178304961532890bd9b87b2aad14a2aa317f4b0e35792b2afa236"
+      "bytes": 10183,
+      "sha256": "f3b0825d756b3115ca0c782f7589d80d57ce6a17c1c1c94867243a9dea85620d"
     },
     {
       "path": "airi_overlay/resident-pcm.js",
@@ -641,8 +646,8 @@
     },
     {
       "path": "deploy/cloud/frontend_wiring.py",
-      "bytes": 36660,
-      "sha256": "82af55c787857954c14cac439fd0c9bf427e59972fc13ac27e05cc2ea86ca053"
+      "bytes": 37519,
+      "sha256": "3ef582c9403c00340f4e9e34b590979d9392e18adba3923da0aa7cfe2a0a12c0"
     },
     {
       "path": "deploy/cloud/gallery_curated.py",
@@ -841,8 +846,8 @@
     },
     {
       "path": "deploy/cloud/rollout.py",
-      "bytes": 9189,
-      "sha256": "f003d1d7b46e42a2b6063efbc6277342b0e40abad0f2b3b2737404cb1f2c42a2"
+      "bytes": 9187,
+      "sha256": "4fd186ab283f76ceada1a5e73d8094c04e2de8374ee8c1bdaa65ce17daa143a9"
     },
     {
       "path": "deploy/cloud/runtime_storage.py",
@@ -1031,8 +1036,8 @@
     },
     {
       "path": "deploy/cloud/web/index.html",
-      "bytes": 6717,
-      "sha256": "468d01b66e859118da51f2b9ce2bca00d0118187fd10edb6198999591aeea71d"
+      "bytes": 6918,
+      "sha256": "14f51c829cef4587a6f91de03bb727788ce8b93abf6dae809372614513c810b6"
     },
     {
       "path": "deploy/cloud/web/kiosk.css",
@@ -1121,13 +1126,13 @@
     },
     {
       "path": "deploy/cloud/web/shell.css",
-      "bytes": 8106,
-      "sha256": "6af3b20ebcebb9ede74efda8d1e25368c191253e1a288012b8cdc5a8aea87443"
+      "bytes": 10456,
+      "sha256": "aae8d6bca1cb74bdcc4e93475256ce7339432347e5912d0a6c6e30c745a22292"
     },
     {
       "path": "deploy/cloud/web/shell.js",
-      "bytes": 12560,
-      "sha256": "d9faf8807e515e58e9b3cd5e2b6eeb4abc898cf87037f0a905b45012ae8d746b"
+      "bytes": 14581,
+      "sha256": "51c619769ed757612cdafb94c5e4f835db028cf8b95bfa2658639dc2101f5a44"
     },
     {
       "path": "deploy/cloud/web/staff-notifications.js",
@@ -2061,8 +2066,8 @@
     },
     {
       "path": "tools/acceptance_gate.py",
-      "bytes": 6492,
-      "sha256": "d80f9a197c15d80fdcda9aa539648ae66f7d7ee3877ad93265d78b17e2b43cd2"
+      "bytes": 6553,
+      "sha256": "9e1794927a944e71e73062368cc10e8b1d0fc327f6ee3452b365585dce476f47"
     },
     {
       "path": "tools/check_release_gate.py",

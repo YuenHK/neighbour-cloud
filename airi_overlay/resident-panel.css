@@ -110,3 +110,35 @@ body[data-cloud-view="resident"] .resident-panel-status:not(:empty) {
 .resident-hand-cursor[hidden]{display:none}.resident-assistant-panel button[data-hand-hover]{outline:3px solid #e9a243;outline-offset:3px}
 .resident-case-photo{font-size:12px;line-height:1.5}.resident-case-photo p{margin:5px 0}.resident-case-photo button{min-height:36px;font-size:12px}
 .resident-photo-dialog{max-width:min(440px,92vw);max-height:88dvh;overflow:auto;padding:22px;border:1px solid #cbded8;border-radius:18px;color:#204d45;background:#fff}.resident-photo-dialog::backdrop{background:#14382b88}.resident-photo-dialog img{display:block;max-width:100%;max-height:35dvh;margin:10px auto;border-radius:10px}.resident-photo-dialog p{line-height:1.6}.resident-photo-dialog button{margin:6px}
+
+/* LED mode follows the mobile glass-overlay rules so the two views stay separate. */
+@media(max-width:256px) and (max-height:768px) {
+  body[data-cloud-view="resident"] .estate-resident-layout { display:grid!important;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1.75fr) minmax(0,1fr);height:100%;width:100%;padding:4px;gap:4px;overflow:hidden; }
+  body[data-cloud-view="resident"][data-estate-kiosk] .estate-avatar-canvas { width:100%;height:100%;min-width:0;min-height:0;flex:none;grid-area:1 / 1 / 2 / 2;align-self:stretch;border-radius:12px;overflow:hidden; }
+  body[data-cloud-view="resident"] .estate-avatar-canvas [min-h] { min-height:0!important; }
+  body[data-cloud-view="resident"] .resident-assistant-panel { width:100%;height:100%;min-height:0;min-width:0;inset:auto;grid-area:2 / 1 / 3 / 2;align-self:stretch;position:relative;max-height:none;padding:8px;border-radius:12px;overflow:hidden;font-size:clamp(9px,4.4vw,12px);line-height:1.5;box-shadow:0 3px 14px #173c3709; }
+  body[data-cloud-view="resident"] .resident-assistant-panel header { gap:4px;flex:none;min-height:24px; }
+  body[data-cloud-view="resident"] .resident-assistant-panel h2 { font-size:clamp(11px,5vw,14px);margin:0;line-height:1.3; }
+  body[data-cloud-view="resident"] .resident-heading-actions { gap:4px; }
+  body[data-cloud-view="resident"] .resident-assistant-panel button { min-height:27px;padding:4px 6px;font-size:10px;line-height:1.3;border-radius:7px; }
+  body[data-cloud-view="resident"] .resident-assistant-panel .resident-end { font-size:9px;padding:4px; }
+  body[data-cloud-view="resident"] .resident-assistant-panel .resident-camera-toggle { width:27px;min-width:27px;padding:4px; }
+  body[data-cloud-view="resident"] .resident-transcript { min-height:0;min-width:0;flex:1;margin:6px 0 4px;padding-right:2px;overscroll-behavior:contain; }
+  body[data-cloud-view="resident"] .resident-bubble { max-width:98%;padding:6px 8px;margin-bottom:6px;border-radius:9px; }
+  body[data-cloud-view="resident"] .resident-bubble span { font-size:8px;margin-bottom:2px; }
+  body[data-cloud-view="resident"] .resident-greeting { margin:0;padding:8px;border-radius:9px; }
+  body[data-cloud-view="resident"] .resident-panel-notices { flex:none;max-height:2.8em;font-size:9px;line-height:1.4;overflow:auto;margin:0 0 4px; }
+  body[data-cloud-view="resident"] .resident-panel-notices p { margin:0;font-size:9px;line-height:1.4; }
+  body[data-cloud-view="resident"] .resident-assistant-panel form { flex:none;gap:4px;min-width:0; }
+  body[data-cloud-view="resident"] .resident-assistant-panel textarea { min-height:30px;height:30px;max-height:48px;resize:none;padding:4px 6px;font-size:16px;line-height:20px; }
+  body[data-cloud-view="resident"] .resident-panel-actions { gap:4px;flex-wrap:wrap; }
+  body[data-cloud-view="resident"] .resident-panel-actions button { min-width:0; }
+  body[data-cloud-view="resident"] .resident-conversation-state { min-height:24px;padding:3px 4px;gap:5px;border-radius:7px;font-size:9px; }
+  body[data-cloud-view="resident"] .resident-state-copy { gap:0; }
+  body[data-cloud-view="resident"] .resident-state-copy strong { display:none; }
+  body[data-cloud-view="resident"] .resident-state-copy span { font-size:9px;line-height:1.4; }
+  body[data-cloud-view="resident"] .resident-state-mark { flex-basis:14px;height:14px;gap:2px; }
+}
+@media(max-width:256px) and (max-height:480px) {
+  body[data-cloud-view="resident"] .estate-resident-layout { grid-template-rows:minmax(0,1fr) minmax(0,1fr); }
+}

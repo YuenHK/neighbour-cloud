@@ -1,9 +1,8 @@
 const { test } = require('node:test')
 const assert = require('node:assert/strict')
-const fs = require('node:fs')
 const path = require('node:path')
-const source = fs.readFileSync(path.resolve('airi_overlay/gallery-fit.js'), 'utf8')
-const load = () => import('data:text/javascript;base64,' + Buffer.from(source).toString('base64'))
+const { pathToFileURL } = require('node:url')
+const load = () => import(pathToFileURL(path.resolve('airi_overlay/gallery-fit.js')).href)
 test('native framing remains exactly the same object', async () => {
   const { galleryFraming } = await load(), fallback = { scale: 2, x: 3, y: 4 }
   assert.equal(galleryFraming({}, { width: 500, height: 800 }, fallback), fallback)
