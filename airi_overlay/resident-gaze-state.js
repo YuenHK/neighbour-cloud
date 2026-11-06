@@ -9,6 +9,37 @@ export function readResidentGaze(now) {
     return undefined
   return { x: Math.max(-1, Math.min(1, value.x)), y: Math.max(-1, Math.min(1, value.y)) }
 }
+
+/** Frame-rate independent, short-lived spatial interpolation, not identity. */
+export class ResidentGazeFilter {
+  constructor() { this.reset() }
+  reset() {
+    this.position = undefined
+    this.lastAt = undefined
+  }
+
+  update(value, now) {
+    if (!Number.isFinite(now) || (this.lastAt !== undefined && now < this.lastAt)) {
+      this.reset()
+      return undefined
+    }
+    const valid = value && [value.x, value.y].every(Number.isFinite)
+    if (!valid && !this.position)
+      return undefined
+    const dt = this.lastAt === undefined ? 16 : Math.min(100, now - this.lastAt)
+    this.lastAt = now
+    const alpha = 1 - Math.exp(-dt / (valid ? 75 : 220))
+    this.position ||= { x: 0, y: 0 }
+    const target = valid ? { x: Math.max(-1, Math.min(1, value.x)), y: Math.max(-1, Math.min(1, value.y)) } : { x: 0, y: 0 }
+    this.position.x += (target.x - this.position.x) * alpha
+    this.position.y += (target.y - this.position.y) * alpha
+    if (!valid && Math.hypot(this.position.x, this.position.y) < 0.001) {
+      this.reset()
+      return undefined
+    }
+    return { ...this.position }
+  }
+}
 export function selectResidentFace(detections, width, height, previous) {
   if (!Array.isArray(detections) || !Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0)
     return undefined

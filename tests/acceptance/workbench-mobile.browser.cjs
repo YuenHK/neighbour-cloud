@@ -1,6 +1,6 @@
 // Keep all isolated browser regressions mandatory under the existing five checks.
 const {spawnSync}=require('node:child_process')
-for(const script of ['tests/acceptance/staff-pwa.browser.cjs','tests/acceptance/staff-push-dedup.browser.cjs','tests/cloud-origin.browser.cjs',
+for(const script of ['tests/acceptance/staff-pwa.browser.cjs','tests/acceptance/staff-push-dedup.browser.cjs','tests/acceptance/resident-hand-dwell.browser.cjs','tests/cloud-origin.browser.cjs',
  'tests/workbench-filters.browser.cjs','tests/patrol-workflow.browser.cjs','tests/resident-pcm-native.browser.cjs',
  'tests/background-pattern.browser.cjs','tests/acceptance/launch-animation.browser.cjs','tests/acceptance/community-launch.browser.cjs','tests/acceptance/viewport-fit.browser.cjs',
  'tests/acceptance/patrol-planner.browser.cjs','tests/acceptance/kiosk.browser.cjs']){

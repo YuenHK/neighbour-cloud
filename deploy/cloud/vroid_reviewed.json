@@ -3015,6 +3015,51 @@
       "native_render_verified": true,
       "visual_reviewed": true,
       "terms": "作者設定允許其他人使用及再散布；保留作者署名、模型原檔及原有條款，只作本平台非商業學習用途。"
+    },
+    {
+      "id": "1156495961117409162",
+      "version": "6304207711461690636",
+      "name": "初音ミク · 初音ミクVer.5",
+      "author": "ふろたん",
+      "author_id": "53662916",
+      "source": "https://hub.vroid.com/en/characters/3172321643353401422/models/1156495961117409162",
+      "format": "vrm",
+      "bytes": 16932696,
+      "sha256": "179d95334914f090990e4c34578d14b24cd3f2c8dcfa29320ceacc0edcca5771",
+      "image": "/assets/gallery/vroid-1156495961117409162-179d95334914.webp",
+      "native_render_verified": true,
+      "visual_reviewed": true,
+      "terms": "作者明確允許其他人使用及再散布；僅作非商業學習。保留作者署名、原始 VRM 與作者附加條款，沒有改動模型資料。初音ミク角色 © Crypton Future Media, INC.，依 Piapro 角色使用指引 https://piapro.jp/license/pcl/summary 使用；此為同人作品，不代表角色權利人或作者。"
+    },
+    {
+      "id": "2479424733756001909",
+      "version": "5562781415306112406",
+      "name": "初音ミク · 初音ミク",
+      "author": "uti８",
+      "author_id": "81063186",
+      "source": "https://hub.vroid.com/en/characters/6191426263819575746/models/2479424733756001909",
+      "format": "vrm",
+      "bytes": 15923180,
+      "sha256": "1c66eace5adcc22fb65e336fac16c80ce1100f1c62212b8ac108f22837936e8c",
+      "image": "/assets/gallery/vroid-2479424733756001909-1c66eace5adc.webp",
+      "native_render_verified": true,
+      "visual_reviewed": true,
+      "terms": "作者明確允許其他人使用及再散布；僅作非商業學習。保留作者署名、原始 VRM 與作者附加條款，沒有改動模型資料。初音ミク角色 © Crypton Future Media, INC.，依 Piapro 角色使用指引 https://piapro.jp/license/pcl/summary 使用；此為同人作品，不代表角色權利人或作者。"
+    },
+    {
+      "id": "8953905159315227122",
+      "version": "5632639460814854110",
+      "name": "初音ミク · 初音ミク",
+      "author": "sn_",
+      "author_id": "108015894",
+      "source": "https://hub.vroid.com/en/characters/25521327566147389/models/8953905159315227122",
+      "format": "vrm",
+      "bytes": 17452672,
+      "sha256": "873673a643fddd0d8c01ea90e5791ad1e2344cf98d9549aa0941bf007d951a71",
+      "image": "/assets/gallery/vroid-8953905159315227122-873673a643fd.webp",
+      "native_render_verified": true,
+      "visual_reviewed": true,
+      "terms": "作者明確允許其他人使用及再散布；僅作非商業學習。保留作者署名、原始 VRM 與作者附加條款，沒有改動模型資料。初音ミク角色 © Crypton Future Media, INC.，依 Piapro 角色使用指引 https://piapro.jp/license/pcl/summary 使用；此為同人作品，不代表角色權利人或作者。"
     }
   ]
 }

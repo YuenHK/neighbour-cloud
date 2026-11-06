@@ -98,11 +98,15 @@ body[data-cloud-view="resident"] .resident-panel-status:not(:empty) {
     background: #edf4ef;
   }
 }
-.resident-gaze-options{position:relative;font-size:12px;color:#466b64;line-height:1.55;flex-shrink:0}
-.resident-gaze-options summary{cursor:pointer;width:fit-content;padding:3px 0}
-.resident-gaze-options[open]{max-height:170px;overflow:auto;padding:8px;border:1px solid #cbded8;border-radius:12px;background:#f5fbf9}
-.resident-gaze-options p{margin:5px 0}.resident-gaze-options button{font-size:12px;min-height:38px}
-.resident-hand-cursor{position:fixed;left:0;top:0;z-index:90;width:22px;height:22px;border:3px solid #f3ad4e;background:#ffffff66;border-radius:50%;pointer-events:none;margin:-11px 0 0 -11px;box-shadow:0 0 0 4px #1b6c5c55}
+.resident-heading-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.resident-assistant-panel .resident-camera-toggle{position:relative;display:grid;place-items:center;width:42px;height:42px;min-width:42px;padding:0;border-radius:12px;color:#56756e}
+.resident-camera-toggle::after{content:"";position:absolute;right:6px;bottom:6px;width:6px;height:6px;border-radius:50%;background:#a3b4af}
+.resident-camera-toggle[data-state=tracking]::after,.resident-camera-toggle[data-state=searching]::after{background:#299578}
+.resident-camera-toggle[data-state=starting]::after{background:#d5a24c}
+.resident-hand-cursor{--hand-progress:0;position:fixed;left:0;top:0;z-index:90;width:40px;height:40px;border:2px solid #ffffffd9;background:conic-gradient(#f2aa3d calc(var(--hand-progress)*1turn),#265b6240 0);border-radius:50%;pointer-events:none;margin:-20px 0 0 -20px;box-shadow:0 2px 10px #123c3a30;will-change:transform}
+.resident-hand-cursor::before{content:"";position:absolute;inset:5px;border-radius:50%;background:#ffffffe8;border:1px solid #9bbbb1}
+.resident-hand-cursor::after{content:"";position:absolute;inset:15px;border-radius:50%;background:#296f60}
+.resident-hand-cursor[data-state=selected]{background:#3ca98b}.resident-hand-cursor[data-state=selected]::after{inset:12px;background:transparent;border:solid #24755d;border-width:0 2px 2px 0;border-radius:0;transform:translateY(-2px) rotate(45deg);width:7px;height:12px}
 .resident-hand-cursor[hidden]{display:none}.resident-assistant-panel button[data-hand-hover]{outline:3px solid #e9a243;outline-offset:3px}
 .resident-case-photo{font-size:12px;line-height:1.5}.resident-case-photo p{margin:5px 0}.resident-case-photo button{min-height:36px;font-size:12px}
 .resident-photo-dialog{max-width:min(440px,92vw);max-height:88dvh;overflow:auto;padding:22px;border:1px solid #cbded8;border-radius:18px;color:#204d45;background:#fff}.resident-photo-dialog::backdrop{background:#14382b88}.resident-photo-dialog img{display:block;max-width:100%;max-height:35dvh;margin:10px auto;border-radius:10px}.resident-photo-dialog p{line-height:1.6}.resident-photo-dialog button{margin:6px}

@@ -171,8 +171,8 @@
     },
     {
       "path": "airi_overlay/cloud-gestures.ts",
-      "bytes": 2007,
-      "sha256": "f151f512839b33c9d697b5f6b3cc860c5c1ead4300b0025bdf036a87d183ee30"
+      "bytes": 2181,
+      "sha256": "29239cc24b76d83d35181477bd825b39562345d4955e04f40e1b283144ba129f"
     },
     {
       "path": "airi_overlay/cloud-model-gallery.json",
@@ -236,8 +236,8 @@
     },
     {
       "path": "airi_overlay/cloud-vrm-gestures.ts",
-      "bytes": 4330,
-      "sha256": "4173294ba4b6ac44a869051af9eca80137c22340d05f24ee9aac4b6996eddb24"
+      "bytes": 4487,
+      "sha256": "761c9c3e55e79ccec1b778337c2403dcb214833de7a55dd4a6d9dab7c2f155f7"
     },
     {
       "path": "airi_overlay/embedded-settings.ts",
@@ -426,18 +426,18 @@
     },
     {
       "path": "airi_overlay/resident-gaze-state.js",
-      "bytes": 1553,
-      "sha256": "4b07300495d8fea5364c6cb357cf489c7a9d52d1f1f5b84d09d97852aac48062"
+      "bytes": 2660,
+      "sha256": "3f79f0bbd6485393bc3b4348a99545e67b16c8186f5142eafd15a08d2f717737"
     },
     {
       "path": "airi_overlay/resident-gaze-worker.js",
-      "bytes": 1736,
-      "sha256": "ee79a9561080155cf23667bdb0c6aeb4d83872254fddc717272ae02ed60caf6f"
+      "bytes": 2111,
+      "sha256": "030c63e535b82b00cf49350d8095b5283d44337b621ddcd140b9f667024e724d"
     },
     {
       "path": "airi_overlay/resident-gaze.js",
-      "bytes": 7637,
-      "sha256": "f499ea3406052ebde00a6061adf8e07f2307524d93dfb225018c34baecccf3d9"
+      "bytes": 8836,
+      "sha256": "f520c4c2132b6bb407fc78740eff4a1b3dfc2578dbc40236afc0563c1103d2e8"
     },
     {
       "path": "airi_overlay/resident-gestures.js",
@@ -446,8 +446,8 @@
     },
     {
       "path": "airi_overlay/resident-hand.js",
-      "bytes": 3677,
-      "sha256": "c785dc5a89ace78b57d6294ec3839339f705df2558d7078f505cea6a7c146875"
+      "bytes": 5518,
+      "sha256": "9ee1815121e57fe4fcafdf2447684000b6b36a0b2e224f8161a469c17d0fbbf9"
     },
     {
       "path": "airi_overlay/resident-idle.js",
@@ -466,8 +466,8 @@
     },
     {
       "path": "airi_overlay/resident-panel.css",
-      "bytes": 5718,
-      "sha256": "24840f42584e954a134c0984b4704cc48461ae613352b0d1990380ddc9ed4975"
+      "bytes": 6516,
+      "sha256": "8e320b2fdcc178304961532890bd9b87b2aad14a2aa317f4b0e35792b2afa236"
     },
     {
       "path": "airi_overlay/resident-pcm.js",
@@ -486,8 +486,8 @@
     },
     {
       "path": "airi_overlay/resident-service-panel.vue",
-      "bytes": 36213,
-      "sha256": "e8a0794cd11be9e63532275cc9a8c95e5125f7d589c70707ead59b45311df891"
+      "bytes": 35248,
+      "sha256": "b27dedd9791a5934e3be01eb7395b0ca5e1e57fba9eafce8bb04be3b258fcbf3"
     },
     {
       "path": "airi_overlay/resident-session.js",
@@ -636,8 +636,8 @@
     },
     {
       "path": "deploy/cloud/frontend_wiring.py",
-      "bytes": 35708,
-      "sha256": "f805b137c0b75389b3666fe564deb119eb39bfb20a515d51fa00e19cb36701f4"
+      "bytes": 35713,
+      "sha256": "d20b53d942e2f1e6d1219c98f4a6276b9c09f6428fb492eb6ad31d8b9ab69941"
     },
     {
       "path": "deploy/cloud/gallery_extra.py",
@@ -826,8 +826,8 @@
     },
     {
       "path": "deploy/cloud/rollout.py",
-      "bytes": 9192,
-      "sha256": "bf8e1330311c5b2509dc729e0f45cd40849cca06e36e7a63726badc7d1a921ad"
+      "bytes": 9194,
+      "sha256": "0f18b2d979eb3077b66e1ca3e6af79c4772672c23d522bbeae14c6d7feb16083"
     },
     {
       "path": "deploy/cloud/runtime_storage.py",
@@ -911,8 +911,8 @@
     },
     {
       "path": "deploy/cloud/vroid_reviewed.json",
-      "bytes": 152826,
-      "sha256": "7c48d248422a6ce8d240e94d4e9b71d7df45da0fe535191fce4bf38939d38183"
+      "bytes": 155668,
+      "sha256": "12d74b42674dd6cc7b410dde47ebba6482dd477a84b5fb84c09dbc4b2ef4ab5e"
     },
     {
       "path": "deploy/cloud/web/admin-entry.js",
@@ -1116,8 +1116,8 @@
     },
     {
       "path": "deploy/cloud/web/staff-notifications.js",
-      "bytes": 6577,
-      "sha256": "fe7945bda370c9cbdc961e66a8aa7491a7e3e32617aa32bbdc0a70375dc84683"
+      "bytes": 3339,
+      "sha256": "5da20487a94c4b6c44649d400cfd2a94dcaf7787711633f2e028b8a1b462c060"
     },
     {
       "path": "deploy/cloud/web/staff-sw.js",
@@ -2046,8 +2046,8 @@
     },
     {
       "path": "tools/acceptance_gate.py",
-      "bytes": 5948,
-      "sha256": "469b91b32445c5afe2830e586f99ab959f589c614e70011755c157f9177a4085"
+      "bytes": 6073,
+      "sha256": "3505f87ab5259e5d57b63a78839c70bad43e5f0fb4d9b3d023282a189692f60e"
     },
     {
       "path": "tools/check_release_gate.py",

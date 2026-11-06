@@ -522,7 +522,7 @@ def cloud_model_panel(source):
     source = source.replace("import { useI18n } from 'vue-i18n'\n", '').replace("const { t } = useI18n()\n", '')
     if source.count('    <Live2D\n') != 1 or source.count('    />\n  </div>') != 1:
         raise ValueError('native_model_adjustments_anchor_requires_review')
-    source = source.replace('    <Live2D\n', '    <details class="cloud-model-options"><summary>調整模型外觀與動作</summary>\n    <Live2D\n', 1)
+    source = source.replace('    <Live2D\n', '    <details class="cloud-model-options" open><summary>調整模型外觀與動作</summary>\n    <Live2D\n', 1)
     source = source.replace('    />\n  </div>', '    />\n    </details>\n  </div>', 1)
     source = source.replace("import Spine from './spine.vue'\n", '')
     begin = source.index('    <Spine\n')

@@ -70,10 +70,6 @@ function toggleGaze() {
   else
     gaze?.stop()
 }
-function startHandControl() {
-  automaticCameraAttempted = true
-  void gaze?.start(true)
-}
 const transcript = ref<HTMLElement>()
 const speechRuntime = useSpeechRuntimeStore()
 const consciousness = useConsciousnessStore()
@@ -623,31 +619,16 @@ function checkIdle() {
 <template>
   <section class="resident-assistant-panel" aria-label="居民數字人對話">
     <header>
-      <div><h2>你好，慢慢傾。</h2></div><button type="button" class="resident-end" data-hand-action="next" aria-label="結束本輪對話，迎接下一位" @click="reset">
-        下一位
-      </button>
+      <div><h2>你好，慢慢傾。</h2></div>
+      <div class="resident-heading-actions">
+        <button v-if="cloudResident" type="button" class="resident-camera-toggle" data-hand-action="camera-toggle" :data-state="gazeState" :aria-pressed="!['off', 'unavailable'].includes(gazeState)" :aria-label="['off', 'unavailable'].includes(gazeState) ? '啟用視像及手勢' : '關閉視像及手勢'" :title="['off', 'unavailable'].includes(gazeState) ? '啟用視像及手勢' : '關閉視像及手勢'" @click="toggleGaze">
+          <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="6" width="13" height="12" rx="3" /><path d="m16 10 5-3v10l-5-3" /></svg>
+        </button>
+        <button type="button" class="resident-end" data-hand-action="next" aria-label="結束本輪對話，迎接下一位" @click="reset">
+          下一位
+        </button>
+      </div>
     </header>
-    <details v-if="cloudResident" class="resident-gaze-options">
-      <summary data-hand-action="camera-options">
-        視像與手勢{{ gazeState === 'tracking' ? ' · 已跟隨你' : gazeState === 'searching' ? ' · 尋找位置中' : gazeState === 'starting' ? ' · 正在啟動' : gazeState === 'unavailable' ? ' · 未啟用' : ' · 已關閉' }}
-      </summary>
-      <p>進入居民頁會嘗試啟動視線互動及手勢；首次仍須允許瀏覽器鏡頭權限。影像只喺此裝置即時處理，不拍照、不上傳、不儲存，亦不辨認身份。按「下一位」可繼續用手勢；關閉、離開居民頁或切到背景便停止鏡頭。</p>
-      <button type="button" data-hand-action="camera-toggle" :aria-pressed="!['off', 'unavailable'].includes(gazeState)" @click="toggleGaze">
-        {{ ['off', 'unavailable'].includes(gazeState) ? '啟用鏡頭、視線及手勢' : '關閉鏡頭及手勢' }}
-      </button>
-      <button v-if="!gaze?.hands" type="button" @click="startHandControl">
-        啟用鏡頭手勢導覽
-      </button>
-      <p v-if="gaze?.hands">
-        手掌移動游標；停留在按鈕後捏合拇指與食指確認。握拳暫停，畫面上下邊緣可捲動對話。首次鏡頭及語音權限需由現場職員預先允許。
-      </p>
-      <p v-if="gazeState === 'starting'" role="status">
-        正在準備，請留意瀏覽器鏡頭權限提示。
-      </p>
-      <p v-else-if="gazeState === 'unavailable'" role="status">
-        鏡頭未能啟用或已中斷；對話及語音可照常使用。
-      </p>
-    </details>
     <div ref="transcript" class="resident-transcript" aria-live="polite" aria-relevant="additions">
       <p v-if="!messages.length" class="resident-greeting">
         {{ presentation.greeting || '查資料、傾偈、跟進事情，直接同我講就得。' }}

@@ -2,6 +2,9 @@
 // No network upload, recording, logging, identity recognition or storage.
 let detector
 let hands
+let frameCount = 0
+let detections = []
+let previousSize
 self.exports = {}
 self.onmessage = async ({ data }) => {
   if (data?.type === 'init') {
@@ -29,9 +32,15 @@ self.onmessage = async ({ data }) => {
   }
   if (data?.type === 'frame' && data.image) {
     try {
-      const result = detector.detectForVideo(data.image, data.at)
+      const size = `${data.image.width}x${data.image.height}`
+      // A single in-flight frame, no queue. The cheaper spatial face pass
+      // is shared across three hand samples while the cursor renders at rAF.
+      if (!hands || frameCount % 3 === 0 || previousSize !== size)
+        detections = detector.detectForVideo(data.image, data.at).detections
+      previousSize = size
+      frameCount++
       const landmarks = hands?.detectForVideo(data.image, data.at).landmarks[0]
-      self.postMessage({ type: 'faces', detections: result.detections, landmarks, width: data.image.width, height: data.image.height })
+      self.postMessage({ type: 'faces', detections, landmarks, width: data.image.width, height: data.image.height })
     }
     catch { self.postMessage({ type: 'failed' }) }
     finally { data.image.close() }

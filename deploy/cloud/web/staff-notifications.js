@@ -1,94 +1,83 @@
 import { cloudFetch } from '/cloud/admin-request.js'
-const area = document.createElement('section')
-area.className = 'service-card'
-area.innerHTML = '<h2>手機工作提示</h2><p>工作提示預設啟用，通知不會顯示居民資料。首次手機通知仍須由你允許；iPhone／iPad 請先加入主畫面。已批准的裝置會自動恢復，手動關閉則會保留選擇。</p><div class="service-actions"><button type="button" data-push-toggle>開啟工作提示</button><button type="button" class="service-button-secondary" data-push-test hidden>測試工作提示</button></div><p role="status"></p>'
-document.querySelector('#panel-usage')?.append(area)
-const button = area.querySelector('[data-push-toggle]'), test = area.querySelector('[data-push-test]'), status = area.querySelector('[role=status]')
+
+// Loaded only after staff authentication. No extra card, test push or resident
+// content. Browser permission is still native and needs a trusted interaction.
 const supported = 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window
-let testTimer
-function enabled(value) {
-  button.dataset.enabled = String(value)
-  button.textContent = value ? '關閉工作提示' : '開啟工作提示'
-  test.hidden = !value
-  if (!value) { clearTimeout(testTimer); test.disabled = false }
-}
-function cooldown(seconds) {
-  clearTimeout(testTimer)
-  test.disabled = seconds > 0
-  if (seconds > 0) testTimer = setTimeout(() => { test.disabled = false }, seconds * 1000)
-}
-if (!supported) {
-  button.disabled = true; status.textContent = '此瀏覽器未提供推送通知，工作台仍會自動更新。'
-}
-async function activate(requestPermission) {
-  button.disabled = true
-  try {
-    // Request inside the click's activation, before service-worker/network waits.
-    if (Notification.permission !== 'granted'
-      && (!requestPermission || await Notification.requestPermission() !== 'granted')) throw new Error('permission')
+let pending
+let active = false
+let attempts = 0
+let lastAttempt = -Infinity
+const state = value => { document.documentElement.dataset.staffNotifications = value }
+
+function activate() {
+  if (pending || active || !supported || Notification.permission !== 'granted')
+    return pending
+  if (attempts >= 2 || performance.now() - lastAttempt < 30000)
+    return undefined
+  attempts++
+  lastAttempt = performance.now()
+  state('connecting')
+  pending = (async () => {
     const registration = await navigator.serviceWorker.register('/staff-sw.js', { scope: '/' })
     await navigator.serviceWorker.ready
-    const existing = await registration.pushManager.getSubscription()
-    let subscription = existing
+    let subscription = await registration.pushManager.getSubscription()
     if (!subscription) {
-      const config = await cloudFetch('/api/v1/service-desk/notifications', { signal: AbortSignal.timeout(10000) }).then(r => { if (!r.ok) throw new Error(); return r.json() })
+      const response = await cloudFetch('/api/v1/service-desk/notifications', { signal: AbortSignal.timeout(10000) })
+      if (!response.ok)
+        throw new Error('push_configuration_unavailable')
+      const config = await response.json()
       const bytes = Uint8Array.from(atob(config.public_key.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0))
       subscription = await registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: bytes })
     }
-    const response = await cloudFetch('/api/v1/service-desk/notifications', { method: 'POST', body: JSON.stringify(subscription.toJSON()), headers: { 'Content-Type': 'application/json' }, signal: AbortSignal.timeout(10000) })
-    if (!response.ok) throw new Error('subscribe_failed')
-    const value = await response.json(); localStorage.setItem('neighbour-push-id', value.subscription_id)
+    const response = await cloudFetch('/api/v1/service-desk/notifications', {
+      method: 'POST', body: JSON.stringify(subscription.toJSON()), headers: { 'Content-Type': 'application/json' },
+      signal: AbortSignal.timeout(10000),
+    })
+    if (!response.ok)
+      throw new Error('push_registration_unconfirmed')
+    const value = await response.json()
+    localStorage.setItem('neighbour-push-id', value.subscription_id)
     localStorage.setItem('neighbour-push-preference', 'on')
-    enabled(true); status.textContent = '已開啟。可按「測試工作提示」，毋須建立個案；請在手機核對是否收到通知。'
-    const state = await cloudFetch(`/api/v1/service-desk/notifications/${value.subscription_id}/status`, { signal: AbortSignal.timeout(10000) }).then(r => { if (!r.ok) throw new Error(); return r.json() })
-    cooldown(state.test_retry_after_seconds || 0)
-  } catch { status.textContent = '暫未完成手機提示連接；可按「開啟工作提示」再試，工作台仍會自動更新。' }
-  finally { button.disabled = false }
+    active = true
+    state('ready')
+  })().catch(() => state('unavailable')).finally(() => { pending = undefined })
+  return pending
 }
-button.onclick = async () => {
-  if (button.dataset.enabled !== 'true') return activate(true)
-  localStorage.setItem('neighbour-push-preference', 'off')
-  button.disabled = true
-  try {
-    const registration = await navigator.serviceWorker.register('/staff-sw.js', { scope: '/' })
-    const existing = await registration.pushManager.getSubscription()
-    const identity = localStorage.getItem('neighbour-push-id')
-    if (identity) {
-      const response = await cloudFetch('/api/v1/service-desk/notifications/' + identity, { method: 'DELETE', signal: AbortSignal.timeout(10000) })
-      if (!response.ok) throw new Error('remove_failed')
-    }
-    await existing?.unsubscribe(); localStorage.removeItem('neighbour-push-id')
-    enabled(false); status.textContent = '工作提示已關閉。'; return
-  } catch { status.textContent = '上次關閉未能確認，請稍後再按「關閉工作提示」；不會自動重新開啟。' }
-  finally { button.disabled = false }
+
+function disarm() {
+  document.removeEventListener('pointerup', permission, true)
+  document.removeEventListener('keydown', permission, true)
 }
-test.onclick = async () => {
-  const identity = localStorage.getItem('neighbour-push-id')
-  if (!identity || test.disabled) return
-  test.disabled = true
-  try {
-    const response = await cloudFetch(`/api/v1/service-desk/notifications/${identity}/test`, { method: 'POST', signal: AbortSignal.timeout(15000) })
-    if (!response.ok) throw new Error('test_failed')
-    const result = await response.json()
-    if (['expired', 'not_registered'].includes(result.state)) {
-      localStorage.removeItem('neighbour-push-id'); enabled(false)
-      status.textContent = '訂閱已到期，請重新開啟工作提示。'; return
-    }
-    cooldown(result.retry_after_seconds || 60)
-    status.textContent = result.accepted
-      ? '測試已交予手機推送服務，請查看手機通知；未代表手機已收到。每分鐘可測試一次，不會建立個案。'
-      : result.state === 'cooldown' ? '請稍等一分鐘再測試，沒有重複發送。' : '推送服務暫未接受，請稍後再試；沒有建立個案。'
-  } catch { cooldown(60); status.textContent = '測試結果未能確認，請先查看手機；一分鐘後才可再試，避免重複通知。' }
+function permission(event) {
+  if (!event.isTrusted || document.hidden || (event.type === 'keydown' && !['Enter', ' '].includes(event.key)))
+    return
+  disarm()
+  // Invoke directly within this event, before any worker or network await.
+  if (Notification.permission === 'default') {
+    void Notification.requestPermission().then(value => {
+      if (value === 'granted')
+        void activate()
+      else state('permission-required')
+    }).catch(() => state('permission-required'))
+  }
+  else if (Notification.permission === 'granted') {
+    void activate()
+  }
 }
-if (supported && localStorage.getItem('neighbour-push-preference') !== 'off' && Notification.permission === 'granted') {
-  void activate(false) // Restore only an existing OS permission; never auto-prompt.
-} else if (supported && localStorage.getItem('neighbour-push-id')) {
-  enabled(true)
-  const identity = localStorage.getItem('neighbour-push-id')
-  cloudFetch(`/api/v1/service-desk/notifications/${identity}/status`, { signal: AbortSignal.timeout(10000) })
-    .then(r => { if (!r.ok) throw new Error(); return r.json() })
-    .then(value => {
-      if (!value.registered) { localStorage.removeItem('neighbour-push-id'); enabled(false); status.textContent = '訂閱已到期，請重新開啟工作提示。' }
-      else cooldown(value.test_retry_after_seconds || 0)
-    }).catch(() => { status.textContent = '暫未核對到訂閱狀態；可稍後再試，工作台仍會自動更新。' })
+
+if (!supported) {
+  state('unsupported')
 }
+else if (Notification.permission === 'granted') {
+  void activate()
+}
+else if (Notification.permission === 'default') {
+  state('permission-required')
+  document.addEventListener('pointerup', permission, true)
+  document.addEventListener('keydown', permission, true)
+}
+else {
+  state('permission-required')
+}
+window.addEventListener('online', () => { if (!document.hidden) void activate() })
+window.addEventListener('pagehide', disarm, { once: true })

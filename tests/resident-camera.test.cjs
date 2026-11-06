@@ -11,17 +11,16 @@ test('face targeting is spatial, rejects invalid/low-confidence values and expir
  assert.deepEqual(readResidentGaze(1000),{x:1,y:-1});assert.equal(readResidentGaze(1500),undefined)
  clearResidentGaze();assert.equal(readResidentGaze(100),undefined)
 })
-test('selection requires stable target plus sustained pinch, never repeats held pinch, and resets when lost',async()=>{
+test('selection uses a stable two-second dwell without pinch and rearms only after leaving',async()=>{
  const {HandSelection,residentPalm}=await load('airi_overlay/resident-hand.js'),state=new HandSelection(),button={}
  assert.equal(residentPalm([]),undefined)
  assert.equal(state.update(button,false,100),false)
- assert.equal(state.update(button,true,500),false)
- assert.equal(state.update(button,true,1100),false)
- assert.equal(state.update(button,true,1501),true)
- assert.equal(state.update(button,true,9000),false)
- assert.equal(state.update(undefined,false,9200),false)
- assert.equal(state.update(button,true,9500),false)
- assert.equal(state.update(button,true,10000),false)
+ for(let now=200;now<=2000;now+=100)assert.equal(state.update(button,false,now),false)
+ assert.equal(state.update(button,false,2100),true)
+ assert.equal(state.update(button,false,2200),false)
+ assert.equal(state.update(undefined,false,2300),false)
+ assert.equal(state.update(button,false,2400),false)
+ assert.equal(state.update(button,false,2500),false)
 })
 test('idle greeting never interrupts speech, drafts, existing conversation, hidden pages or startup',async()=>{
  const {shouldResidentWelcome}=await load('airi_overlay/resident-gestures.js')

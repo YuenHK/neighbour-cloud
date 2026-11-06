@@ -42,6 +42,7 @@ def test_actual_resident_and_settings_preview_use_free_renderer_and_existing_aud
     runtime = cloud_free_model_runtime((UI / 'components/scenarios/settings/model-settings/runtime.ts').read_text(encoding='utf-8'))
     assert "'vrm' | 'rigby'" in runtime
     panel = cloud_model_panel((UI / 'components/scenarios/settings/model-settings/panel.vue').read_text(encoding='utf-8'))
+    assert '<details class="cloud-model-options" open>' in panel
     assert '<Spine' not in panel and "import Spine" not in panel and 'effectiveRenderer === \'rigby\'' in panel
 
 

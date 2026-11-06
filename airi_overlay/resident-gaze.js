@@ -50,7 +50,7 @@ export class ResidentGaze {
       return
     }
     // Use native permission UX; do not infer consent or bypass a denied prompt.
-    const requested = navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: 'user', width: { ideal: 320 }, height: { ideal: 240 }, frameRate: { ideal: 8, max: 10 } } })
+    const requested = navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 20, max: 24 } } })
     requested.then((stream) => {
       if (epoch !== this.generation)
         stream.getTracks().forEach(track => track.stop())
@@ -130,15 +130,31 @@ export class ResidentGaze {
     if (epoch !== this.generation || !this.video)
       return
     try {
+      this.frameStarted = performance.now()
+      if (!this.video.videoWidth || !this.video.videoHeight || this.video.currentTime === this.videoTime) {
+        this.timer = setTimeout(() => {
+          void this.frame(epoch)
+        }, 16)
+        return
+      }
+      this.videoTime = this.video.currentTime
       if (this.detector) {
-        const data = this.detector.detectForVideo(this.video, performance.now())
+        // Main-thread compatibility mode: update hands more often than faces,
+        // and never run repeated inference for the same camera frame.
+        if (!this.handDetector || !this.frameCount || this.frameCount % 3 === 0)
+          this.faceDetections = this.detector.detectForVideo(this.video, performance.now()).detections
+        this.frameCount = (this.frameCount || 0) + 1
         const landmarks = this.handDetector?.detectForVideo(this.video, performance.now()).landmarks[0]
-        this.acceptFaces({ detections: data.detections, landmarks, width: this.video.videoWidth, height: this.video.videoHeight }, epoch)
+        this.acceptFaces({ detections: this.faceDetections, landmarks, width: this.video.videoWidth, height: this.video.videoHeight }, epoch)
         return
       }
       if (!this.worker)
         return
-      const bitmap = await createImageBitmap(this.video, { resizeWidth: 320, resizeHeight: 240 })
+      const scale = Math.min(1, 384 / this.video.videoWidth, 384 / this.video.videoHeight)
+      const bitmap = await createImageBitmap(this.video, {
+        resizeWidth: Math.max(1, Math.round(this.video.videoWidth * scale)),
+        resizeHeight: Math.max(1, Math.round(this.video.videoHeight * scale)),
+      })
       if (epoch !== this.generation) {
         bitmap.close()
         return
@@ -153,20 +169,25 @@ export class ResidentGaze {
   }
 
   acceptFaces(data, epoch) {
+    if (epoch !== this.generation)
+      return
+    const now = performance.now()
     this.pointer?.update(data.landmarks)
     const face = selectResidentFace(data.detections, data.width, data.height, this.previous)
     if (face) {
       this.previous = face
-      Reflect.set(globalThis, '__NEIGHBOUR_RESIDENT_GAZE__', Object.freeze({ x: face.x * 2 - 1, y: face.y * 2 - 1, at: performance.now() }))
+      this.faceSeenAt = now
+      Reflect.set(globalThis, '__NEIGHBOUR_RESIDENT_GAZE__', Object.freeze({ x: face.x * 2 - 1, y: face.y * 2 - 1, at: now }))
     }
-    else {
+    else if (!this.faceSeenAt || now - this.faceSeenAt > 250) {
       this.previous = undefined
       clearResidentGaze()
     }
-    this.onState(face ? 'tracking' : 'searching')
+    this.onState(this.previous ? 'tracking' : 'searching')
+    const interval = this.detector ? 125 : 62.5
     this.timer = setTimeout(() => {
       void this.frame(epoch)
-    }, this.detector ? 450 : 200)
+    }, Math.max(8, interval - (now - (this.frameStarted ?? now))))
   }
 
   capturePreview() {
@@ -204,6 +225,10 @@ export class ResidentGaze {
       this.video = undefined
     }
     this.previous = undefined
+    this.faceSeenAt = undefined
+    this.videoTime = undefined
+    this.frameCount = 0
+    this.faceDetections = undefined
     clearResidentGaze()
     this.onState(state)
   }

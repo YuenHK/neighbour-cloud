@@ -47,12 +47,13 @@ export function residentVrmGesture() {
     const gaze = readResidentGaze(now)
     const dt = Number.isFinite(deltaSeconds) ? Math.max(0, Math.min(1 / 15, deltaSeconds)) : 1 / 60
     const blend = 1 - Math.exp(-9 * dt)
-    gazeOffset.lerp(new Vector3(gaze ? -gaze.x * 16 : 0, gaze ? gaze.y * 9 : 0, 0), blend * 0.6)
+    gazeOffset.lerp(new Vector3(gaze ? -gaze.x * 20 : 0, gaze ? gaze.y * 12 : 0, 0), 1 - Math.exp(-(gaze ? 16 : 9) * dt))
     if (gaze && vrm.lookAt) {
       eyePose ||= { vrm, auto: vrm.lookAt.autoUpdate, yaw: vrm.lookAt.yaw, pitch: vrm.lookAt.pitch }
       vrm.lookAt.autoUpdate = false
-      vrm.lookAt.yaw = gazeOffset.x * 0.7
-      vrm.lookAt.pitch = gazeOffset.y * 0.7
+      // Head may turn further; eyes stay inside the native gentle range.
+      vrm.lookAt.yaw = Math.max(-12, Math.min(12, gazeOffset.x * 0.85))
+      vrm.lookAt.pitch = Math.max(-8, Math.min(8, gazeOffset.y * 0.85))
     }
     else if (eyePose?.vrm.lookAt) {
       eyePose.vrm.lookAt.autoUpdate = eyePose.auto
