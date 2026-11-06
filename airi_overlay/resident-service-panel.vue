@@ -14,7 +14,7 @@ import ResidentConversationState from './resident-conversation-state.vue'
 
 import { createResidentApi } from './resident-api.js'
 import { ResidentGaze } from './resident-gaze.js'
-import { residentGesture, residentSpeechGesture, shouldResidentWelcome } from './resident-gestures.js'
+import { residentConversationGesture, residentGesture, residentSpeechGesture, shouldResidentWelcome } from './resident-gestures.js'
 import { ResidentIdle } from './resident-idle.js'
 import { ResidentPcm, ResidentTiming } from './resident-pcm.js'
 import { createResidentTextFilter, readResidentReply, residentMessageParts, residentPlainText, residentSpeechText } from './resident-response.js'
@@ -53,8 +53,10 @@ let avatarVisible = window.parent === window
 let avatarMounted = Reflect.get(globalThis, '__NEIGHBOUR_AVATAR_READY__') === true
 let entranceGreeted = false
 let lastWelcome = performance.now()
+let lastActivity = performance.now()
 let welcomeTimer: ReturnType<typeof setInterval> | undefined
 let automaticCameraAttempted = false
+let resumeCameraOnVisible = false
 function startDefaultInteraction() {
   if (!cloudResident || !gaze || !avatarVisible || !avatarMounted || document.hidden
     || new URLSearchParams(location.search).get('settings') === '1' || automaticCameraAttempted) {
@@ -64,6 +66,7 @@ function startDefaultInteraction() {
   void gaze.start(true)
 }
 function toggleGaze() {
+  resumeCameraOnVisible = false
   automaticCameraAttempted = true
   if (['off', 'unavailable'].includes(gazeState.value))
     void gaze?.start(true)
@@ -89,10 +92,11 @@ const conversationPhase = computed(() => residentUiPhase({
   status: status.value,
 }))
 let activeCare = false
-watch(nowSpeaking, active => residentSpeechGesture(active, activeCare), { flush: 'sync' })
+let activeGesture: ReturnType<typeof residentConversationGesture> = 'speaking'
+watch(nowSpeaking, active => residentSpeechGesture(active, activeCare, activeGesture), { flush: 'sync' })
 watch(speechActive, (active) => {
   if (active)
-    residentGesture(activeCare ? 'care' : 'speaking')
+    residentGesture(activeCare ? 'care' : activeGesture)
 })
 const inputControllers = new Set<AbortController>()
 let speechIntent: ReturnType<typeof speechRuntime.openIntent> | undefined
@@ -289,6 +293,7 @@ function reset() {
   if (!gaze?.hands)
     gaze?.stop()
   activeCare = false
+  activeGesture = 'speaking'
   residentGesture('greeting')
   lastWelcome = performance.now()
   followupNotice.value = ''
@@ -306,6 +311,7 @@ function reset() {
     window.dispatchEvent(new Event('estate:resident-session-ended'))
 }
 function touch() {
+  lastActivity = performance.now()
   inactivity.touch()
 }
 function beginSpeech() {
@@ -374,7 +380,8 @@ async function sendMessage(text = draft.value, voice = true, inputEndedAt?: numb
   clearAudio()
   speechFailed = false
   const epoch = session.generation
-  activeCare = /壓力|唔開心|難受|擔心|跳樓|自殺|想死|生活困難|好攰|驚/.test(text)
+  activeGesture = residentConversationGesture(text)
+  activeCare = activeGesture === 'care'
   residentGesture(activeCare ? 'care' : 'listen')
   busy.value = true
   messages.value = [...session.history, { role: 'user', content: text }]
@@ -393,11 +400,19 @@ async function sendMessage(text = draft.value, voice = true, inputEndedAt?: numb
   let intent: ReturnType<typeof speechRuntime.openIntent> | undefined
   try {
     const answer = await session.send(text, 'voice', (delta: string) => {
-      if (!partial)
-        residentGesture(activeCare ? 'care' : 'speaking')
+      const first = !partial
       timing.mark('first_text')
       void timing.report()
       partial += delta
+      const selected = activeCare ? 'care' : residentConversationGesture(text, partial)
+      if (first || selected !== activeGesture) {
+        activeGesture = selected
+        activeCare = selected === 'care'
+        if (nowSpeaking.value)
+          residentSpeechGesture(true, activeCare, activeGesture)
+        else
+          residentGesture(activeGesture)
+      }
       messages.value = [...session.history, { role: 'user', content: text }, { role: 'assistant', content: partial }]
       if (voice) {
         const cfg = providers.getProviderConfig(speechSettings.activeSpeechProvider)
@@ -545,9 +560,20 @@ function greetAvatar() {
   startDefaultInteraction()
 }
 function welcomeIfIdle() {
-  if (shouldResidentWelcome({ visible: avatarVisible, mounted: avatarMounted, hidden: document.hidden, busy: busy.value, speaking: speechActive.value || nowSpeaking.value, messages: messages.value.length, draft: draft.value, lastAt: lastWelcome }, performance.now())) {
-    residentGesture('greeting')
+  if (shouldResidentWelcome({ visible: avatarVisible, mounted: avatarMounted, hidden: document.hidden, busy: busy.value, speaking: speechActive.value || nowSpeaking.value, messages: messages.value.length, draft: draft.value, care: activeCare, lastActivity, lastAt: lastWelcome }, performance.now())) {
+    residentGesture('idle')
     lastWelcome = performance.now()
+  }
+}
+function resumeVisibleInteraction() {
+  if (document.hidden) {
+    resumeCameraOnVisible = !['off', 'unavailable'].includes(gazeState.value) && gazeState.value !== 'starting'
+    return
+  }
+  if (resumeCameraOnVisible) {
+    resumeCameraOnVisible = false
+    automaticCameraAttempted = false
+    startDefaultInteraction()
   }
 }
 function residentVisible(event: MessageEvent) {
@@ -573,6 +599,9 @@ onMounted(() => {
       welcomeIfIdle()
     gazeState.value = state
   })
+  // Capture phase records active intent before the gaze controller releases
+  // its camera on a hidden page. Explicit off/denied never auto-retries.
+  document.addEventListener('visibilitychange', resumeVisibleInteraction, true)
   welcomeTimer = setInterval(welcomeIfIdle, 5000)
   window.addEventListener('message', residentVisible)
   if (avatarMounted && avatarVisible)
@@ -593,6 +622,7 @@ onMounted(() => {
   window.dispatchEvent(new Event('resident-conversation-ready'))
 })
 onUnmounted(() => {
+  document.removeEventListener('visibilitychange', resumeVisibleInteraction, true)
   clearInterval(welcomeTimer)
   cancelPhoto()
   gaze?.dispose()

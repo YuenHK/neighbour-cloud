@@ -45,6 +45,7 @@ export function residentVrmGesture() {
     const now = performance.now()
     const offsets = gestureOffsets(gesture, now)
     const gaze = readResidentGaze(now)
+    const scan = gesture?.kind === 'idle' && gaze ? 0 : 1
     const dt = Number.isFinite(deltaSeconds) ? Math.max(0, Math.min(1 / 15, deltaSeconds)) : 1 / 60
     const blend = 1 - Math.exp(-9 * dt)
     gazeOffset.lerp(new Vector3(gaze ? -gaze.x * 20 : 0, gaze ? gaze.y * 12 : 0, 0), 1 - Math.exp(-(gaze ? 16 : 9) * dt))
@@ -67,7 +68,7 @@ export function residentVrmGesture() {
       ...bodyGestureOffsets(gesture, now),
       ...(offsets
         ? {
-            head: [offsets.y, offsets.x, offsets.z],
+            head: [offsets.y * scan, offsets.x * scan, offsets.z],
             chest: [offsets.y * 0.18, offsets.x * 0.18, offsets.body * 0.18],
           }
         : {}),

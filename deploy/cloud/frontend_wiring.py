@@ -112,9 +112,6 @@ def cloud_avatar_audio(source):
         raise ValueError('cloud_avatar_audio_anchor_requires_review')
     new = """let residentSource: AudioNode | undefined
 let residentGraphGeneration = 0
-const vrmGestures = residentVrmGesture()
-watch(vrmViewerRef, (viewer) => viewer?.setVrmFrameHook(vrmGestures.update), { flush: 'post' })
-watch(() => props.paused, (paused) => { if (paused) vrmGestures.restore() })
 async function residentPcmGraph(event: Event) {
   const data = (event as CustomEvent<{ source: AudioNode, context: AudioContext }>).detail
   if (!data || data.context !== audioContext || stageDisposed)
@@ -150,7 +147,6 @@ onMounted(() => {
 onUnmounted(() => {
   stageDisposed = true
   residentGraphGeneration++
-  vrmGestures.restore()
   window.removeEventListener('resident-pcm-node', residentPcmGraph)
   window.removeEventListener('resident-pcm-ended', residentPcmEnded)
 })
@@ -158,7 +154,7 @@ onUnmounted(() => {
     source = source.replace(old, new)
     for old, new in (
         ('const currentAudioSource = ref<AudioBufferSourceNode>()', 'const currentAudioSource = ref<AudioNode>()\nlet stageDisposed = false'),
-        ("import { animations } from '@proj-airi/stage-ui-three/assets/vrm'", "import { animations } from '@proj-airi/stage-ui-three/assets/vrm'\nimport { residentVrmGesture } from '../../../../stage-ui-three/src/cloud-vrm-gestures'\nimport { releaseResidentLipSync } from '../../../../model-driver-lipsync/src/resident-lipsync'"),
+        ("import { animations } from '@proj-airi/stage-ui-three/assets/vrm'", "import { animations } from '@proj-airi/stage-ui-three/assets/vrm'\nimport { releaseResidentLipSync } from '../../../../model-driver-lipsync/src/resident-lipsync'"),
         ('    lipSyncNode.value?.disconnect()', '    releaseResidentLipSync(lipSyncNode.value)'),
         ('async function setupLipSync() {', 'let lipSyncPreparing: Promise<void> | undefined\nasync function setupLipSync() {\n  if (lipSyncPreparing) return lipSyncPreparing\n  lipSyncPreparing = prepareLipSync().finally(() => {\n    lipSyncPreparing = undefined\n  })\n  return lipSyncPreparing\n}\nasync function prepareLipSync() {'),
         ('    live2dLipSync.value = lipSync', "    if (stageDisposed || stageModelRenderer.value !== 'live2d') {\n      releaseResidentLipSync(lipSync.node)\n      return\n    }\n    live2dLipSync.value = lipSync"),
@@ -172,7 +168,34 @@ onUnmounted(() => {
 def cloud_audio_node_type(source):
     if source.count('currentAudioSource?: AudioBufferSourceNode') != 1:
         raise ValueError('cloud_avatar_node_type_requires_review')
-    return source.replace('currentAudioSource?: AudioBufferSourceNode', 'currentAudioSource?: AudioNode', 1)
+    source = source.replace('currentAudioSource?: AudioBufferSourceNode', 'currentAudioSource?: AudioNode', 1)
+    if 'function runVrmFrameRuntimeHook(' in source:
+        # The native MediaPipe driver owns/replaces the external pose hook.
+        # Resident motion must run after it, rather than competing for it.
+        old = '''function runVrmFrameRuntimeHook(vrm: VRM, delta: number) {
+  try {
+    vrmFrameRuntimeHook.value?.(vrm, delta)
+  }
+  catch (error) {
+    console.error(error)
+    emit('error', error)
+  }
+}'''
+        new = '''const residentMotion = residentVrmGesture()
+watch(() => props.paused, (paused) => { if (paused) residentMotion.restore() })
+''' + old[:-1] + '''  finally {
+    residentMotion.update(vrm, delta)
+  }
+}'''
+        for before, after in (
+            ("import { VRMUtils } from '@pixiv/three-vrm'", "import { VRMUtils } from '@pixiv/three-vrm'\nimport { residentVrmGesture } from '../../cloud-vrm-gestures'"),
+            (old, new),
+            ("onUnmounted(() => {\n  componentCleanUp('component-unmount')", "onUnmounted(() => {\n  residentMotion.restore()\n  componentCleanUp('component-unmount')"),
+        ):
+            if source.count(before) != 1:
+                raise ValueError('cloud_resident_motion_hook_requires_review')
+            source = source.replace(before, after, 1)
+    return source
 
 
 def cloud_live2d_lip_sync(source):
