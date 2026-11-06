@@ -19,7 +19,7 @@ const notify = inject<(message: string) => void>('neighbour-model-status', () =>
 const display = useDisplayModelsStore()
 const query = ref('')
 const platform = ref('all')
-const format = ref('all')
+const format = ref('live2d-zip')
 const accepted = inject('neighbour-model-license-accepted', ref(false))
 const busy = ref('')
 const message = ref('選擇後先預覽；按「儲存至平台」才套用到所有裝置。')
@@ -43,18 +43,18 @@ const sourceMessage = ref('')
 const verifiedSourceCount = ref<number | null>(null)
 const discoverySource = ref('all')
 const discoveryQuery = ref('')
-const discoveryFormat = ref('all')
+const discoveryFormat = ref('live2d')
 const discoveryResults = ref<DiscoveredModel[]>([])
 const sourceSuccess = computed(() => sourceUpdates.value.filter(row => row.last_success_ms !== null).length)
 function sourceName(id: string) {
   return sourceRegistry.value.find(row => row.id === id)?.name || id
 }
 function sourceLabel(row: SourceResearch) {
-  if (row.mode === 'reviewed_runtime_import')
-    return '已核對款式可一鍵預覽；不是全站自動目錄'
   const update = sourceUpdates.value.find(item => item.source === row.id)
   if (update?.last_success_ms)
     return `${update.stale ? '更新暫未完成，保留上次' : '目錄已更新'} · ${update.items.length} 項待核候選`
+  if (row.mode === 'reviewed_runtime_import')
+    return '已核對款式可一鍵預覽；不是全站自動目錄'
   if (update)
     return update.stale ? '暫未能取得目錄' : '正在等候首次檢查'
   return row.mode === 'existing_oauth' ? '已接入，已核模型在上方清單' : '尚未接通自動目錄'
@@ -274,14 +274,18 @@ async function choose(row: Choice) {
       const pinnedVRoid = /^https:\/\/raw\.githubusercontent\.com\/madjin\/vrm-samples\/[a-f0-9]{40}\/vroid\/beta\/(?:Sakurada_Fumiriya|Sendagaya_Shino)\.vrm$/.test(item.archive)
       if (remote && !arweave && !pinnedVRoid)
         throw new Error('圖庫來源未能核對。')
-      const response = await fetch(item.archive, { credentials: 'omit', redirect: remote && arweave ? 'follow' : 'error', mode: remote ? 'cors' : 'same-origin', referrerPolicy: 'no-referrer', signal: AbortSignal.timeout(60000) })
+      // Larger licensed models need more time on mobile connections. Keep a
+      // finite upper bound and show progress instead of treating slow as bad.
+      const downloadTimeout = Math.min(300000, Math.max(90000, 30000 + Math.ceil(item.bytes / 65536) * 1000))
+      const response = await fetch(item.archive, { credentials: 'omit', redirect: remote && arweave ? 'follow' : 'error', mode: remote ? 'cors' : 'same-origin', referrerPolicy: 'no-referrer', signal: AbortSignal.timeout(downloadTimeout) })
       if (!response.ok || !response.body)
-        throw new Error('模型暫時未能下載。')
+        throw new VroidPreviewError('模型暫時未能下載。', false)
       if (remote && (arweave ? !/^https:\/\/(?:[a-z0-9]+\.)?arweave\.net\//.test(response.url) : response.url !== item.archive))
         throw new Error('模型下載來源不正確。')
       const reader = response.body.getReader()
       const chunks: Uint8Array[] = []
       let size = 0
+      let progress = -5
       try {
         while (true) {
           const part = await reader.read()
@@ -291,6 +295,11 @@ async function choose(row: Choice) {
           if (size > item.bytes || size > 32 * 1024 * 1024)
             throw new Error('模型下載超過已核對大小。')
           chunks.push(part.value)
+          const percent = Math.floor(size / item.bytes * 100)
+          if (percent >= progress + 5) {
+            progress = percent
+            status(`正在下載 ${item.name}… ${percent}%`)
+          }
         }
       }
       finally {
@@ -298,6 +307,7 @@ async function choose(row: Choice) {
         reader.releaseLock()
       }
       const content = new Blob(chunks as BlobPart[])
+      status(`正在核對 ${item.name}…`)
       if (content.size !== item.bytes || await modelHash(content) !== item.sha256)
         throw new Error('模型檔案核對未通過，沒有更換原角色。')
       model = await display.addDisplayModel(remote ? DisplayModelFormat.VRM : DisplayModelFormat.Live2dZip, new File([content], remote ? `${item.id}.vrm` : `${item.id}-Live2D.zip`, { type: remote ? 'model/gltf-binary' : 'application/zip' }))
@@ -307,7 +317,8 @@ async function choose(row: Choice) {
     picked(model)
   }
   catch (error) {
-    const hide = (!row.vroid && !row.reviewed) || (error instanceof VroidPreviewError && error.hide)
+    const transient = error instanceof TypeError || (error instanceof DOMException && ['AbortError', 'TimeoutError'].includes(error.name))
+    const hide = error instanceof VroidPreviewError ? error.hide : !transient && !row.vroid && !row.reviewed
     if (hide)
       failed.value.add(row.id)
     status(`${errorMessageFrom(error) ?? '未能完整載入模型。'} 原角色保留，${hide ? '今次清單會先隱藏此項。' : '稍後可再次選擇。'}`)
@@ -380,7 +391,7 @@ async function prepareOwnArchive() {
           所有格式
         </option>
         <option value="live2d-zip">
-          Live2D · 2D
+          Live2D · 2D（推薦）
         </option>
         <option value="vrm">
           VRM · 3D

@@ -16,6 +16,11 @@ def source(identity, name, url, domains, formats, mode, note, terms=None, *, one
 
 
 SOURCES = (
+    source('desktop-companion', 'xShiroeNguyenx · Live2D 原創圖庫', 'https://github.com/xShiroeNguyenx/desktop-companion',
+           ['github.com'], ['live2d'], 'reviewed_runtime_import',
+           '已核18款原創 Live2D；每次後台檢查作者清單，條款變動或未試載新款不自動當成已驗收。',
+           'https://github.com/xShiroeNguyenx/desktop-companion/blob/4a9170a13c4fb702e35c68a2311d5fa27088b6d5/ASSETS-LICENSE.md',
+           one_click_verified=True, path_prefix='/xShiroeNguyenx/desktop-companion'),
     source('live2d', 'Live2D 官方', 'https://www.live2d.com/en/learn/sample/', ['live2d.com'],
            ['live2d'], 'metadata', '逐款核對官方及角色個別條款；已驗證款式在可用清單。',
            'https://www.live2d.com/eula/live2d-free-material-license-agreement_en.html'),
@@ -119,7 +124,7 @@ def registry_snapshot():
     originals = originals_snapshot()
     models = reviewed_models()
     return {'items': [dict(row) for row in SOURCES], 'target_sources': 20,
-            'registered_sources': len(SOURCES), 'metadata_adapters': 5,
+            'registered_sources': len(SOURCES), 'metadata_adapters': 6,
             'existing_oauth_sources': 1, 'target_complete': originals['target_complete'],
             'reviewed_runtime_sources': len({row.source for row in models}), 'reviewed_runtime_models': len(models),
             'reviewed_original_github_models': sum(row['model_count'] for row in originals['verified_libraries'] if row['repository']),
