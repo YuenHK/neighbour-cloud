@@ -16,6 +16,16 @@ def source(identity, name, url, domains, formats, mode, note, terms=None, *, one
 
 
 SOURCES = (
+    source('psd2live', 'PSD2Live Examples 原創圖庫', 'https://github.com/tsunehimatoi/psd2live-examples',
+           ['github.com'], ['live2d'], 'reviewed_runtime_import',
+           '三款 CC0 原創模型已原生試載；每次後台檢查官方清單，新版本仍需檔案及畫面驗證。',
+           'https://github.com/tsunehimatoi/psd2live-examples/blob/32bc3487d6fbc29f1680d4c70b94e526f6b944a8/LICENSE',
+           one_click_verified=True, path_prefix='/tsunehimatoi/psd2live-examples'),
+    source('mofox', 'MoFox 原創 Live2D 圖庫', 'https://github.com/MoFox-Studio/MoFox-ArtCollection',
+           ['github.com'], ['live2d'], 'reviewed_runtime_import',
+           '非商業學習並署名來源；作者原 ZIP 不改動，僅由畫面完整取景。每次後台檢查新公開模型。',
+           'https://github.com/MoFox-Studio/MoFox-ArtCollection/blob/e59a4305c0ed8a815c8387bd2d25fee633e72dc3/README.md',
+           one_click_verified=True, path_prefix='/MoFox-Studio/MoFox-ArtCollection'),
     source('desktop-companion', 'xShiroeNguyenx · Live2D 原創圖庫', 'https://github.com/xShiroeNguyenx/desktop-companion',
            ['github.com'], ['live2d'], 'reviewed_runtime_import',
            '已核18款原創 Live2D；每次後台檢查作者清單，條款變動或未試載新款不自動當成已驗收。',
@@ -124,7 +134,7 @@ def registry_snapshot():
     originals = originals_snapshot()
     models = reviewed_models()
     return {'items': [dict(row) for row in SOURCES], 'target_sources': 20,
-            'registered_sources': len(SOURCES), 'metadata_adapters': 6,
+            'registered_sources': len(SOURCES), 'metadata_adapters': 8,
             'existing_oauth_sources': 1, 'target_complete': originals['target_complete'],
             'reviewed_runtime_sources': len({row.source for row in models}), 'reviewed_runtime_models': len(models),
             'reviewed_original_github_models': sum(row['model_count'] for row in originals['verified_libraries'] if row['repository']),

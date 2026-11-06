@@ -65,8 +65,9 @@ SUFFIX_TYPES = {'.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'te
 MAX_PROGRAM_BYTES = 256 * 1024 * 1024
 # Fixed public packages occupy disk and stream on demand, not the separate
 # 64 MiB resident-upload store. Curated archives are separate, lazily fetched
-# static files: the 49-Live2D set is ~117 MiB, not preloaded into browser RAM.
-MAX_REVIEWED_GALLERY_BYTES = 128 * 1024 * 1024
+# static files: the101-skin set is ~210MiB, not preloaded into browser RAM.
+# This finite disk package allowance is not a cloud API quota or plan change.
+MAX_REVIEWED_GALLERY_BYTES = 224 * 1024 * 1024
 
 
 def reviewed_gallery_paths():

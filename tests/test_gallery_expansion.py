@@ -24,15 +24,15 @@ def operations():
 
 def test_source_registry_distinguishes_metadata_and_pinned_runtime_sources_from_full_integrations():
     value = registry_snapshot()
-    assert len(REGISTRY) == value['registered_sources'] == 24
+    assert len(REGISTRY) == value['registered_sources'] == 26
     assert len({row['domains'][0] for row in value['items']}) == 22
     assert REGISTRY['melba']['path_prefix'] != REGISTRY['whale-girl']['path_prefix']
-    assert value['target_complete'] is False and value['all_sources_one_click'] is False
-    assert value['metadata_adapters'] == 6 and value['existing_oauth_sources'] == 1
+    assert value['target_complete'] is True and value['all_sources_one_click'] is False
+    assert value['metadata_adapters'] == 8 and value['existing_oauth_sources'] == 1
     assert value['reviewed_runtime_sources'] == 7 and value['reviewed_runtime_models'] == 9
-    assert value['reviewed_original_github_models'] == 55
-    assert value['verified_independent_sources'] == 18 and value['github_original_sources'] == 15
-    assert {row['id'] for row in value['items'] if row['one_click_verified']} == {'vrmconsortium', 'tsukuyomi', 'aituber-onair', 'melba', 'whale-girl', 'desktop-companion'}
+    assert value['reviewed_original_github_models'] == 59
+    assert value['verified_independent_sources'] == 20 and value['github_original_sources'] == 17
+    assert {row['id'] for row in value['items'] if row['one_click_verified']} == {'vrmconsortium', 'tsukuyomi', 'aituber-onair', 'melba', 'whale-girl', 'desktop-companion', 'psd2live', 'mofox'}
     for row in value['items']:
         assert valid_source_link(row['url'], row['id'])
         assert row['note'] and row['terms'].startswith('https://')
@@ -142,7 +142,7 @@ def test_snapshot_combines_five_metadata_sources_without_creating_or_migrating_t
     ops = operations()
     value = SourceCatalogue(original, None, operations=ops)
     snapshot = asyncio.run(value.snapshot())
-    assert len(snapshot['sources']) == 6
+    assert len(snapshot['sources']) == 8
     assert snapshot['metadata_sources_with_success'] == 0
     assert snapshot['unreviewed_items_importable'] is False
     assert ops.count(NAMESPACE) == 0  # Reading is not implicit cache installation.

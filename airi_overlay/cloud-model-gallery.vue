@@ -130,7 +130,7 @@ const vroid = ref<VroidModel[]>([])
 interface ReviewedModel { id: string, name: string, source: string, source_name: string, source_url: string, license_url: string, credit: string, notice: string, bytes: number, sha256: string, application_only: boolean }
 const reviewed = ref<ReviewedModel[]>([])
 const visibleCount = ref(60)
-interface GalleryModel { id: string, name: string, source: string, archive: string, image: string, bytes: number, sha256: string, license: string, terms: string, individual_terms: string, format?: string, platform?: string }
+interface GalleryModel { id: string, name: string, source: string, archive: string, image: string, bytes: number, sha256: string, license: string, terms: string, individual_terms: string, format?: string, platform?: string, derivative?: boolean, base_id?: string, palette_label?: string }
 interface Choice { id: string, name: string, platform: string, format: string, sha256?: string, platforms?: string[], aliases?: string[], image?: string, bytes?: number, model?: DisplayModel, gallery?: GalleryModel, sharedId?: string, vroid?: VroidModel, reviewed?: ReviewedModel, addedAt?: number }
 const admittedAt = admissions.added_ms as Record<string, number>
 const choices = computed(() => {
@@ -417,6 +417,7 @@ async function prepareOwnArchive() {
           <img v-if="row.image && !imagesFailed.has(row.id)" :src="row.image" :alt="row.name" loading="lazy" @error="imagesFailed.add(row.id)">
           <span v-else class="model-picker-placeholder" aria-hidden="true">♧</span>
           <strong :title="row.name">{{ row.name }}</strong><span class="model-picker-tag">{{ row.platform }}{{ row.format === 'vrm' ? ' · 3D' : '' }}</span>
+          <span v-if="row.gallery?.derivative" class="model-picker-tag">配色衍生 · {{ row.gallery.palette_label }}</span>
           <small>{{ busy === row.id ? '準備中…' : props.selectedModel?.id === row.id ? '目前選擇' : '選擇預覽' }}</small>
         </button>
         <details v-if="row.reviewed" class="model-picker-terms">

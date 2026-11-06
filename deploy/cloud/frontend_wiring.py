@@ -209,7 +209,7 @@ def cloud_model_gestures(source):
     frame = '  const normalized = modelNormalizeParams.value'
     if source.count(frame) != 1:
         raise ValueError('cloud_gallery_framing_anchor_requires_review')
-    source = source.replace(frame, '  const normalized = galleryFraming(model.value, { width: props.width, height: props.height }, modelNormalizeParams.value)', 1)
+    source = source.replace(frame, '  const normalized = galleryFraming(model.value, { width: props.width, height: props.height }, modelNormalizeParams.value, props.modelId)', 1)
     source = source.replace(binding, binding + "\n    motionManagerUpdate.register(residentGesturePlugin(), 'final')", 1)
     capture = "  try {\n    if (isUnmounted) {"
     setup = '    await Live2DFactory.setupLive2DModel(live2DModel, { url: modelSrcRef.value, id: props.modelId }, { autoInteract: false })'

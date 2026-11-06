@@ -176,13 +176,13 @@
     },
     {
       "path": "airi_overlay/cloud-model-gallery.json",
-      "bytes": 66171,
-      "sha256": "872ab61267641b663fc172543029e17e283fd283ee8b219fb22b618c85653755"
+      "bytes": 151431,
+      "sha256": "caa13b97e7f3d309dd9e486098e57be6c153ba94d689ab9c5bef175e46e9e5e7"
     },
     {
       "path": "airi_overlay/cloud-model-gallery.vue",
-      "bytes": 34495,
-      "sha256": "e82f88dc43000070e2391a367b77845ae55532fe96b753c1fe0ca32027e810fa"
+      "bytes": 34687,
+      "sha256": "e5e3e39be97e94939de6b69b5da5c2e4e0074a1ddea7d396355f1fdf7bbf8cba"
     },
     {
       "path": "airi_overlay/cloud-model-library.vue",
@@ -351,8 +351,8 @@
     },
     {
       "path": "airi_overlay/gallery-fit.js",
-      "bytes": 2343,
-      "sha256": "b661ced6a4841ff20f324c8eac0f26dfeec2207209fee3bd913f00fda68620cd"
+      "bytes": 2731,
+      "sha256": "fd9b0f2f687997c324799bf636c449547ee9f7f0ea0f39dc52a9334a047c0a01"
     },
     {
       "path": "airi_overlay/local-connection-error.ts",
@@ -366,8 +366,8 @@
     },
     {
       "path": "airi_overlay/model-added.json",
-      "bytes": 23421,
-      "sha256": "36b0b5e72a8d459d7bf6cf3d510bbb428e7adb7d3e374511200034d52a2bd7f3"
+      "bytes": 27997,
+      "sha256": "490a267f334ff603ef4d40eb9e60bd1342e67176955c2d69a38b3a75f72c9fe1"
     },
     {
       "path": "airi_overlay/model-dedup.js",
@@ -641,8 +641,13 @@
     },
     {
       "path": "deploy/cloud/frontend_wiring.py",
-      "bytes": 35713,
-      "sha256": "d20b53d942e2f1e6d1219c98f4a6276b9c09f6428fb492eb6ad31d8b9ab69941"
+      "bytes": 35728,
+      "sha256": "5f034d850e7f407e7830b1ce0f01af926ef9d7f3a0f2cfe520d3feabaa84545a"
+    },
+    {
+      "path": "deploy/cloud/gallery_curated.py",
+      "bytes": 8736,
+      "sha256": "3e4b4adc03fb904c3d79e9df1cfad6035cc79ee25dc72b5cc80e0eee80400859"
     },
     {
       "path": "deploy/cloud/gallery_extra.py",
@@ -656,13 +661,13 @@
     },
     {
       "path": "deploy/cloud/gallery_registry.py",
-      "bytes": 10448,
-      "sha256": "18dabd0af3c0af5f9d9cd56346a5837c4a52ee259bcbadace3e6af1bc5ff33fe"
+      "bytes": 11470,
+      "sha256": "c59a114904ee2b714d8f8234a629136bfddc875c1037e614a2d6fb0d2fe162cf"
     },
     {
       "path": "deploy/cloud/gallery_sources.py",
-      "bytes": 15066,
-      "sha256": "61ce2f5b3e143f5e9b6a15856c952adb7b961b17f81a9b5ec10f45ceb160038a"
+      "bytes": 15428,
+      "sha256": "b94b2f1c470a8c9ebcd78ac567706bc21c48ed3dbed810d9a575252472303a15"
     },
     {
       "path": "deploy/cloud/google_identity.py",
@@ -741,8 +746,8 @@
     },
     {
       "path": "deploy/cloud/original_libraries.json",
-      "bytes": 21206,
-      "sha256": "faeaf09c3e8628c8bced4c71aced169e0e045efdbebaac5fd41e921d429efd4b"
+      "bytes": 22991,
+      "sha256": "1b4c847015e8fd0549d25a00219a6011e7a6910d01f2a4004e9ad17f5307826f"
     },
     {
       "path": "deploy/cloud/original_libraries.py",
@@ -816,8 +821,8 @@
     },
     {
       "path": "deploy/cloud/reviewed_model_imports.py",
-      "bytes": 41724,
-      "sha256": "17cb7ae750917d9b4ada7a3b3c6e2037a79acd80c5d80f87188b5bd144820c0f"
+      "bytes": 81193,
+      "sha256": "71628213889cad5b33dfc930d9e475287c132fc88bfa86d8c1b162a865da44e5"
     },
     {
       "path": "deploy/cloud/reviewed_vrm_prepare.py",
@@ -836,8 +841,8 @@
     },
     {
       "path": "deploy/cloud/rollout.py",
-      "bytes": 9191,
-      "sha256": "66095d1f7cd48dac5e34ecab0c0c110b36d505407c8dd5ecd321b381c9f061f7"
+      "bytes": 9190,
+      "sha256": "424e616418393f27b72f6f1f079bbff4c67757ffa3b58c9f629f6023dd5fb5ec"
     },
     {
       "path": "deploy/cloud/runtime_storage.py",
@@ -1086,8 +1091,8 @@
     },
     {
       "path": "deploy/cloud/web/privacy.js",
-      "bytes": 4988,
-      "sha256": "3888265483cf9d8982e249d229937cc39994ad04db39068394b958a838e5c6c5"
+      "bytes": 5834,
+      "sha256": "320aa3f8b9d4249e2d21911a435dee09fad51818da5176f61efbcad2812146ec"
     },
     {
       "path": "deploy/cloud/web/quota-compact.js",
@@ -1146,8 +1151,8 @@
     },
     {
       "path": "deploy/cloud/web_assets.py",
-      "bytes": 13927,
-      "sha256": "2d2d2aa5bc32fa0b21e2dc39c460d7b66041e2160757f950f443ce5c99002158"
+      "bytes": 14002,
+      "sha256": "7fdaf29665a26a1c0b869b9bb8479bc73067e0e960a2a6e5deb451a930910709"
     },
     {
       "path": "docs/gaia-community-architecture-2026-11-05.md",
@@ -2056,8 +2061,8 @@
     },
     {
       "path": "tools/acceptance_gate.py",
-      "bytes": 6109,
-      "sha256": "d82371d9d11620b877e02d5be44792fde32b96877b1d4e86d4a3ddb4018e9938"
+      "bytes": 6383,
+      "sha256": "6c4fa8e8b1a68814e415d0fab3ac54f6b1697543c61564086b03200493b6f8a0"
     },
     {
       "path": "tools/check_release_gate.py",

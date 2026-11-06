@@ -8,6 +8,19 @@ test('native framing remains exactly the same object', async () => {
   const { galleryFraming } = await load(), fallback = { scale: 2, x: 3, y: 4 }
   assert.equal(galleryFraming({}, { width: 500, height: 800 }, fallback), fallback)
 })
+
+test('unaltered MoFox archive fits only for its exact content ID', async () => {
+  const { galleryFraming } = await load(), fallback = { scale: 8, x: 3, y: 4 }
+  const model = { internalModel: { width: 1000, height: 2000, settings: { json: {} },
+    coreModel: { getDrawableCount: () => 1, getDrawableOpacity: () => 1 },
+    getDrawableVertices: () => [600, 800, 1000, 1200], localTransform: { apply: p => p } } }
+  assert.equal(galleryFraming(model, { width: 400, height: 800 }, fallback, 'other-model'), fallback)
+  const hash = '8b93e71f792d13de4588c99b7c469e82f3f0e6cc9389257780812b5dafaa5c31'
+  for (const prefix of ['cloud-live2d-', 'display-model-sha256-live2d-zip-'])
+    assert.deepEqual(galleryFraming(model, { width: 400, height: 800 }, fallback, prefix + hash), { scale: .9, x: -70, y: 400 })
+  assert.deepEqual(model.internalModel.settings.json, {})
+  assert.equal(galleryFraming(model, { width: 400, height: 800 }, fallback, 'cloud-live2d-' + hash + 'extra'), fallback)
+})
 test('reviewed off-centre visible geometry fits with padding and survives resizing', async () => {
   const { galleryFraming } = await load()
   const model = { internalModel: { width: 1000, height: 2000,

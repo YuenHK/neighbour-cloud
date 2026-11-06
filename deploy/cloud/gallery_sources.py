@@ -17,6 +17,7 @@ import httpx
 from fastapi import APIRouter
 from starlette.concurrency import run_in_threadpool
 
+from deploy.cloud.gallery_curated import CuratedUpdates
 from deploy.cloud.gallery_extra import ExtraSources
 from deploy.cloud.gallery_original import OriginalUpdates
 from deploy.cloud.gallery_registry import registry_snapshot
@@ -145,6 +146,7 @@ class SourceCatalogue:
         self.store, self.client, self.now = store, client, now or (lambda: int(time.time() * 1000))
         self.extra = ExtraSources(operations, client, self.now) if operations is not None else None
         self.original = OriginalUpdates(operations, client, self.now) if operations is not None else None
+        self.curated = CuratedUpdates(operations, client, self.now) if operations is not None else None
         self.tasks = set()
         self.closed = False
         self.next_check_ms = 0
@@ -187,6 +189,8 @@ class SourceCatalogue:
                 rows.extend(await run_in_threadpool(self.extra.rows))
             if self.original is not None:
                 rows.extend(await run_in_threadpool(self.original.rows))
+            if self.curated is not None:
+                rows.extend(await run_in_threadpool(self.curated.rows))
             return {'sources': rows, 'refreshing': bool(self.tasks), 'refresh_interval_ms': TTL,
                     'check_on_staff_entry': True, 'entry_coalesce_ms': 60000,
                     'automatic_avatar_switch': False, 'provider_credits_used': 0,
@@ -296,6 +300,8 @@ class SourceCatalogue:
 
         if self.original is not None:
             await self.original.refresh(minimum_age)
+        if self.curated is not None:
+            await self.curated.refresh(minimum_age)
 
 
 def sources_router(authorize, catalogue):

@@ -18,9 +18,12 @@ export function installGalleryMouthAlias(model) {
   aliased.add(model)
 }
 
-export function galleryFraming(model, viewport, fallback) {
+export function galleryFraming(model, viewport, fallback, modelId) {
   const internal = model?.internalModel
-  if (internal?.settings?.json?.Neighbour?.fit !== 'visible-contain-v1')
+  // Original MoFox archive cannot be altered under its terms. Fit its verified
+  // immutable content ID at view time instead of changing the author's files.
+  const originalMofox = typeof modelId === 'string' && /^(?:cloud-live2d-|display-model-sha256-live2d-zip-)8b93e71f792d13de4588c99b7c469e82f3f0e6cc9389257780812b5dafaa5c31$/.test(modelId)
+  if (!internal || (internal.settings?.json?.Neighbour?.fit !== 'visible-contain-v1' && !originalMofox))
     return fallback
   let bounds = cache.get(model)
   if (!bounds) {

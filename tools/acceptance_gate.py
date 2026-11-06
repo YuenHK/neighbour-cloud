@@ -22,7 +22,7 @@ TESTS = ['test_community_operations.py', 'test_cloud_http_app.py', 'test_cloud_s
          'test_cloud_admin_assets.py', 'test_service_desk.py', 'test_cloud_avatar_vrm.py',
          'test_cloud_avatar_assets.py', 'test_cloud_avatar_api.py', 'test_cloud_presentation.py',
          'test_cloud_gallery_catalog.py', 'test_cloud_vroid_api.py', 'test_cloud_vroid_library.py',
-         'test_gallery_sources.py', 'test_gallery_expansion.py', 'test_gallery_original_updates.py', 'test_cloud_model_discovery.py',
+         'test_gallery_sources.py', 'test_gallery_expansion.py', 'test_gallery_original_updates.py', 'test_gallery_curated_updates.py', 'test_live2d_derivatives.py', 'test_cloud_model_discovery.py',
          'test_patrol_grounding.py', 'test_patrol_planner.py', 'test_cloud_bundle.py',
          'test_fiducial_localisation.py', 'test_board_localisation.py',
          'test_route_follower.py', 'test_navigation_scenarios.py', 'test_navigation_kit.py', 'test_s1_free_paths.py',
@@ -69,6 +69,9 @@ def main():
         commands.append(['node', 'tests/acceptance/workbench-mobile.browser.cjs'])
     node_modules = Path(os.environ.get('NODE_PATH') or root / '.experiments/optimization-lab-20261029/node/node_modules')
     package = json.loads((node_modules / 'promptfoo/package.json').read_text(encoding='utf-8'))
+    # Child browser suites use normal require('playwright'); resolving only
+    # promptfoo's executable here did not make that same dependency root visible.
+    env['NODE_PATH'] = str(node_modules.resolve())
     binary = package['bin']['promptfoo'] if isinstance(package['bin'], dict) else package['bin']
     commands.append(['node', str(node_modules / 'promptfoo' / binary), 'eval', '--config',
         str(root / 'tools/evaluation/promptfooconfig.json'), '--no-cache', '--no-table', '--output', str(output / 'promptfoo.json')])

@@ -561,6 +561,54 @@
           "sha256": "f534c6736ac39e547872941d531bef968093a394edc110857ee739bcd2b076be"
         }
       ]
+    },
+    {
+      "id": "psd2live-original",
+      "name": "PSD2Live Examples",
+      "maintainer_id": "tsunehimatoi",
+      "url": "https://github.com/tsunehimatoi/psd2live-examples",
+      "repository": "https://github.com/tsunehimatoi/psd2live-examples",
+      "rights_urls": [
+        "https://github.com/tsunehimatoi/psd2live-examples/blob/32bc3487d6fbc29f1680d4c70b94e526f6b944a8/LICENSE"
+      ],
+      "original_material": true,
+      "verification": "licensed-native-import-verified",
+      "models": [
+        {
+          "channel": "static",
+          "id": "psd2live-tml",
+          "sha256": "fb765cff068fdf9939b6305c91918475721cffbb366b164ea03a45fe41421db9"
+        },
+        {
+          "channel": "static",
+          "id": "psd2live-ds",
+          "sha256": "0466e9e92b6b402dbdce663771f1a11cc529b456225d629e137958b2cab85e8a"
+        },
+        {
+          "channel": "static",
+          "id": "psd2live-star-lan",
+          "sha256": "f45b3c4599feab50e8dfd624ac44f55baaa5654cd83dd9f8106b708e017b8c39"
+        }
+      ]
+    },
+    {
+      "id": "mofox-original",
+      "name": "MoFox 原創 Live2D",
+      "maintainer_id": "mofox-studio",
+      "url": "https://github.com/MoFox-Studio/MoFox-ArtCollection",
+      "repository": "https://github.com/MoFox-Studio/MoFox-ArtCollection",
+      "rights_urls": [
+        "https://github.com/MoFox-Studio/MoFox-ArtCollection/blob/e59a4305c0ed8a815c8387bd2d25fee633e72dc3/README.md"
+      ],
+      "original_material": true,
+      "verification": "licensed-native-import-verified",
+      "models": [
+        {
+          "channel": "static",
+          "id": "mofox-original",
+          "sha256": "8b93e71f792d13de4588c99b7c469e82f3f0e6cc9389257780812b5dafaa5c31"
+        }
+      ]
     }
   ]
 }
