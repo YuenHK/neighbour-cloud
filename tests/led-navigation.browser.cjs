@@ -24,6 +24,10 @@ async function run(engine,type){
     assert.ok((await header.boundingBox()).y+(await header.boundingBox()).height<=1)
     const frameHeight=await page.locator('#service iframe').evaluate(e=>e.getBoundingClientRect().height);assert.equal(frameHeight,height)
     await page.mouse.move(width/2,3);await page.waitForTimeout(260);assert.equal(await handle.getAttribute('aria-expanded'),'true')
+    // The aria state changes before the CSS transition ends. Wait for the
+    // actual visible position, bounded even on a busy renderer; keep the
+    // geometry assertion instead of assuming 260ms implies completion.
+    await page.waitForFunction(()=>document.getElementById('platformHeader').getBoundingClientRect().top>=-.5,null,{timeout:2000})
     assert.ok((await header.boundingBox()).y>=-.5);assert.equal(await page.locator('#service iframe').evaluate(e=>e.getBoundingClientRect().height),height)
     await page.mouse.move(width/2,height-30);await page.waitForTimeout(260);assert.equal(await handle.getAttribute('aria-expanded'),'false')
     await handle.focus();await page.keyboard.press('Enter');await page.waitForTimeout(250);assert.equal(await handle.getAttribute('aria-expanded'),'true')

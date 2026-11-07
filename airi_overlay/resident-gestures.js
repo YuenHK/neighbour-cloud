@@ -6,38 +6,56 @@ const durations = { greeting: 3200, listen: 1700, speaking: 2600, care: 3300, ex
 export function continuousWelcomeBody(now, gentle = false) {
   if (!Number.isFinite(now) || now < 0)
     return undefined
-  const phase = (now % 5600) / 5600
+  const phase = (now % 11000) / 11000
   const strength = gentle ? 0.58 : 1
   const lead = Math.cos(2 * Math.PI * phase)
-  const left = (0.55 - 0.40 * lead) * strength
-  const right = (0.55 + 0.40 * lead) * strength
-  const wave = Math.sin(10 * Math.PI * phase)
+  const invite = (value) => {
+    const p = Math.max(0, Math.min(1, (value + 0.6) / 0.6))
+    return p * p * (3 - 2 * p)
+  }
+  // A short overlap hands over the wave, then the other arm really rests.
+  const left = invite(-lead)
+  const right = invite(lead)
+  const wave = Math.sin(2 * Math.PI * now / 1500) * strength
   return {
-    leftShoulder: [0, -1.2 * left, -1.4 * left],
-    rightShoulder: [0, 1.2 * right, 1.4 * right],
-    // Fold the forearms back towards the face, keeping palms visible in a
-    // narrow close-up. These six arm/hand bones replace the native idle pose.
-    leftUpperArm: [-2 * left, -4 * left, -34 - 6 * left],
-    rightUpperArm: [-2 * right, 4 * right, 34 + 6 * right],
-    leftLowerArm: [0, -8 * left, -106 - 7 * left],
-    rightLowerArm: [0, 8 * right, 106 + 7 * right],
-    leftHand: [-30 * left, -4 * left, -14 * wave * left],
-    rightHand: [-30 * right, 4 * right, 14 * wave * right],
+    leftShoulder: [0, -0.7 * left * strength, -0.8 * left * strength],
+    rightShoulder: [0, 0.7 * right * strength, 0.8 * right * strength],
+    // Raised palm stays beside the cheek, not above the crown. The other arm
+    // returns to an arms-down pose; do not keep both hands on the head.
+    leftUpperArm: [-2 * left, -3 * left, 72 * (1 - left)],
+    rightUpperArm: [-2 * right, 3 * right, -72 * (1 - right)],
+    leftLowerArm: [0, -4 * left, -5 - 135 * left],
+    rightLowerArm: [0, 4 * right, 5 + 135 * right],
+    leftHand: [-20 * left * strength, -4 * left, -18 * wave * left],
+    rightHand: [-20 * right * strength, 4 * right, 18 * wave * right],
   }
 }
 export function continuousWelcomeLive2d(now, gentle = false) {
   const pose = continuousWelcomeBody(now, gentle)
   if (!pose)
     return undefined
-  const left = -pose.leftShoulder[2] / 1.4
-  const right = pose.rightShoulder[2] / 1.4
+  const left = Math.abs(pose.leftLowerArm[2]) / 140
+  const right = Math.abs(pose.rightLowerArm[2]) / 140
   return {
     ParamArmLA: left * 0.85,
     ParamArmRA: right * 0.85,
-    ParamHandL: pose.leftHand[2] / 14 * 0.45,
-    ParamHandR: pose.rightHand[2] / 14 * 0.45,
+    ParamHandL: pose.leftHand[2] / 18 * 0.45,
+    ParamHandR: pose.rightHand[2] / 18 * 0.45,
     ParamShoulderL: left * 0.14,
     ParamShoulderR: right * 0.14,
+  }
+}
+/** Small varied head/body motions, independent of waves, lips and saved pose. */
+export function residentAmbientOffsets(now, kind = 'idle', hasGaze = false) {
+  if (!Number.isFinite(now) || now < 0)
+    return undefined
+  const phase = now / 24000 * 2 * Math.PI
+  const strength = kind === 'care' ? 0.38 : kind === 'idle' ? 1 : 0.55
+  return {
+    x: hasGaze ? 0 : Math.sin(phase) * 2.8 * strength,
+    y: Math.sin(phase * 2 + 0.4) * 1.2 * strength,
+    z: Math.sin(phase + 1.2) * 1.0 * strength,
+    body: Math.sin(phase * 0.75) * 1.1 * strength,
   }
 }
 function settledGesture(gesture, now) {

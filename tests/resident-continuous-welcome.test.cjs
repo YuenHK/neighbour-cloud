@@ -5,9 +5,9 @@ test('continuous welcome waves never have a long idle gap and layer only onto ar
  const {continuousWelcomeBody,continuousWelcomeLive2d}=await load('airi_overlay/resident-gestures.js')
  for(let now=0;now<=28000;now+=100){
   const pose=continuousWelcomeBody(now),gentle=continuousWelcomeBody(now,true),live=continuousWelcomeLive2d(now)
-  assert.ok(Math.abs(pose.leftUpperArm[2])+Math.abs(pose.rightUpperArm[2])>10)
-  assert.ok(Object.values(pose).flat().every(n=>Number.isFinite(n)&&Math.abs(n)<=120))
-  assert.ok(Math.abs(gentle.rightUpperArm[2])<Math.abs(pose.rightUpperArm[2]))
+  assert.ok(Math.max(Math.abs(pose.leftLowerArm[2]),Math.abs(pose.rightLowerArm[2]))>=130)
+  assert.ok(Object.values(pose).flat().every(n=>Number.isFinite(n)&&Math.abs(n)<=150))
+  assert.ok(Math.abs(gentle.rightHand[0])<=Math.abs(pose.rightHand[0]))
   assert.ok(!Object.keys(pose).some(k=>/head|spine|chest|eye|mouth/i.test(k)))
   assert.ok(Object.keys(live).every(k=>/^Param(?:Arm|Hand|Shoulder)/.test(k)))
  }
@@ -30,13 +30,13 @@ test('native VRM keeps waving with no gesture, while speaking and while nodding;
   bones.leftUpperArm.quaternion.setFromEuler(new three.Euler(.1, -.2, -1.1))
   const baseline=Object.fromEntries(names.map(n=>[n,bones[n].quaternion.clone()]))
   const vrm={humanoid:{getNormalizedBoneNode:n=>bones[n]}},run=()=>{for(let i=0;i<100;i++)motion.update(vrm,1/60)},motion=exports.residentVrmGesture()
-  run();assert.ok(bones.rightUpperArm.quaternion.angleTo(new three.Quaternion())>.1,'no active dialogue must still wave')
+  run();assert.ok(bones.rightLowerArm.quaternion.angleTo(new three.Quaternion())>.1,'no active dialogue must still wave')
   const angles=gesture.continuousWelcomeBody(now).rightUpperArm.map(n=>n*Math.PI/180)
   assert.ok(bones.rightUpperArm.quaternion.angleTo(new three.Quaternion().setFromEuler(new three.Euler(...angles)))<1e-5,'authored idle must not push waving hands out of the close-up')
   const first=bones.rightUpperArm.quaternion.clone();for(let i=0;i<1000;i++)motion.update(vrm,1/60);assert.ok(first.angleTo(bones.rightUpperArm.quaternion)<1e-5)
   for(const kind of ['speaking','listen','care']){
    now+=1100;scope.__NEIGHBOUR_RESIDENT_GESTURE__={kind,start:now-650,duration:2600,continuous:kind==='speaking'};run()
-   assert.ok(bones.rightUpperArm.quaternion.angleTo(new three.Quaternion())>.05,kind+' must not stop waves')
+   assert.ok(bones.rightHand.quaternion.angleTo(new three.Quaternion())>.001||bones.leftHand.quaternion.angleTo(new three.Quaternion())>.001,kind+' must not stop waves')
    assert.ok(bones.head.quaternion.angleTo(new three.Quaternion())>.0001,kind+' retains conversational head motion')
   }
   media.matches=true;motion.update(vrm,1/60);assert.ok(names.every(n=>bones[n].quaternion.angleTo(baseline[n])<1e-5))

@@ -3,7 +3,7 @@ const {spawnSync}=require('node:child_process')
 for(const script of ['tests/acceptance/staff-pwa.browser.cjs','tests/acceptance/staff-push-dedup.browser.cjs','tests/acceptance/resident-hand-dwell.browser.cjs','tests/cloud-origin.browser.cjs',
  'tests/workbench-filters.browser.cjs','tests/patrol-workflow.browser.cjs','tests/resident-pcm-native.browser.cjs',
  'tests/background-pattern.browser.cjs','tests/acceptance/launch-animation.browser.cjs','tests/acceptance/community-launch.browser.cjs','tests/acceptance/viewport-fit.browser.cjs',
- 'tests/acceptance/patrol-planner.browser.cjs','tests/acceptance/kiosk.browser.cjs','tests/led-navigation.browser.cjs']){
+ 'tests/acceptance/patrol-planner.browser.cjs','tests/acceptance/kiosk.browser.cjs','tests/led-navigation.browser.cjs','tests/resident-led-readability.browser.cjs']){
  const result=spawnSync(process.execPath,[script],{stdio:'inherit',timeout:100000})
  if(result.error)throw result.error
  if(result.status!==0)process.exit(result.status||1)

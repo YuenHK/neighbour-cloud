@@ -5,7 +5,7 @@ import { Box3, Euler, Quaternion, Vector3 } from 'three'
 
 import { isAdaptiveResident, residentDisplayMagnification, upperBodyFraming } from './resident-display.js'
 import { readResidentGaze } from './resident-gaze-state.js'
-import { bodyGestureOffsets, continuousWelcomeBody, gestureOffsets } from './resident-gestures.js'
+import { bodyGestureOffsets, continuousWelcomeBody, gestureOffsets, residentAmbientOffsets } from './resident-gestures.js'
 
 const bones = ['head', 'chest', 'spine', 'leftShoulder', 'rightShoulder', 'leftUpperArm', 'rightUpperArm', 'leftLowerArm', 'rightLowerArm', 'leftHand', 'rightHand'] as const
 type GestureBone = typeof bones[number]
@@ -107,6 +107,7 @@ export function residentVrmGesture() {
     const offsets = gestureOffsets(gesture, now)
     const welcome = document.body?.dataset?.cloudView === 'resident' ? continuousWelcomeBody(now, gesture?.kind === 'care') : undefined
     const gaze = readResidentGaze(now)
+    const ambient = welcome ? residentAmbientOffsets(now, gesture?.kind || 'idle', !!gaze) : undefined
     const scan = gesture?.kind === 'idle' && gaze ? 0 : 1
     const dt = Number.isFinite(deltaSeconds) ? Math.max(0, Math.min(1 / 15, deltaSeconds)) : 1 / 60
     const blend = 1 - Math.exp(-9 * dt)
@@ -136,6 +137,14 @@ export function residentVrmGesture() {
           }
         : {}),
     }
+    if (ambient) {
+      const head = targets.head || zero
+      const chest = targets.chest || zero
+      const spine = targets.spine || zero
+      targets.head = [head[0] + ambient.y, head[1] + ambient.x, head[2] + ambient.z]
+      targets.chest = [chest[0], chest[1] + ambient.body, chest[2] + ambient.body * 0.35]
+      targets.spine = [spine[0] + ambient.body * 0.4, spine[1] + ambient.body * 0.5, spine[2]]
+    }
     if (gaze || gazeOffset.lengthSq() > 1e-6) {
       const head = targets.head || zero
       targets.head = [head[0] + gazeOffset.y, head[1] + gazeOffset.x, head[2]]
@@ -154,7 +163,7 @@ export function residentVrmGesture() {
       const pose = old || { before: bone.quaternion.clone(), after: bone.quaternion.clone(), offset: new Vector3() }
       pose.before.copy(bone.quaternion)
       const target = targets[name] || zero
-      const limit = name.endsWith('LowerArm') ? 120 : 75
+      const limit = name.endsWith('LowerArm') ? 150 : 75
       const clamp = (value: number) => Number.isFinite(value) ? Math.max(-limit, Math.min(limit, value)) : 0
       pose.offset.x += (clamp(target[0]) - pose.offset.x) * blend
       pose.offset.y += (clamp(target[1]) - pose.offset.y) * blend

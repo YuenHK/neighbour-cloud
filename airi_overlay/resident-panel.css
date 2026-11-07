@@ -178,6 +178,44 @@ body[data-cloud-view="resident"] .estate-resident-layout > * { min-width:0; }
 @media(max-aspect-ratio:2/5) {
   body[data-cloud-view="resident"] .resident-assistant-panel { height:56%;min-height:0;max-height:100%;width:100%; }
 }
+/* LED text is read from a distance. Scale with the CSS viewport as well as
+   native 256px panels; no secondary copy shrinks below the greeting size. */
+@media(max-aspect-ratio:2/5), (max-width:300px) and (orientation:portrait) {
+  body[data-cloud-view="resident"] .resident-assistant-panel { --resident-led-type:clamp(18px,7.1vw,72px);--resident-led-gap:clamp(4px,1.6vw,14px);font-size:var(--resident-led-type);line-height:1.45;padding:var(--resident-led-gap); }
+  body[data-cloud-view="resident"] .resident-assistant-panel h2,
+  body[data-cloud-view="resident"] .resident-assistant-panel button,
+  body[data-cloud-view="resident"] .resident-assistant-panel .resident-end,
+  body[data-cloud-view="resident"] .resident-assistant-panel textarea,
+  body[data-cloud-view="resident"] .resident-assistant-panel label,
+  body[data-cloud-view="resident"] .resident-assistant-panel small,
+  body[data-cloud-view="resident"] .resident-bubble span,
+  body[data-cloud-view="resident"] .resident-panel-notices,
+  body[data-cloud-view="resident"] .resident-panel-notices p,
+  body[data-cloud-view="resident"] .resident-conversation-state,
+  body[data-cloud-view="resident"] .resident-state-copy span,
+  body[data-cloud-view="resident"] .resident-panel-status { font-size:var(--resident-led-type);line-height:1.45; }
+  body[data-cloud-view="resident"] .resident-assistant-panel header { gap:var(--resident-led-gap);flex-wrap:wrap; }
+  body[data-cloud-view="resident"] .resident-assistant-panel header > div:first-child { min-width:0;flex:1 1 auto; }
+  body[data-cloud-view="resident"] .resident-assistant-panel h2 { white-space:normal;overflow-wrap:anywhere; }
+  body[data-cloud-view="resident"] .resident-assistant-panel button { min-height:calc(var(--resident-led-type)*1.9);padding:calc(var(--resident-led-type)*.18) calc(var(--resident-led-type)*.32);overflow-wrap:anywhere; }
+  body[data-cloud-view="resident"] .resident-assistant-panel .resident-camera-toggle { width:calc(var(--resident-led-type)*1.9);height:calc(var(--resident-led-type)*1.9);min-width:calc(var(--resident-led-type)*1.9);padding:4px; }
+  body[data-cloud-view="resident"] .resident-heading-actions,
+  body[data-cloud-view="resident"] .resident-panel-actions,
+  body[data-cloud-view="resident"] .resident-assistant-panel form { gap:var(--resident-led-gap); }
+  body[data-cloud-view="resident"] .resident-assistant-panel textarea { height:calc(var(--resident-led-type)*2.4);min-height:calc(var(--resident-led-type)*2.4);max-height:18dvh;padding:var(--resident-led-gap); }
+  body[data-cloud-view="resident"] .resident-bubble,
+  body[data-cloud-view="resident"] .resident-greeting { padding:calc(var(--resident-led-type)*.4); }
+  body[data-cloud-view="resident"] .resident-panel-notices { flex:0 1 2.2em;max-height:2.2em;min-height:0; }
+  body[data-cloud-view="resident"] .resident-transcript { min-height:1.7em; }
+  body[data-cloud-view="resident"] .resident-panel-actions button[data-hand-action="microphone"] { min-width:0;flex:1 1 auto;white-space:normal;overflow:visible;text-overflow:clip; }
+  body[data-cloud-view="resident"] .resident-panel-actions button.primary { flex:0 0 auto;min-width:calc(var(--resident-led-type)*3);white-space:nowrap; }
+  body[data-cloud-view="resident"] .resident-conversation-state { gap:var(--resident-led-gap);padding:var(--resident-led-gap); }
+}
+@media(max-width:180px) and (orientation:portrait) {
+  body[data-cloud-view="resident"] .resident-assistant-panel { --resident-led-type:16px;height:80%; }
+  body[data-cloud-view="resident"] .resident-assistant-panel header > div:first-child { flex-basis:100%; }
+  body[data-cloud-view="resident"] .resident-heading-actions { margin-left:auto; }
+}
 @media(prefers-contrast:more) {
   body[data-cloud-view="resident"] .resident-assistant-panel { background:rgba(255,255,255,.96);backdrop-filter:none;-webkit-backdrop-filter:none; }
   body[data-cloud-view="resident"] .resident-greeting,body[data-cloud-view="resident"] .resident-bubble:not(.user) { background:#edf4ef; }

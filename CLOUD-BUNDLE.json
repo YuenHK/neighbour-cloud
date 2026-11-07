@@ -171,8 +171,8 @@
     },
     {
       "path": "airi_overlay/cloud-gestures.ts",
-      "bytes": 4185,
-      "sha256": "e649ff3fe04b7ad7076bbba1c7ea9d3a369fd216bdea40d65383c57e2e2d5874"
+      "bytes": 5171,
+      "sha256": "acd7ef4526faa55884b949b47d7010e0fec080c2d98e8ba1e9c09fbff4148c45"
     },
     {
       "path": "airi_overlay/cloud-model-gallery.json",
@@ -236,8 +236,8 @@
     },
     {
       "path": "airi_overlay/cloud-vrm-gestures.ts",
-      "bytes": 8591,
-      "sha256": "43a386ac26d90d6c1cccaa0b4c7fa60ffe60fd8bcab335abdc180013cc5a98f8"
+      "bytes": 9146,
+      "sha256": "c3cf3edecea9c090898d4e1d8fd8ac16d687f0b32cca8df574a3f9c99ab1ab2b"
     },
     {
       "path": "airi_overlay/embedded-settings.ts",
@@ -451,8 +451,8 @@
     },
     {
       "path": "airi_overlay/resident-gestures.js",
-      "bytes": 9777,
-      "sha256": "fecb069fab66b9b33cecfbfabab66273c9ad9e4cc88e13a08fd8402b6dd6e81d"
+      "bytes": 10598,
+      "sha256": "8d481587d4211c4f1f5b0e96e31c8ff96d12e6cac4c59fe40f8b32181a741286"
     },
     {
       "path": "airi_overlay/resident-hand.js",
@@ -476,8 +476,8 @@
     },
     {
       "path": "airi_overlay/resident-panel.css",
-      "bytes": 13934,
-      "sha256": "af358053f128b76789930719c590e538cc835a9abf69c46362a0e7d430875c77"
+      "bytes": 17660,
+      "sha256": "0d4608ec0c652c11ca78c4ea94a1c6707bef4c7b1449dab89d2d0fe8703bd194"
     },
     {
       "path": "airi_overlay/resident-pcm.js",
@@ -846,8 +846,8 @@
     },
     {
       "path": "deploy/cloud/rollout.py",
-      "bytes": 9198,
-      "sha256": "c9a1f101baa21bad894f23b20fe8143553ceb1eb6a880a68eadd6e706a09bbe9"
+      "bytes": 9195,
+      "sha256": "a84d5a36674021e8dc167ae52b254dc7c5082d1f0eb9021cee3c5c145ebe8ecb"
     },
     {
       "path": "deploy/cloud/runtime_storage.py",
@@ -2066,8 +2066,8 @@
     },
     {
       "path": "tools/acceptance_gate.py",
-      "bytes": 6637,
-      "sha256": "75f6314356d676595b4967f9e34525a4f2cdc14da3dec21455438f8f9be3fb00"
+      "bytes": 6679,
+      "sha256": "f576cb65cbeba65fff8d457715edf340bb1a5b217eb9f9d8a6f29137ff165dea"
     },
     {
       "path": "tools/check_release_gate.py",
