@@ -1,7 +1,7 @@
 import type { MotionManagerPlugin } from './composables/live2d/motion-manager'
 
 import { readResidentGaze, ResidentGazeFilter } from './resident-gaze-state.js'
-import { gestureOffsets, live2dGestureOffsets } from './resident-gestures.js'
+import { continuousWelcomeLive2d, gestureOffsets, live2dGestureOffsets } from './resident-gestures.js'
 
 export function residentGesturePlugin(): MotionManagerPlugin {
   const reduced = matchMedia('(prefers-reduced-motion: reduce)')
@@ -23,7 +23,10 @@ export function residentGesturePlugin(): MotionManagerPlugin {
     if (document.hidden || reduced.matches)
       gazeFilter.reset()
     const gaze = !document.hidden && !reduced.matches ? gazeFilter.update(readResidentGaze(performance.now()), performance.now()) : undefined
-    const limbs = offsets ? live2dGestureOffsets(gesture, performance.now()) : undefined
+    const welcome = document.body?.dataset?.cloudView === 'resident' && !document.hidden && !reduced.matches
+      ? continuousWelcomeLive2d(performance.now(), gesture?.kind === 'care')
+      : undefined
+    const limbs = welcome ? { ...(offsets ? live2dGestureOffsets(gesture, performance.now()) : undefined), ...welcome } : offsets ? live2dGestureOffsets(gesture, performance.now()) : undefined
     for (const [name, previous] of poses) {
       if (Math.abs(ctx.model.getParameterValueById(name) - previous.after) < 1e-6)
         ctx.model.setParameterValueById(name, previous.before)

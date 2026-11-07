@@ -1,4 +1,4 @@
-import { isAdaptiveResident, upperBodyFraming } from './resident-display.js'
+import { isAdaptiveResident, residentDisplayMagnification, upperBodyFraming } from './resident-display.js'
 
 // Opt-in framing for reviewed gallery archives. Native/user models keep AIRI's
 // existing framing unless their runtime manifest explicitly asks for this fit.
@@ -35,6 +35,7 @@ export function galleryFraming(model, viewport, fallback, modelId) {
     let top = Infinity
     let right = -Infinity
     let bottom = -Infinity
+    const points = []
     for (let index = 0; index < core.getDrawableCount(); index++) {
       if (core.getDrawableOpacity(index) <= 0.01)
         continue
@@ -43,6 +44,7 @@ export function galleryFraming(model, viewport, fallback, modelId) {
         const pixel = internal.localTransform.apply({ x: vertices[point], y: vertices[point + 1] })
         if (!Number.isFinite(pixel.x) || !Number.isFinite(pixel.y))
           continue
+        points.push([pixel.x, pixel.y])
         left = Math.min(left, pixel.x)
         right = Math.max(right, pixel.x)
         top = Math.min(top, pixel.y)
@@ -51,11 +53,15 @@ export function galleryFraming(model, viewport, fallback, modelId) {
     }
     if (right <= left || bottom <= top)
       return fallback
-    bounds = { left, right, top, bottom }
+    const upper = points.filter(point => point[1] <= top + (bottom - top) * 0.35).map(point => point[0]).sort((a, b) => a - b)
+    const middle = Math.floor(upper.length / 2)
+    const focusX = upper.length ? (upper[middle] + upper[Math.max(0, middle - (upper.length % 2 === 0 ? 1 : 0))]) / 2 : (left + right) / 2
+    bounds = { left, right, top, bottom, focusX }
     cache.set(model, bounds)
   }
   if (adaptive) {
-    const fit = upperBodyFraming(bounds, viewport)
+    const magnification = residentDisplayMagnification()
+    const fit = upperBodyFraming(bounds, viewport, magnification, magnification > 1 ? bounds.focusX : undefined)
     return fit ? { scale: fit.scale, x: fit.x + internal.width / 2 * fit.scale, y: fit.y + internal.height / 2 * fit.scale } : fallback
   }
   const scale = Math.min(viewport.width / (bounds.right - bounds.left), viewport.height / (bounds.bottom - bounds.top)) * 0.9

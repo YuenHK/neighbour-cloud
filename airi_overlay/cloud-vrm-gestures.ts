@@ -3,9 +3,9 @@ import type { Object3D, PerspectiveCamera } from 'three'
 
 import { Box3, Euler, Quaternion, Vector3 } from 'three'
 
-import { isAdaptiveResident, upperBodyFraming } from './resident-display.js'
+import { isAdaptiveResident, residentDisplayMagnification, upperBodyFraming } from './resident-display.js'
 import { readResidentGaze } from './resident-gaze-state.js'
-import { bodyGestureOffsets, gestureOffsets } from './resident-gestures.js'
+import { bodyGestureOffsets, continuousWelcomeBody, gestureOffsets } from './resident-gestures.js'
 
 const bones = ['head', 'chest', 'spine', 'leftShoulder', 'rightShoulder', 'leftUpperArm', 'rightUpperArm', 'leftLowerArm', 'rightLowerArm', 'leftHand', 'rightHand'] as const
 type GestureBone = typeof bones[number]
@@ -48,7 +48,10 @@ export function residentVrmDisplay() {
           projected.expandByPoint(new Vector3(x, y, z).project(camera))
       }
     }
-    const fit = upperBodyFraming({ left: projected.min.x, right: projected.max.x, top: -projected.max.y, bottom: -projected.min.y }, { width: 2, height: 2 })
+    const magnification = residentDisplayMagnification()
+    const head = magnification > 1 ? vrm.humanoid?.getNormalizedBoneNode?.('head') : undefined
+    const focusX = head?.getWorldPosition(new Vector3()).project(camera).x
+    const fit = upperBodyFraming({ left: projected.min.x, right: projected.max.x, top: -projected.max.y, bottom: -projected.min.y }, { width: 2, height: 2 }, magnification, focusX)
     if (!fit)
       return
     const ratio = fit.scale
@@ -102,6 +105,7 @@ export function residentVrmGesture() {
     const gesture = Reflect.get(globalThis, '__NEIGHBOUR_RESIDENT_GESTURE__')
     const now = performance.now()
     const offsets = gestureOffsets(gesture, now)
+    const welcome = document.body?.dataset?.cloudView === 'resident' ? continuousWelcomeBody(now, gesture?.kind === 'care') : undefined
     const gaze = readResidentGaze(now)
     const scan = gesture?.kind === 'idle' && gaze ? 0 : 1
     const dt = Number.isFinite(deltaSeconds) ? Math.max(0, Math.min(1 / 15, deltaSeconds)) : 1 / 60
@@ -120,10 +124,11 @@ export function residentVrmGesture() {
       eyePose.vrm.lookAt.pitch = eyePose.pitch
       eyePose = undefined
     }
-    if (!offsets && !poses.size && !gaze)
+    if (!offsets && !poses.size && !gaze && !welcome)
       return
     const targets: Partial<Record<GestureBone, number[]>> = {
       ...bodyGestureOffsets(gesture, now),
+      ...welcome,
       ...(offsets
         ? {
             head: [offsets.y * scan, offsets.x * scan, offsets.z],
@@ -135,8 +140,10 @@ export function residentVrmGesture() {
       const head = targets.head || zero
       targets.head = [head[0] + gazeOffset.y, head[1] + gazeOffset.x, head[2]]
     }
-    // The native idle mixer runs first. Add small rotations to its current
-    // pose, undoing our prior offset only when no animation replaced it.
+    // The native idle mixer runs first. Welcome arms use a normalized pose:
+    // adding them to an authored arms-down pose folds palms off screen.
+    // Head/body/gaze remain additive. Restore the untouched authored pose
+    // when hidden or reduced-motion, without accumulating rotations.
     for (const name of bones) {
       const bone = vrm.humanoid.getNormalizedBoneNode(name)
       if (!bone)
@@ -158,7 +165,10 @@ export function residentVrmGesture() {
       }
       const rad = Math.PI / 180
       delta.setFromEuler(euler.set(pose.offset.x * rad, pose.offset.y * rad, pose.offset.z * rad))
-      bone.quaternion.multiply(delta)
+      if (welcome && /(?:UpperArm|LowerArm|Hand)$/.test(name))
+        bone.quaternion.copy(delta)
+      else
+        bone.quaternion.multiply(delta)
       pose.after.copy(bone.quaternion)
       poses.set(bone, pose)
     }

@@ -23,7 +23,7 @@ test('responsive upper-body close-up is larger than whole-body fit and preserves
       assert.ok(fit.scale>fullScale*1.5,`${width}x${height} must visibly enlarge the torso`)
       const top=fit.y-1000*fit.scale
       assert.ok(Math.abs(top-height*.9*.04)<1e-8,'head starts near the upper edge')
-      assert.ok(top+1200*fit.scale<=height*.9*.9,'head-to-waist region fits within the viewport')
+      assert.ok(top+1200*fit.scale/display.residentDisplayMagnification()<=height*.9*.9,'ordinary upper-body fit remains; extreme LED adds its requested 2x close-up')
       assert.deepEqual(model.internalModel.settings.json,{})
     }
     global.document.body.dataset.cloudView='settings'

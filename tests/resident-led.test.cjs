@@ -11,7 +11,8 @@ test('LED Live2D frames the upper body without changing author metadata and reve
   const {galleryFraming}=await load('airi_overlay/gallery-fit.js')
   const model={internalModel:{width:1000,height:2000,settings:{json:{}},coreModel:{getDrawableCount:()=>1,getDrawableOpacity:()=>1},getDrawableVertices:()=>[0,0,1000,2000],localTransform:{apply:p=>p}}},fallback=Object.freeze({scale:9,x:400,y:-200})
   const value=galleryFraming(model,{width:248,height:480},fallback,'user-own-model')
-  assert.notEqual(value,fallback);assert.ok(value.scale>Math.min(248/1000,480/2000)*.86*1.5);assert.ok(value.scale*1200<480)
+  const priorScale=Math.min(248/(1000*.64),480*.88/(2000*.6))*.94
+  assert.notEqual(value,fallback);assert.ok(Math.abs(value.scale-priorScale*2)<1e-8);assert.ok(Math.abs(value.y-1000*value.scale-480*.04)<1e-8)
   assert.deepEqual(model.internalModel.settings.json,{})
   global.innerWidth=1280;global.innerHeight=720;assert.equal(galleryFraming(model,{width:390,height:500},fallback,'user-own-model'),fallback)
   global.innerWidth=256;global.document.body.dataset.cloudView='settings';assert.equal(galleryFraming(model,{width:248,height:480},fallback),fallback)
@@ -33,7 +34,8 @@ test('VRM LED upper-body projection leaves camera and physics transforms intact,
   assert.equal(camera.view?.enabled,true)
   const position=root.position.clone(),scale=root.scale.clone(),box=new three.Box3().setFromObject(model)
   const width=box.max.x-box.min.x,height=box.max.y-box.min.y
-  for(const x of [box.min.x+width*.18,box.max.x-width*.18])for(const y of [box.max.y-height*.6,box.max.y])for(const z of [box.min.z,box.max.z]){const p=new three.Vector3(x,y,z).project(camera);assert.ok(Math.abs(p.x)<1&&Math.abs(p.y)<1,JSON.stringify(p))}
+  for(const x of [box.min.x+width*.34,box.max.x-width*.34])for(const y of [box.max.y-height*.3,box.max.y])for(const z of [box.min.z,box.max.z]){const p=new three.Vector3(x,y,z).project(camera);assert.ok(Math.abs(p.x)<1&&Math.abs(p.y)<1,JSON.stringify(p))}
+  assert.ok(new three.Vector3((box.min.x+box.max.x)/2,box.min.y,box.min.z).project(camera).y< -1,'extreme LED close-up crops the lower body instead of fitting the feet')
   for(let i=0;i<500;i++)fit.update({scene:model},camera)
   assert.ok(root.position.equals(position)&&root.scale.equals(scale));assert.ok(camera.position.equals(before.camera)&&camera.quaternion.equals(before.quaternion))
   global.innerWidth=1280;global.innerHeight=720;scope.innerWidth=1280;scope.innerHeight=720;fit.update({scene:model},camera)

@@ -1,0 +1,2 @@
+import{C as e,Nt as t,X as n,j as r}from"./vue.runtime.esm-bundler-BpXz90Lz.js";import{P as i}from"./components-BSv2S6dn.js";import{t as a}from"./route-block-yVb9Knfw.js";var o=r({__name:`web-search`,setup(r){return(r,a)=>(n(),e(t(i)))}});typeof a==`function`&&a(o);var s=o;export{s as default};
+//# sourceMappingURL=web-search-DqDLak7a.js.map

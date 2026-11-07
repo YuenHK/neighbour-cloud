@@ -1,6 +1,45 @@
 // Short, per-frame gestures. No API calls, timers, storage or conversation data.
 const key = '__NEIGHBOUR_RESIDENT_GESTURE__'
 const durations = { greeting: 3200, listen: 1700, speaking: 2600, care: 3300, explain: 3600, agree: 2200, thanks: 2700, celebrate: 3000, idle: 5800 }
+
+/** Continuous normalized arm pose; conversational head motion stays independent. */
+export function continuousWelcomeBody(now, gentle = false) {
+  if (!Number.isFinite(now) || now < 0)
+    return undefined
+  const phase = (now % 5600) / 5600
+  const strength = gentle ? 0.58 : 1
+  const lead = Math.cos(2 * Math.PI * phase)
+  const left = (0.55 - 0.40 * lead) * strength
+  const right = (0.55 + 0.40 * lead) * strength
+  const wave = Math.sin(10 * Math.PI * phase)
+  return {
+    leftShoulder: [0, -1.2 * left, -1.4 * left],
+    rightShoulder: [0, 1.2 * right, 1.4 * right],
+    // Fold the forearms back towards the face, keeping palms visible in a
+    // narrow close-up. These six arm/hand bones replace the native idle pose.
+    leftUpperArm: [-2 * left, -4 * left, -34 - 6 * left],
+    rightUpperArm: [-2 * right, 4 * right, 34 + 6 * right],
+    leftLowerArm: [0, -8 * left, -106 - 7 * left],
+    rightLowerArm: [0, 8 * right, 106 + 7 * right],
+    leftHand: [-30 * left, -4 * left, -14 * wave * left],
+    rightHand: [-30 * right, 4 * right, 14 * wave * right],
+  }
+}
+export function continuousWelcomeLive2d(now, gentle = false) {
+  const pose = continuousWelcomeBody(now, gentle)
+  if (!pose)
+    return undefined
+  const left = -pose.leftShoulder[2] / 1.4
+  const right = pose.rightShoulder[2] / 1.4
+  return {
+    ParamArmLA: left * 0.85,
+    ParamArmRA: right * 0.85,
+    ParamHandL: pose.leftHand[2] / 14 * 0.45,
+    ParamHandR: pose.rightHand[2] / 14 * 0.45,
+    ParamShoulderL: left * 0.14,
+    ParamShoulderR: right * 0.14,
+  }
+}
 function settledGesture(gesture, now) {
   if (gesture?.continuous && ['greeting', 'agree', 'thanks', 'celebrate'].includes(gesture.kind) && now - gesture.start > gesture.duration)
     return { ...gesture, kind: 'speaking', start: gesture.start + gesture.duration, duration: durations.speaking }
