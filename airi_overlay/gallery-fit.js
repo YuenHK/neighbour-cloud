@@ -1,4 +1,4 @@
-import { isLedResident } from './resident-display.js'
+import { isAdaptiveResident } from './resident-display.js'
 
 // Opt-in framing for reviewed gallery archives. Native/user models keep AIRI's
 // existing framing unless their runtime manifest explicitly asks for this fit.
@@ -22,11 +22,11 @@ export function installGalleryMouthAlias(model) {
 
 export function galleryFraming(model, viewport, fallback, modelId) {
   const internal = model?.internalModel
-  const led = isLedResident()
+  const adaptive = isAdaptiveResident()
   // Original MoFox archive cannot be altered under its terms. Fit its verified
   // immutable content ID at view time instead of changing the author's files.
   const originalMofox = typeof modelId === 'string' && /^(?:cloud-live2d-|display-model-sha256-live2d-zip-)8b93e71f792d13de4588c99b7c469e82f3f0e6cc9389257780812b5dafaa5c31$/.test(modelId)
-  if (!internal || (!led && internal.settings?.json?.Neighbour?.fit !== 'visible-contain-v1' && !originalMofox))
+  if (!internal || (!adaptive && internal.settings?.json?.Neighbour?.fit !== 'visible-contain-v1' && !originalMofox))
     return fallback
   let bounds = cache.get(model)
   if (!bounds) {
@@ -54,7 +54,7 @@ export function galleryFraming(model, viewport, fallback, modelId) {
     bounds = { left, right, top, bottom }
     cache.set(model, bounds)
   }
-  const scale = Math.min(viewport.width / (bounds.right - bounds.left), viewport.height / (bounds.bottom - bounds.top)) * (led ? 0.78 : 0.9)
+  const scale = Math.min(viewport.width / (bounds.right - bounds.left), viewport.height / (bounds.bottom - bounds.top)) * (adaptive ? 0.86 : 0.9)
   if (!Number.isFinite(scale) || scale <= 0)
     return fallback
   return { scale, x: viewport.width / 2 - ((bounds.left + bounds.right - internal.width) / 2) * scale, y: viewport.height / 2 - ((bounds.top + bounds.bottom - internal.height) / 2) * scale }

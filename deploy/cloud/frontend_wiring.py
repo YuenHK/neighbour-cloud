@@ -230,11 +230,11 @@ def cloud_model_gestures(source):
     binding = "    motionManagerUpdate.register(useMotionUpdatePluginLipSync(mouthOpenSize, nowSpeaking), 'final')"
     if source.count(anchor) != 1 or source.count(binding) != 1:
         raise ValueError('cloud_model_gesture_anchor_requires_review')
-    source = source.replace(anchor, "import { residentGesturePlugin } from '../../../cloud-gestures'\nimport { galleryFraming, installGalleryMouthAlias } from '../../../gallery-fit.js'\nimport { isLedResident } from '../../../resident-display.js'\n" + anchor, 1)
+    source = source.replace(anchor, "import { residentGesturePlugin } from '../../../cloud-gestures'\nimport { galleryFraming, installGalleryMouthAlias } from '../../../gallery-fit.js'\nimport { isAdaptiveResident } from '../../../resident-display.js'\n" + anchor, 1)
     frame = '  const normalized = modelNormalizeParams.value'
     if source.count(frame) != 1:
         raise ValueError('cloud_gallery_framing_anchor_requires_review')
-    source = source.replace(frame, '  const normalized = galleryFraming(model.value, { width: props.width, height: props.height }, modelNormalizeParams.value, props.modelId)\n  const displayScale = isLedResident() ? 1 : scale.value\n  const displayOffset = isLedResident() ? { x: 0, y: 0 } : offset.value', 1)
+    source = source.replace(frame, '  const normalized = galleryFraming(model.value, { width: props.width, height: props.height }, modelNormalizeParams.value, props.modelId)\n  const displayScale = isAdaptiveResident() ? 1 : scale.value\n  const displayOffset = isAdaptiveResident() ? { x: 0, y: 0 } : offset.value', 1)
     for before, after in (('normalized.scale * scale.value', 'normalized.scale * displayScale'),
                           ('normalized.x + offset.value.x', 'normalized.x + displayOffset.x'),
                           ('normalized.y + offset.value.y', 'normalized.y + displayOffset.y')):

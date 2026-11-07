@@ -11,16 +11,22 @@ preparePrivacy(document)
 installLedNavigation()
 function installLedNavigation() {
   const header = node('platformHeader'), handle = node('ledNavigationToggle')
-  const small = matchMedia('(max-width:256px) and (max-height:768px)')
-  let hovering = false, pinned = false
+  const small = matchMedia('(max-aspect-ratio:1/1), (max-width:900px), (max-height:360px)')
+  let hovering = false, pinned = false, swipe, ignoreClickUntil = 0
+  const adaptive = () => small.matches && document.body.dataset.platformView !== 'staff'
   function update() {
-    const open = small.matches && (hovering || pinned || header.contains(document.activeElement))
+    const open = adaptive() && (hovering || pinned || header.contains(document.activeElement))
     document.body.toggleAttribute('data-led-navigation-open', open)
     handle.setAttribute('aria-expanded', String(open))
+    // A hidden drawer must not receive tab focus until its handle is opened.
+    header.inert = adaptive() && !open
+    const viewport = window.visualViewport
+    const height = viewport && Math.abs(viewport.scale - 1) < .01 ? viewport.height : innerHeight
+    document.body.style.setProperty('--resident-viewport-height', `${Math.max(1, height)}px`)
   }
   function outside(target) { return !header.contains(target) && !handle.contains(target) }
   function dismiss() {
-    if (!small.matches) return
+    if (!adaptive()) return
     pinned = hovering = false
     if (header.contains(document.activeElement)) document.activeElement.blur()
     update()
@@ -29,23 +35,42 @@ function installLedNavigation() {
     surface.addEventListener('pointerenter', event => { if (event.pointerType === 'mouse') { hovering = true; update() } })
     surface.addEventListener('pointerleave', event => { if (outside(event.relatedTarget)) { hovering = false; update() } })
   }
-  handle.addEventListener('click', () => { pinned = !pinned; if (!pinned) hovering = false; update() })
+  handle.addEventListener('click', () => {
+    if (performance.now() < ignoreClickUntil) { ignoreClickUntil = 0; return }
+    pinned = !pinned; if (!pinned) hovering = false; update()
+  })
+  handle.addEventListener('pointerdown', event => {
+    if (event.pointerType !== 'touch' || !adaptive()) return
+    swipe = { id: event.pointerId, x: event.clientX, y: event.clientY }
+  })
+  handle.addEventListener('pointermove', event => {
+    if (!swipe || event.pointerId !== swipe.id) return
+    if (event.clientY - swipe.y >= 32 && Math.abs(event.clientX - swipe.x) < 48) {
+      pinned = true; ignoreClickUntil = performance.now() + 500; update()
+    }
+  })
+  handle.addEventListener('pointerup', () => { swipe = undefined })
+  handle.addEventListener('pointercancel', () => { swipe = undefined; ignoreClickUntil = 0 })
   header.addEventListener('focusin', update)
   header.addEventListener('focusout', () => queueMicrotask(update))
   document.addEventListener('pointerdown', event => {
-    if (!small.matches || !outside(event.target)) return
+    if (!adaptive() || !outside(event.target)) return
     dismiss()
   })
   // Pointer events inside the service iframe do not bubble to this document.
   node('service').addEventListener('pointerenter', dismiss)
   window.addEventListener('blur', () => setTimeout(() => { if (document.activeElement?.tagName === 'IFRAME') dismiss() }, 0))
   document.addEventListener('keydown', event => {
-    if (event.key !== 'Escape' || !small.matches || !document.body.hasAttribute('data-led-navigation-open')) return
+    if (event.key !== 'Escape' || !adaptive() || !document.body.hasAttribute('data-led-navigation-open')) return
     pinned = hovering = false
     handle.focus({ preventScroll: true })
     update()
   })
   small.addEventListener('change', () => { pinned = hovering = false; update() })
+  window.visualViewport?.addEventListener('resize', update)
+  window.addEventListener('resize', update)
+  new MutationObserver(() => { pinned = hovering = false; update() })
+    .observe(document.body, { attributes: true, attributeFilter: ['data-platform-view'] })
   update()
 }
 let frame, broker, expire, provider, role
@@ -150,6 +175,7 @@ function show(area) {
   frame?.remove()
   frame = document.createElement('iframe')
   currentArea = area
+  document.body.dataset.platformView = area === 'staff' ? 'staff' : 'resident'
   clearTimeout(startupTimer)
   startupTextReady = false
   launch.start(area, 'interface')
@@ -204,6 +230,7 @@ async function startResident() {
   requestedArea = 'resident'
   launch.start('resident')
   currentArea = 'resident'
+  document.body.dataset.platformView = 'resident'
   node('login').hidden = true
   node('staffLogin').hidden = true
   node('staffPassword').value = ''
@@ -240,6 +267,7 @@ node('staff').onclick = () => {
   if (role === 'staff' && provider) { show('staff'); return }
   if (!publicMode) return
   beginNavigation()
+  document.body.dataset.platformView = 'staff'
   node('login').hidden = true
   node('staffLogin').hidden = false
   node('staffLoginStatus').textContent = ''

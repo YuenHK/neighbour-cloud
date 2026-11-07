@@ -41,7 +41,7 @@ async function direct(browser,engine,viewport,reduced=false){
  await guard(context)
  await context.route('**/*',route=>serve(route,async(route,u)=>{
   if(u.pathname==='/'){const html=fs.readFileSync(path.join(base,'index.html'),'utf8').replace('<script type="module" src="/cloud/shell.js"></script>','<script type="module" src="/harness.js"></script>');await route.fulfill({headers,contentType:'text/html',body:html});return true}
-  if(u.pathname==='/harness.js'){await route.fulfill({contentType:'text/javascript',body:`import{createLaunchScreen}from'/cloud/launch-screen.js';import{prepareCommunityIntroduction}from'/cloud/community-about.js';window.launch=createLaunchScreen(document,{onRetry(){window.retries=(window.retries||0)+1},onContinue(){window.continued=true}});prepareCommunityIntroduction(document,{snapshot:()=>launch.snapshot()});launch.start('resident');window.testReady=true`});return true}
+  if(u.pathname==='/harness.js'){await route.fulfill({contentType:'text/javascript',body:`import{createLaunchScreen}from'/cloud/launch-screen.js';import{prepareCommunityIntroduction}from'/cloud/community-about.js';document.body.setAttribute('data-led-navigation-open','');window.launch=createLaunchScreen(document,{onRetry(){window.retries=(window.retries||0)+1},onContinue(){window.continued=true}});prepareCommunityIntroduction(document,{snapshot:()=>launch.snapshot()});launch.start('resident');window.testReady=true`});return true}
   return false
  }))
  try{
@@ -92,7 +92,7 @@ async function direct(browser,engine,viewport,reduced=false){
    await page.setViewportSize({width,height:900})
    assert.deepEqual(await page.evaluate(()=>{
     const brand=document.querySelector('.platform-brand').getBoundingClientRect(),links=document.querySelector('.header-links').getBoundingClientRect(),intro=document.querySelector('#platformIntro').getBoundingClientRect(),privacy=document.querySelector('.privacy>summary').getBoundingClientRect()
-    return {overflow:document.documentElement.scrollWidth>innerWidth,overlap:brand.right>links.left,aligned:Math.abs(intro.y-privacy.y)<1,within:privacy.right<=innerWidth}
+    return {overflow:document.documentElement.scrollWidth>innerWidth,overlap:brand.left<links.right&&brand.right>links.left&&brand.top<links.bottom&&brand.bottom>links.top,aligned:Math.abs(intro.y-privacy.y)<1,within:privacy.right<=innerWidth}
    }),{overflow:false,overlap:false,aligned:true,within:true},`${tag} header ${width}`)
   }
   await page.setViewportSize(viewport)

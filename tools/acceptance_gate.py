@@ -58,7 +58,7 @@ def main():
            'PROMPTFOO_DISABLE_TELEMETRY': '1', 'PYTHONIOENCODING': 'utf-8', 'PROMPTFOO_PYTHON': sys.executable}
     commands = [['python', '-m', 'pytest', *['tests/' + name for name in TESTS],
                  '-q', '--junitxml=' + str(output / 'regression.xml')],
-                ['node', '--test', 'tests/resident-pcm.test.cjs', 'tests/resident-avatar-audio.test.cjs', 'tests/resident-gestures.test.cjs', 'tests/resident-context-motion.test.cjs', 'tests/resident-led.test.cjs', 'tests/gallery-fit.test.cjs', 'tests/resident-camera.test.cjs', 'tests/resident-dwell.test.cjs', 'tests/resident-tracking-pipeline.test.cjs', 'tests/resident-default-interaction.test.cjs', 'tests/staff-pwa.test.cjs',
+                ['node', '--test', 'tests/resident-pcm.test.cjs', 'tests/resident-avatar-audio.test.cjs', 'tests/resident-gestures.test.cjs', 'tests/resident-context-motion.test.cjs', 'tests/resident-led.test.cjs', 'tests/resident-responsive.test.cjs', 'tests/gallery-fit.test.cjs', 'tests/resident-camera.test.cjs', 'tests/resident-dwell.test.cjs', 'tests/resident-tracking-pipeline.test.cjs', 'tests/resident-default-interaction.test.cjs', 'tests/staff-pwa.test.cjs',
                  'tests/cloud-transport.test.cjs', 'tests/admin-request.test.cjs', 'tests/workbench-live.test.cjs', 'tests/model-dedup.test.cjs',
                  'tests/cloud-privacy.test.cjs', 'tests/kiosk.test.cjs', 'tests/patrol-planner-review.test.cjs',
                  'tests/free_skeletal.test.mjs', 'tests/community-state.test.cjs', 'tests/test_community_systems_visual.mjs', 'tests/test_community_products.mjs']]

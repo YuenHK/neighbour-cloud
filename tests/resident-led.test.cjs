@@ -13,7 +13,7 @@ test('LED Live2D framing contains original models without changing author metada
   const value=galleryFraming(model,{width:248,height:480},fallback,'user-own-model')
   assert.notEqual(value,fallback);assert.ok(value.scale*2000<480);assert.ok(value.scale*1000<248)
   assert.deepEqual(model.internalModel.settings.json,{})
-  global.innerWidth=390;assert.equal(galleryFraming(model,{width:390,height:500},fallback,'user-own-model'),fallback)
+  global.innerWidth=1280;global.innerHeight=720;assert.equal(galleryFraming(model,{width:390,height:500},fallback,'user-own-model'),fallback)
   global.innerWidth=256;global.document.body.dataset.cloudView='settings';assert.equal(galleryFraming(model,{width:248,height:480},fallback),fallback)
  }finally{Object.assign(global,original)}
 })
@@ -35,7 +35,7 @@ test('VRM LED full-body fitting leaves camera and saved preferences intact, has 
   for(const x of [box.min.x,box.max.x])for(const y of [box.min.y,box.max.y])for(const z of [box.min.z,box.max.z]){const p=new three.Vector3(x,y,z).project(camera);assert.ok(Math.abs(p.x)<.9&&Math.abs(p.y)<.9,JSON.stringify(p))}
   for(let i=0;i<500;i++)fit.update({scene:model},camera)
   assert.ok(root.position.equals(position)&&root.scale.equals(scale));assert.ok(camera.position.equals(before.camera)&&camera.quaternion.equals(before.quaternion))
-  global.innerWidth=390;scope.innerWidth=390;fit.update({scene:model},camera)
+  global.innerWidth=1280;global.innerHeight=720;scope.innerWidth=1280;scope.innerHeight=720;fit.update({scene:model},camera)
   assert.ok(root.position.equals(before.position)&&root.scale.equals(before.scale))
   assert.equal(camera.view,null)
  }finally{Object.assign(global,original)}
