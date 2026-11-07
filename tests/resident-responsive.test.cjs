@@ -7,7 +7,7 @@ test('resident framing follows available orientation and size, including portrai
     assert.equal(residentViewportMode(w,h), mode, `${w}x${h}`)
 })
 
-test('responsive body fitting is resident-only and does not change staff preview framing or saved model data', async () => {
+test('responsive upper-body close-up is larger than whole-body fit and preserves staff and saved model data', async () => {
   const prior = { document: global.document, innerWidth: global.innerWidth, innerHeight: global.innerHeight }
   try {
     const display = await load(), { galleryFraming } = await import(pathToFileURL(path.resolve('airi_overlay/gallery-fit.js')).href)
@@ -19,7 +19,11 @@ test('responsive body fitting is resident-only and does not change staff preview
       assert.equal(display.isAdaptiveResident(),true)
       const fit=galleryFraming(model,{width:width*.9,height:height*.9},fallback,'original-user-model')
       assert.notEqual(fit,fallback)
-      assert.ok(fit.scale*2000<=height*.9 && fit.scale*1000<=width*.9)
+      const fullScale=Math.min(width*.9/1000,height*.9/2000)*.86
+      assert.ok(fit.scale>fullScale*1.5,`${width}x${height} must visibly enlarge the torso`)
+      const top=fit.y-1000*fit.scale
+      assert.ok(Math.abs(top-height*.9*.04)<1e-8,'head starts near the upper edge')
+      assert.ok(top+1200*fit.scale<=height*.9*.9,'head-to-waist region fits within the viewport')
       assert.deepEqual(model.internalModel.settings.json,{})
     }
     global.document.body.dataset.cloudView='settings'
@@ -29,4 +33,17 @@ test('responsive body fitting is resident-only and does not change staff preview
     assert.equal(display.isAdaptiveResident(),false)
     assert.equal(galleryFraming(model,{width:700,height:600},fallback,'original-user-model'),fallback)
   } finally { Object.assign(global,prior) }
+})
+
+test('upper-body projection rejects invalid dimensions and remains finite for narrow LED and wide strips', async () => {
+  const {upperBodyFraming}=await load()
+  for(const viewport of [{width:128,height:384},{width:256,height:768},{width:1920,height:320}]){
+    const fit=upperBodyFraming({left:-50,right:50,top:-100,bottom:100},viewport)
+    assert.ok(Object.values(fit).every(Number.isFinite))
+    assert.ok(Math.abs(-100*fit.scale+fit.y-viewport.height*.04)<1e-8)
+    assert.ok(64*fit.scale<=viewport.width)
+    assert.ok(120*fit.scale<viewport.height*.9)
+  }
+  assert.equal(upperBodyFraming({left:1,right:1,top:0,bottom:2},{width:256,height:768}),undefined)
+  assert.equal(upperBodyFraming({left:0,right:1,top:0,bottom:2},{width:0,height:768}),undefined)
 })

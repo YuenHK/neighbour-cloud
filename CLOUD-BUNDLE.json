@@ -236,8 +236,8 @@
     },
     {
       "path": "airi_overlay/cloud-vrm-gestures.ts",
-      "bytes": 7708,
-      "sha256": "516b16948d7b279f712fb7c0d9b79ce1ed5b065cc16cad133a8c5d448a4926b0"
+      "bytes": 7855,
+      "sha256": "0955537bc46e8b845c90929c47f70563eb1ee69f194373508045b40c4468d101"
     },
     {
       "path": "airi_overlay/embedded-settings.ts",
@@ -351,8 +351,8 @@
     },
     {
       "path": "airi_overlay/gallery-fit.js",
-      "bytes": 2864,
-      "sha256": "f1e4504289791d7b1b7f322febb75c41f6323ebaca46b8c15e6c5867bdf62f98"
+      "bytes": 3071,
+      "sha256": "16765d6cb99c42bb3985f33f3b7649263332968b990436f5f7b78bbf5cc0b2ca"
     },
     {
       "path": "airi_overlay/local-connection-error.ts",
@@ -426,8 +426,8 @@
     },
     {
       "path": "airi_overlay/resident-display.js",
-      "bytes": 990,
-      "sha256": "065b5da25585026b84d067dc070ae3ce97129d98b863a1cf35638c505c5b676a"
+      "bytes": 1681,
+      "sha256": "1e58aa99ee6d18d4b54b5875af48364b2577646070c2679770ca05f4c7106769"
     },
     {
       "path": "airi_overlay/resident-entry.js",
@@ -846,8 +846,8 @@
     },
     {
       "path": "deploy/cloud/rollout.py",
-      "bytes": 9194,
-      "sha256": "dc3d84be422705db9ea6b90494e4463949c897c825ae5d4b2d558b5370a453a9"
+      "bytes": 9186,
+      "sha256": "c3b022083aa8e2e15443d295f655d84876c46adf582a5adeb8610a8c0f474233"
     },
     {
       "path": "deploy/cloud/runtime_storage.py",

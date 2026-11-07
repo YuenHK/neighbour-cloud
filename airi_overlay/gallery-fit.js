@@ -1,4 +1,4 @@
-import { isAdaptiveResident } from './resident-display.js'
+import { isAdaptiveResident, upperBodyFraming } from './resident-display.js'
 
 // Opt-in framing for reviewed gallery archives. Native/user models keep AIRI's
 // existing framing unless their runtime manifest explicitly asks for this fit.
@@ -54,7 +54,11 @@ export function galleryFraming(model, viewport, fallback, modelId) {
     bounds = { left, right, top, bottom }
     cache.set(model, bounds)
   }
-  const scale = Math.min(viewport.width / (bounds.right - bounds.left), viewport.height / (bounds.bottom - bounds.top)) * (adaptive ? 0.86 : 0.9)
+  if (adaptive) {
+    const fit = upperBodyFraming(bounds, viewport)
+    return fit ? { scale: fit.scale, x: fit.x + internal.width / 2 * fit.scale, y: fit.y + internal.height / 2 * fit.scale } : fallback
+  }
+  const scale = Math.min(viewport.width / (bounds.right - bounds.left), viewport.height / (bounds.bottom - bounds.top)) * 0.9
   if (!Number.isFinite(scale) || scale <= 0)
     return fallback
   return { scale, x: viewport.width / 2 - ((bounds.left + bounds.right - internal.width) / 2) * scale, y: viewport.height / 2 - ((bounds.top + bounds.bottom - internal.height) / 2) * scale }

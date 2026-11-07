@@ -3,7 +3,7 @@ import type { Object3D, PerspectiveCamera } from 'three'
 
 import { Box3, Euler, Quaternion, Vector3 } from 'three'
 
-import { isAdaptiveResident } from './resident-display.js'
+import { isAdaptiveResident, upperBodyFraming } from './resident-display.js'
 import { readResidentGaze } from './resident-gaze-state.js'
 import { bodyGestureOffsets, gestureOffsets } from './resident-gestures.js'
 
@@ -48,9 +48,11 @@ export function residentVrmDisplay() {
           projected.expandByPoint(new Vector3(x, y, z).project(camera))
       }
     }
-    const size = projected.getSize(new Vector3())
-    const center = projected.getCenter(new Vector3())
-    const ratio = Math.min(2 / size.x, 2 / size.y) * 0.86
+    const fit = upperBodyFraming({ left: projected.min.x, right: projected.max.x, top: -projected.max.y, bottom: -projected.min.y }, { width: 2, height: 2 })
+    if (!fit)
+      return
+    const ratio = fit.scale
+    const center = new Vector3((1 - fit.x) / ratio, (fit.y - 1) / ratio, 0)
     if (!Number.isFinite(ratio) || ratio <= 0 || ratio > 100)
       return
     const beforeView = camera.view ? { ...camera.view } : null
