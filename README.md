@@ -85,4 +85,4 @@
 - [開發及部署歷史紀錄](HISTORY.md)
 - [第三方套件與素材授權索引](ACKNOWLEDGEMENTS.md)
 
-最新更新：數字人持續左右招手，聆聽及回答時保留點頭與視線互動；極窄LED人物再放大兩倍、頭部置中，半透明對話框向上移。見[持續招手與LED畫面](docs/continuous-welcome-led-2026-11-07.md)。Gemma＋Microsoft語音和全部資料不變。
+最新更新：LED對話、輸入及按鈕統一大字；數字人改為單手輪流招呼、另一手自然放低，加入環顧及點頭，修正長期雙手過頭的姿勢。Live2D動作改為小幅平滑。見[LED大字與自然動作](docs/led-readable-motion-2026-11-07.md)。Gemma＋Microsoft語音及所有資料保持。
