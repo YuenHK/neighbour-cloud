@@ -85,4 +85,4 @@
 - [開發及部署歷史紀錄](HISTORY.md)
 - [第三方套件與素材授權索引](ACKNOWLEDGEMENTS.md)
 
-最新更新：直向手機、平板、LED及細屏採用放大的上半身取景，減少背景留白；半透明對話與收合導覽保留，電腦及管理面板維持原版。見[上半身畫面說明](docs/upper-body-display-2026-11-07.md)。Gemma＋Microsoft語音和全部資料不變。
+最新更新：數字人持續左右招手，聆聽及回答時保留點頭與視線互動；極窄LED人物再放大兩倍、頭部置中，半透明對話框向上移。見[持續招手與LED畫面](docs/continuous-welcome-led-2026-11-07.md)。Gemma＋Microsoft語音和全部資料不變。
