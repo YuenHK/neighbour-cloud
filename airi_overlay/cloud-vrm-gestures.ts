@@ -5,7 +5,7 @@ import { Box3, Euler, Quaternion, Vector3 } from 'three'
 
 import { isAdaptiveResident, residentDisplayMagnification, upperBodyFraming } from './resident-display.js'
 import { readResidentGaze } from './resident-gaze-state.js'
-import { bodyGestureOffsets, continuousWelcomeBody, gestureOffsets, residentAmbientOffsets } from './resident-gestures.js'
+import { bodyGestureOffsets, continuousWelcomeBody, createResidentMotionDirector, gestureOffsets, residentAmbientOffsets } from './resident-gestures.js'
 
 const bones = ['head', 'chest', 'spine', 'leftShoulder', 'rightShoulder', 'leftUpperArm', 'rightUpperArm', 'leftLowerArm', 'rightLowerArm', 'leftHand', 'rightHand'] as const
 type GestureBone = typeof bones[number]
@@ -79,6 +79,7 @@ export function residentVrmGesture() {
   const forearmAxis = new Vector3(1, 0, 0)
   const euler = new Euler()
   let currentVrm: VRM | undefined
+  let director = createResidentMotionDirector()
   let eyePose: { vrm: VRM, auto: boolean, yaw: number, pitch: number } | undefined
   const gazeOffset = new Vector3()
   function restore() {
@@ -99,6 +100,7 @@ export function residentVrmGesture() {
     if (currentVrm !== vrm) {
       restore()
       currentVrm = vrm
+      director = createResidentMotionDirector()
     }
     if (document.hidden || reduced.matches) {
       restore()
@@ -107,9 +109,10 @@ export function residentVrmGesture() {
     const gesture = Reflect.get(globalThis, '__NEIGHBOUR_RESIDENT_GESTURE__')
     const now = performance.now()
     const offsets = gestureOffsets(gesture, now)
-    const welcome = document.body?.dataset?.cloudView === 'resident' ? continuousWelcomeBody(now, gesture?.kind === 'care', vrm.meta?.metaVersion) : undefined
     const gaze = readResidentGaze(now)
-    const ambient = welcome ? residentAmbientOffsets(now, gesture?.kind || 'idle', !!gaze) : undefined
+    const plan = director.update(now, gesture, !!gaze)
+    const welcome = document.body?.dataset?.cloudView === 'resident' ? continuousWelcomeBody(now, plan.kind === 'care', vrm.meta?.metaVersion, plan) : undefined
+    const ambient = welcome ? residentAmbientOffsets(now, plan.kind, !!gaze) : undefined
     const scan = gesture?.kind === 'idle' && gaze ? 0 : 1
     const dt = Number.isFinite(deltaSeconds) ? Math.max(0, Math.min(1 / 15, deltaSeconds)) : 1 / 60
     const blend = 1 - Math.exp(-9 * dt)
@@ -167,6 +170,8 @@ export function residentVrmGesture() {
       const target = targets[name] || zero
       const limit = name.endsWith('LowerArm') ? 150 : 75
       const clamp = (value: number) => Number.isFinite(value) ? Math.max(-limit, Math.min(limit, value)) : 0
+      if (!old && welcome && /(?:UpperArm|LowerArm|Hand)$/.test(name))
+        pose.offset.set(clamp(target[0]), clamp(target[1]), clamp(target[2]))
       pose.offset.x += (clamp(target[0]) - pose.offset.x) * blend
       pose.offset.y += (clamp(target[1]) - pose.offset.y) * blend
       pose.offset.z += (clamp(target[2]) - pose.offset.z) * blend

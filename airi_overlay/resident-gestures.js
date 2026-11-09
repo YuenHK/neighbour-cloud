@@ -2,21 +2,89 @@
 const key = '__NEIGHBOUR_RESIDENT_GESTURE__'
 const durations = { greeting: 3200, listen: 1700, speaking: 2600, care: 3300, explain: 3600, agree: 2200, thanks: 2700, celebrate: 3000, idle: 5800 }
 
-/** Continuous normalized arm pose; conversational head motion stays independent. */
-export function continuousWelcomeBody(now, gentle = false, metaVersion = '0') {
+function ease(value) {
+  const p = Math.max(0, Math.min(1, value))
+  return p * p * p * (10 + p * (-15 + 6 * p))
+}
+function phrase(kind, action, side, elapsed, length) {
+  const amount = ease(Math.min(elapsed / 650, (length - elapsed) / 850))
+  return { kind, action: amount > 0 ? action : 'rest', side, amount, sway: Math.sin(elapsed / 210) }
+}
+/** One lightweight director per model. Stores kinds/timestamps, never dialogue. */
+export function createResidentMotionDirector() {
+  let epoch
+  let event
+  let turn = 0
+  let lastInteraction = -Infinity
+  let careUntil = -Infinity
+  return {
+    update(now, gesture, hasGaze = false) {
+      if (epoch === undefined)
+        epoch = now
+      const valid = gesture && durations[gesture.kind] && Number.isFinite(gesture.start) && now >= gesture.start
+        && (gesture.continuous || now - gesture.start <= gesture.duration)
+      if (valid && (event?.kind !== gesture.kind || event?.start !== gesture.start || event?.continuous !== gesture.continuous)) {
+        // The global gesture is immutable and replaced only for a real event.
+        event = gesture
+        turn++
+        if (gesture.kind === 'greeting' && !gesture.continuous)
+          careUntil = -Infinity
+      }
+      if (valid && gesture.kind !== 'idle')
+        lastInteraction = now
+      if (valid && gesture.kind === 'care')
+        careUntil = now + 60000
+      const quiet = kind => ({ kind, action: 'rest', side: 'right', amount: 0, sway: 0 })
+      if (now < careUntil)
+        return quiet('care')
+      const kind = valid ? gesture.kind : 'idle'
+      const elapsed = valid ? now - gesture.start : now - epoch
+      const side = turn % 3 === 2 ? 'left' : 'right'
+      if (kind === 'listen' || kind === 'agree')
+        return quiet(kind)
+      if (kind === 'greeting' && elapsed < 3600)
+        return phrase(kind, 'wave', side, elapsed, 3600)
+      if (kind === 'thanks' && elapsed < 2700)
+        return phrase(kind, 'thanks', side, elapsed, 2700)
+      if (kind === 'celebrate' && elapsed < 3000)
+        return phrase(kind, 'celebrate', 'both', elapsed, 3000)
+      if (['speaking', 'explain'].includes(kind) || (valid && gesture.continuous)) {
+        const cycle = Math.floor(elapsed / 6800)
+        const local = elapsed % 6800
+        const action = (cycle + turn) % 3 === 0 ? 'beat' : 'offer'
+        if (local < 2600 && (kind === 'explain' || cycle % 3 !== 2))
+          return phrase(kind, action, (cycle + turn) % 3 === 1 ? 'left' : 'right', local, 2600)
+        return quiet(kind)
+      }
+      // Short initial hello, then mostly quiet. Invitation times vary, with a
+      // dominant hand rather than a perpetual left/right metronome.
+      const age = now - epoch
+      if (age < 3600 && lastInteraction === -Infinity)
+        return phrase('greeting', 'wave', 'right', age, 3600)
+      if (hasGaze || now - lastInteraction < 18000)
+        return quiet(kind)
+      const cycle = Math.floor(age / 140000)
+      const local = age % 140000
+      for (const [i, at] of [39000, 84000, 133000].entries()) {
+        if (local >= at && local < at + 3300)
+          return phrase('idle', 'wave', (cycle * 3 + i) % 3 === 1 ? 'left' : 'right', local - at, 3300)
+      }
+      return quiet(kind)
+    },
+  }
+}
+/** Normalized arm targets; the renderer eases from its last frame. */
+export function continuousWelcomeBody(now, gentle = false, metaVersion = '0', plan) {
   if (!Number.isFinite(now) || now < 0)
     return undefined
-  const phase = (now % 11000) / 11000
+  // Compatibility for independent pose previews; live renderers share their
+  // own director, so changing scene/time does not force an alternating cycle.
+  plan ||= gentle || now >= 3600 ? { action: 'rest', amount: 0 } : phrase('greeting', 'wave', 'right', now, 3600)
+  const left = plan.side === 'left' || plan.side === 'both' ? plan.amount : 0
+  const right = plan.side === 'right' || plan.side === 'both' ? plan.amount : 0
+  const wave = (plan.sway || 0) * (gentle ? 0.58 : 1)
   const strength = gentle ? 0.58 : 1
-  const lead = Math.cos(2 * Math.PI * phase)
-  const invite = (value) => {
-    const p = Math.max(0, Math.min(1, (value + 0.6) / 0.6))
-    return p * p * (3 - 2 * p)
-  }
-  // A short overlap hands over the wave, then the other arm really rests.
-  const left = invite(-lead)
-  const right = invite(lead)
-  const wave = Math.sin(2 * Math.PI * now / 1500) * strength
+  const greeting = plan.action === 'wave'
   const pose = {
     leftShoulder: [0, -0.7 * left * strength, -0.8 * left * strength],
     rightShoulder: [0, 0.7 * right * strength, 0.8 * right * strength],
@@ -31,6 +99,16 @@ export function continuousWelcomeBody(now, gentle = false, metaVersion = '0') {
     leftHand: [30 * left, -4 * left, -18 * wave * left],
     rightHand: [30 * right, 4 * right, 18 * wave * right],
   }
+  if (!greeting) {
+    for (const [side, amount, sign] of [['left', left, 1], ['right', right, -1]]) {
+      const lift = amount * (plan.action === 'celebrate' ? 1 : plan.action === 'beat' ? 0.45 : plan.action === 'thanks' ? 0.35 : 0.65)
+      // Low conversational gestures, well below the face. Forearm bends
+      // forward with a small open hand, instead of replaying a greeting.
+      pose[`${side}UpperArm`] = [-5 * lift, -3 * sign * lift, sign * (72 - 10 * lift)]
+      pose[`${side}LowerArm`] = [32 * lift, -60 * sign * lift, -sign * (5 + 48 * lift)]
+      pose[`${side}Hand`] = [15 * lift, -8 * sign * lift, -sign * 4 * wave * lift]
+    }
+  }
   // AIRI rotates VRM0 scenes by PI; VRM1 faces the viewer without that
   // conversion. Conjugating by that half-turn reverses local X/Z rotations,
   // including the elbow bend, while preserving Y and left/right ownership.
@@ -42,12 +120,12 @@ export function continuousWelcomeBody(now, gentle = false, metaVersion = '0') {
   }
   return pose
 }
-export function continuousWelcomeLive2d(now, gentle = false) {
-  const pose = continuousWelcomeBody(now, gentle)
+export function continuousWelcomeLive2d(now, gentle = false, plan) {
+  const pose = continuousWelcomeBody(now, gentle, '0', plan)
   if (!pose)
     return undefined
-  const left = Math.abs(pose.leftLowerArm[2]) / 140
-  const right = Math.abs(pose.rightLowerArm[2]) / 140
+  const left = Math.max(0, Math.abs(pose.leftLowerArm[2]) - 5) / 135
+  const right = Math.max(0, Math.abs(pose.rightLowerArm[2]) - 5) / 135
   return {
     ParamArmLA: left * 0.85,
     ParamArmRA: right * 0.85,

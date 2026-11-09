@@ -30,19 +30,19 @@ test('palm measurement rejects the visually confirmed barrier44 back-facing refe
  vrm.humanoid.update();vrm.scene.updateMatrixWorld(true)
  assert.ok(palmFacing(vrm,'right',new THREE.Vector3(0,1.4,3))<-.8,'known back-facing pose must never be labelled palm-facing again')
 })
-test('actual Miku rigs present an open palm to the viewer throughout each raised-hand phase, including gentle care',async()=>{
+test('actual Miku rigs keep palms facing viewers during occasional waves and both hands lowered during care',async()=>{
  const gesture=await load('airi_overlay/resident-gestures.js'),display=await load('airi_overlay/resident-display.js'),gaze=await load('airi_overlay/resident-gaze-state.js')
  for(const data of JSON.parse(fs.readFileSync('tests/fixtures/vrm-miku-hand-rigs.json','utf8'))){
   let now=0;const doc={hidden:false,body:{dataset:{cloudView:'resident'}}},media={matches:false},exports={}
   const scope={exports,require:id=>id==='three'?THREE:id.includes('resident-display')?display:id.includes('gaze-state')?gaze:gesture,document:doc,matchMedia:()=>media,performance:{now:()=>now}}
   vm.runInContext(ts.transpileModule(fs.readFileSync('airi_overlay/cloud-vrm-gestures.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,vm.createContext(scope))
-  const vrm=rig(data),motion=exports.residentVrmGesture(),camera=new THREE.Vector3(0,1.4,3);let raised=0,minDot=1,rests=0
+  const vrm=rig(data),motion=exports.residentVrmGesture(),camera=new THREE.Vector3(0,1.4,3),director=gesture.createResidentMotionDirector();let raised=0,minDot=1,rests=0
   for(const kind of ['idle','care']){
    if(kind==='care')scope.__NEIGHBOUR_RESIDENT_GESTURE__={kind,start:now,duration:3300,continuous:true}
-   for(let i=0;i<1000;i++){
-    now+=1000/60;motion.update(vrm,1/60);vrm.humanoid.update();vrm.scene.updateMatrixWorld(true)
+   for(let i=0;i<(kind==='idle'?14400:1000);i++){
+    now+=1000/60;const plan=director.update(now,scope.__NEIGHBOUR_RESIDENT_GESTURE__);motion.update(vrm,1/60);vrm.humanoid.update();vrm.scene.updateMatrixWorld(true)
     if(i<100||i%6)continue
-    const pose=gesture.continuousWelcomeBody(now,kind==='care',vrm.meta.metaVersion)
+    const pose=gesture.continuousWelcomeBody(now,kind==='care',vrm.meta.metaVersion,plan)
     for(const side of ['left','right']){
      const at=n=>vrm.humanoid.getRawBoneNode(side+n).getWorldPosition(new THREE.Vector3())
      if(Math.abs(pose[side+'LowerArm'][2])<15){assert.ok(at('Hand').y<vrm.humanoid.getRawBoneNode('head').getWorldPosition(new THREE.Vector3()).y-.3,`${data.id}/${side}: other hand really rests below chest`);rests++}
@@ -55,7 +55,7 @@ test('actual Miku rigs present an open palm to the viewer throughout each raised
     }
    }
   }
-  assert.ok(raised>150,`${data.id}: both hand cycles must be exercised`)
+  assert.ok(raised>70,`${data.id}: both hand cycles must be exercised`)
   assert.ok(rests>80,`${data.id}: format conversion must preserve the resting arm`)
   media.matches=true;motion.update(vrm);assert.ok(vrm.humanoid.getNormalizedBoneNode('rightHand').quaternion.angleTo(new THREE.Quaternion())<1e-5,'reduced motion restores authored wrist')
  }

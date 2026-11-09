@@ -1,12 +1,12 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),{pathToFileURL}=require('node:url')
 const load=file=>import(pathToFileURL(path.resolve(file)).href)
 
-test('welcome alternates a raised and resting arm instead of holding both above the head throughout a conversation',async()=>{
+test('brief welcome returns both arms to rest instead of holding them up throughout a conversation',async()=>{
  const {continuousWelcomeBody}=await load('airi_overlay/resident-gestures.js')
  let leftRest=0,rightRest=0
  for(let now=0;now<33000;now+=100){
   const p=continuousWelcomeBody(now),l=Math.abs(p.leftLowerArm[2]),r=Math.abs(p.rightLowerArm[2])
-  assert.ok(Math.max(l,r)>=130,'one hand keeps inviting while the other rests')
+  if(now>3600)assert.ok(Math.max(l,r)<15,'both arms rest between invitations')
   assert.ok(p.rightUpperArm[2]<=5 && p.leftUpperArm[2]>=-5,'welcome must not force both upper arms over the head')
   if(l<15)leftRest++;if(r<15)rightRest++
  }

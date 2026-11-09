@@ -171,8 +171,8 @@
     },
     {
       "path": "airi_overlay/cloud-gestures.ts",
-      "bytes": 5171,
-      "sha256": "acd7ef4526faa55884b949b47d7010e0fec080c2d98e8ba1e9c09fbff4148c45"
+      "bytes": 5326,
+      "sha256": "8e35781ad4dacfb353e45c665397490c296dd58937b95851db341fddb14eb63e"
     },
     {
       "path": "airi_overlay/cloud-model-gallery.json",
@@ -236,8 +236,8 @@
     },
     {
       "path": "airi_overlay/cloud-vrm-gestures.ts",
-      "bytes": 9686,
-      "sha256": "8a9e3b719da5a56f5f4af29e9a5aefbee615a216f7a0a26dd66e1c9fb5c9ee92"
+      "bytes": 10009,
+      "sha256": "e08e8371634993ec16f67e438a54e27b5821851d368d5d77ed32d7ebbe7cc48b"
     },
     {
       "path": "airi_overlay/embedded-settings.ts",
@@ -451,8 +451,8 @@
     },
     {
       "path": "airi_overlay/resident-gestures.js",
-      "bytes": 11155,
-      "sha256": "b97dc5485da11b14b933061516c6fb71e78bd930757cad9523199b65a0bcc5c5"
+      "bytes": 15214,
+      "sha256": "fbd787cd318d5a22c456845cd07bf343d12449ddb7e1da14764100d1311b81a8"
     },
     {
       "path": "airi_overlay/resident-hand.js",
@@ -846,8 +846,8 @@
     },
     {
       "path": "deploy/cloud/rollout.py",
-      "bytes": 9191,
-      "sha256": "1d59ae632f27e1c063dce1f6b92e520e9344f005835df43076a0a3df7c90b4d3"
+      "bytes": 9190,
+      "sha256": "36940cae805ef6ceb46d7ecd5c77e2f404fe0ec0000821c0eee648f9a6607daf"
     },
     {
       "path": "deploy/cloud/runtime_storage.py",
@@ -2066,8 +2066,8 @@
     },
     {
       "path": "tools/acceptance_gate.py",
-      "bytes": 6718,
-      "sha256": "bef5ff72a34f9c779548a1164323fb2150800a15de7c28c054cb37223c921997"
+      "bytes": 6902,
+      "sha256": "82193e96d19426d1b1ccb4815a0946ca2b6a18a88e1836a69671d46d796258d9"
     },
     {
       "path": "tools/check_release_gate.py",

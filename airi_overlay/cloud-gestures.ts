@@ -1,7 +1,7 @@
 import type { MotionManagerPlugin } from './composables/live2d/motion-manager'
 
 import { readResidentGaze, ResidentGazeFilter } from './resident-gaze-state.js'
-import { continuousWelcomeLive2d, gestureOffsets, live2dGestureOffsets, residentAmbientOffsets } from './resident-gestures.js'
+import { continuousWelcomeLive2d, createResidentMotionDirector, gestureOffsets, live2dGestureOffsets, residentAmbientOffsets } from './resident-gestures.js'
 
 export function residentGesturePlugin(): MotionManagerPlugin {
   const reduced = matchMedia('(prefers-reduced-motion: reduce)')
@@ -12,6 +12,7 @@ export function residentGesturePlugin(): MotionManagerPlugin {
   const poses = new Map<string, { before: number, after: number }>()
   const limbOffsets = new Map<string, number>()
   let previousAt: number | undefined
+  let director = createResidentMotionDirector()
   const gazeFilter = new ResidentGazeFilter()
   return (ctx) => {
     if (currentModel !== ctx.model) {
@@ -20,6 +21,7 @@ export function residentGesturePlugin(): MotionManagerPlugin {
       limbOffsets.clear()
       previousAt = undefined
       previousEyes = undefined
+      director = createResidentMotionDirector()
       parameters = ctx.model.getModel?.()?.parameters
     }
     const gesture = Reflect.get(globalThis, '__NEIGHBOUR_RESIDENT_GESTURE__')
@@ -30,11 +32,12 @@ export function residentGesturePlugin(): MotionManagerPlugin {
     if (document.hidden || reduced.matches)
       gazeFilter.reset()
     const gaze = !document.hidden && !reduced.matches ? gazeFilter.update(readResidentGaze(performance.now()), performance.now()) : undefined
+    const plan = director.update(now, gesture, !!gaze)
     const welcome = document.body?.dataset?.cloudView === 'resident' && !document.hidden && !reduced.matches
-      ? continuousWelcomeLive2d(performance.now(), gesture?.kind === 'care')
+      ? continuousWelcomeLive2d(now, plan.kind === 'care', plan)
       : undefined
     const limbs = welcome ? { ...(offsets ? live2dGestureOffsets(gesture, performance.now()) : undefined), ...welcome } : offsets ? live2dGestureOffsets(gesture, performance.now()) : undefined
-    const ambient = welcome ? residentAmbientOffsets(now, gesture?.kind || 'idle', !!gaze) : undefined
+    const ambient = welcome ? residentAmbientOffsets(now, plan.kind, !!gaze) : undefined
     for (const [name, previous] of poses) {
       if (Math.abs(ctx.model.getParameterValueById(name) - previous.after) < 1e-6)
         ctx.model.setParameterValueById(name, previous.before)
