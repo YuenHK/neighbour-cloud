@@ -3,7 +3,7 @@ const key = '__NEIGHBOUR_RESIDENT_GESTURE__'
 const durations = { greeting: 3200, listen: 1700, speaking: 2600, care: 3300, explain: 3600, agree: 2200, thanks: 2700, celebrate: 3000, idle: 5800 }
 
 /** Continuous normalized arm pose; conversational head motion stays independent. */
-export function continuousWelcomeBody(now, gentle = false) {
+export function continuousWelcomeBody(now, gentle = false, metaVersion = '0') {
   if (!Number.isFinite(now) || now < 0)
     return undefined
   const phase = (now % 11000) / 11000
@@ -17,7 +17,7 @@ export function continuousWelcomeBody(now, gentle = false) {
   const left = invite(-lead)
   const right = invite(lead)
   const wave = Math.sin(2 * Math.PI * now / 1500) * strength
-  return {
+  const pose = {
     leftShoulder: [0, -0.7 * left * strength, -0.8 * left * strength],
     rightShoulder: [0, 0.7 * right * strength, 0.8 * right * strength],
     // Raised palm stays beside the cheek, not above the crown. The other arm
@@ -26,9 +26,22 @@ export function continuousWelcomeBody(now, gentle = false) {
     rightUpperArm: [-2 * right, 3 * right, -72 * (1 - right)],
     leftLowerArm: [0, -4 * left, -5 - 135 * left],
     rightLowerArm: [0, 4 * right, 5 + 135 * right],
-    leftHand: [-20 * left * strength, -4 * left, -18 * wave * left],
-    rightHand: [-20 * right * strength, 4 * right, 18 * wave * right],
+    // VRM normalized hands extend along local X. Roll the open palm towards
+    // the viewer after the elbow folds; the old -20deg left palms facing
+    // sideways/upwards. Orientation stays open in care; only sway softens.
+    leftHand: [-75 * left, -4 * left, -18 * wave * left],
+    rightHand: [-75 * right, 4 * right, 18 * wave * right],
   }
+  // AIRI rotates VRM0 scenes by PI; VRM1 faces the viewer without that
+  // conversion. Conjugating by that half-turn reverses local X/Z rotations,
+  // including the elbow bend, while preserving Y and left/right ownership.
+  if (metaVersion === '1') {
+    for (const angles of Object.values(pose)) {
+      angles[0] *= -1
+      angles[2] *= -1
+    }
+  }
+  return pose
 }
 export function continuousWelcomeLive2d(now, gentle = false) {
   const pose = continuousWelcomeBody(now, gentle)

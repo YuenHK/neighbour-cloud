@@ -105,7 +105,7 @@ export function residentVrmGesture() {
     const gesture = Reflect.get(globalThis, '__NEIGHBOUR_RESIDENT_GESTURE__')
     const now = performance.now()
     const offsets = gestureOffsets(gesture, now)
-    const welcome = document.body?.dataset?.cloudView === 'resident' ? continuousWelcomeBody(now, gesture?.kind === 'care') : undefined
+    const welcome = document.body?.dataset?.cloudView === 'resident' ? continuousWelcomeBody(now, gesture?.kind === 'care', vrm.meta?.metaVersion) : undefined
     const gaze = readResidentGaze(now)
     const ambient = welcome ? residentAmbientOffsets(now, gesture?.kind || 'idle', !!gaze) : undefined
     const scan = gesture?.kind === 'idle' && gaze ? 0 : 1
