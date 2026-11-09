@@ -34,7 +34,7 @@ This content uses sample data owned and copyrighted by Live2D Inc. The sample da
 
 ## GitHub Pages 入口
 
-https://yuenhk.github.io/neighbour/ 會直接跳到正式平台，沒有額外按鈕。既有 GitHub Pages 根頁及其他遊戲頁保留。Pages 只提供入口，對話及管理功能仍在 Render／Turso；沒有在公開庫放入私人平台原始碼、居民資料或憑證。
+https://wcy.hk/neighbour/ 會直接跳到正式平台，沒有額外按鈕。既有 GitHub Pages 根頁及其他遊戲頁保留。Pages 只提供入口，對話及管理功能仍在 Render／Turso；沒有在公開庫放入私人平台原始碼、居民資料或憑證。
 
 ## 驗證及切換紀錄
 
