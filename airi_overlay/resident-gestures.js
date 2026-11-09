@@ -20,17 +20,16 @@ export function continuousWelcomeBody(now, gentle = false, metaVersion = '0') {
   const pose = {
     leftShoulder: [0, -0.7 * left * strength, -0.8 * left * strength],
     rightShoulder: [0, 0.7 * right * strength, 0.8 * right * strength],
-    // Raised palm stays beside the cheek, not above the crown. The other arm
-    // returns to an arms-down pose; do not keep both hands on the head.
-    leftUpperArm: [-2 * left, -3 * left, 72 * (1 - left)],
-    rightUpperArm: [-2 * right, 3 * right, -72 * (1 - right)],
-    leftLowerArm: [0, -4 * left, -5 - 135 * left],
-    rightLowerArm: [0, 4 * right, 5 + 135 * right],
-    // VRM normalized hands extend along local X. Roll the open palm towards
-    // the viewer after the elbow folds; the old -20deg left palms facing
-    // sideways/upwards. Orientation stays open in care; only sway softens.
-    leftHand: [-75 * left, -4 * left, -18 * wave * left],
-    rightHand: [-75 * right, 4 * right, 18 * wave * right],
+    // Lower the elbow slightly so the open hand clears the cheek/hair.
+    // The other arm still returns to its authored arms-down position.
+    leftUpperArm: [-2 * left, -3 * left, 72 * (1 - left) + 30 * left],
+    rightUpperArm: [-2 * right, 3 * right, -72 * (1 - right) - 30 * right],
+    // Axial roll is shared by the forearm and wrist: rotating only the wrist
+    // exposes the palm but leaves Miku's long cuff covering the fingers.
+    leftLowerArm: [55 * left, -4 * left, -5 - 135 * left],
+    rightLowerArm: [55 * right, 4 * right, 5 + 135 * right],
+    leftHand: [30 * left, -4 * left, -18 * wave * left],
+    rightHand: [30 * right, 4 * right, 18 * wave * right],
   }
   // AIRI rotates VRM0 scenes by PI; VRM1 faces the viewer without that
   // conversion. Conjugating by that half-turn reverses local X/Z rotations,

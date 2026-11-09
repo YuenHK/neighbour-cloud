@@ -236,8 +236,8 @@
     },
     {
       "path": "airi_overlay/cloud-vrm-gestures.ts",
-      "bytes": 9169,
-      "sha256": "61501c8fca429aab4ade71fbada4a72c6c7f52bfcd7a9f03a473de199affcb60"
+      "bytes": 9686,
+      "sha256": "8a9e3b719da5a56f5f4af29e9a5aefbee615a216f7a0a26dd66e1c9fb5c9ee92"
     },
     {
       "path": "airi_overlay/embedded-settings.ts",
@@ -451,8 +451,8 @@
     },
     {
       "path": "airi_overlay/resident-gestures.js",
-      "bytes": 11198,
-      "sha256": "634f69fac857984204f70f332077b4f773c737eb0fa2baa374f682076a430dd7"
+      "bytes": 11155,
+      "sha256": "b97dc5485da11b14b933061516c6fb71e78bd930757cad9523199b65a0bcc5c5"
     },
     {
       "path": "airi_overlay/resident-hand.js",
@@ -846,8 +846,8 @@
     },
     {
       "path": "deploy/cloud/rollout.py",
-      "bytes": 9187,
-      "sha256": "891451fe1f08b4ac2fa406d3e95dbed87624132797f161365bed3dd90a026bab"
+      "bytes": 9191,
+      "sha256": "1d59ae632f27e1c063dce1f6b92e520e9344f005835df43076a0a3df7c90b4d3"
     },
     {
       "path": "deploy/cloud/runtime_storage.py",

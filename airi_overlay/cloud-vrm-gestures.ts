@@ -75,6 +75,8 @@ export function residentVrmGesture() {
   const reduced = matchMedia('(prefers-reduced-motion: reduce)')
   const poses = new Map<Object3D, { before: Quaternion, after: Quaternion, offset: Vector3 }>()
   const delta = new Quaternion()
+  const forearmTwist = new Quaternion()
+  const forearmAxis = new Vector3(1, 0, 0)
   const euler = new Euler()
   let currentVrm: VRM | undefined
   let eyePose: { vrm: VRM, auto: boolean, yaw: number, pitch: number } | undefined
@@ -173,7 +175,16 @@ export function residentVrmGesture() {
         continue
       }
       const rad = Math.PI / 180
-      delta.setFromEuler(euler.set(pose.offset.x * rad, pose.offset.y * rad, pose.offset.z * rad))
+      if (welcome && name.endsWith('LowerArm')) {
+        // Bend the elbow, then roll around the bent forearm's own axis.
+        // XYZ Euler would roll around the upper-arm axis and move the hand.
+        delta.setFromEuler(euler.set(0, pose.offset.y * rad, pose.offset.z * rad))
+        forearmTwist.setFromAxisAngle(forearmAxis, pose.offset.x * rad)
+        delta.multiply(forearmTwist)
+      }
+      else {
+        delta.setFromEuler(euler.set(pose.offset.x * rad, pose.offset.y * rad, pose.offset.z * rad))
+      }
       if (welcome && /(?:UpperArm|LowerArm|Hand)$/.test(name))
         bone.quaternion.copy(delta)
       else

@@ -13,6 +13,23 @@ function rig(data){
  scene.updateMatrixWorld(true)
  return {humanoid,scene,meta:{metaVersion:data.version.startsWith('0')?'0':'1'}}
 }
+
+function palmFacing(vrm,side,camera){
+ const at=n=>vrm.humanoid.getRawBoneNode(side+n).getWorldPosition(new THREE.Vector3())
+ const wrist=at('Hand'),index=at('IndexProximal'),little=at('LittleProximal')
+ // The previous index×little sign measured the dorsal surface. The user
+ // identified its visible fingernail/back side in the barrier44 screenshot.
+ const palm=little.sub(wrist).cross(index.sub(wrist)).normalize().multiplyScalar(side==='left'?1:-1)
+ return palm.dot(camera.clone().sub(wrist).normalize())
+}
+
+test('palm measurement rejects the visually confirmed barrier44 back-facing reference pose',()=>{
+ const data=JSON.parse(fs.readFileSync('tests/fixtures/vrm-miku-hand-rigs.json','utf8'))[0],vrm=rig(data)
+ const backPose={rightShoulder:[0,.7,.8],rightUpperArm:[-2,3,0],rightLowerArm:[0,4,140],rightHand:[-75,4,0],leftUpperArm:[0,0,72],leftLowerArm:[0,0,-5]}
+ for(const [name,angles]of Object.entries(backPose))vrm.humanoid.getNormalizedBoneNode(name).quaternion.setFromEuler(new THREE.Euler(...angles.map(n=>n*Math.PI/180)))
+ vrm.humanoid.update();vrm.scene.updateMatrixWorld(true)
+ assert.ok(palmFacing(vrm,'right',new THREE.Vector3(0,1.4,3))<-.8,'known back-facing pose must never be labelled palm-facing again')
+})
 test('actual Miku rigs present an open palm to the viewer throughout each raised-hand phase, including gentle care',async()=>{
  const gesture=await load('airi_overlay/resident-gestures.js'),display=await load('airi_overlay/resident-display.js'),gaze=await load('airi_overlay/resident-gaze-state.js')
  for(const data of JSON.parse(fs.readFileSync('tests/fixtures/vrm-miku-hand-rigs.json','utf8'))){
@@ -30,10 +47,11 @@ test('actual Miku rigs present an open palm to the viewer throughout each raised
      const at=n=>vrm.humanoid.getRawBoneNode(side+n).getWorldPosition(new THREE.Vector3())
      if(Math.abs(pose[side+'LowerArm'][2])<15){assert.ok(at('Hand').y<vrm.humanoid.getRawBoneNode('head').getWorldPosition(new THREE.Vector3()).y-.3,`${data.id}/${side}: other hand really rests below chest`);rests++}
      if(Math.abs(pose[side+'LowerArm'][2])<135)continue
-     const wrist=at('Hand'),index=at('IndexProximal'),pinky=at('LittleProximal')
-     const normal=index.sub(wrist).cross(pinky.sub(wrist)).normalize().multiplyScalar(side==='left'?1:-1)
-     const dot=normal.dot(camera.clone().sub(wrist).normalize());minDot=Math.min(minDot,dot);raised++
+     const dot=palmFacing(vrm,side,camera);minDot=Math.min(minDot,dot);raised++
      assert.ok(dot>.8,`${data.id}/${kind}/${side}: palm facing viewer=${dot}, expected >0.8`)
+     assert.ok(at('IndexProximal').y>at('Hand').y+.02,`${data.id}/${side}: fingers must point upward for an open greeting, not down the sleeve`)
+     const head=vrm.humanoid.getRawBoneNode('head').getWorldPosition(new THREE.Vector3())
+     assert.ok(Math.abs(at('Hand').x-head.x)>.14,`${data.id}/${side}: raised wrist must clear the face instead of resting against the temple`)
     }
    }
   }
